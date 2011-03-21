@@ -20,7 +20,7 @@
 #ifndef NET_PRISM2_DATALINK_HPP
 #define NET_PRISM2_DATALINK_HPP
 
-#include <net/prism2_datalink.hpp>
+#include <net/datalink.hpp>
 
 namespace net {
 
@@ -50,13 +50,13 @@ namespace net {
       virtual const char *name() const;
 
       /**
-       * Parse the specified layer 2 frame and return a buffer
-       * containing the layer 2 frame minus the prism2_datalink header.
+       * Parse the layer 2 frame and return a heap-allocated buffer.
        *
        * \param frame_sz The size of the frame to be parsed.
        * \param frame A non-null pointer to the frame.
+       * \return A buffer_sptr pointing to the buffer.
        */
-      virtual buffer *parse(size_t frame_sz, const uint8_t *frame);
+      virtual buffer_sptr parse(size_t frame_sz, const uint8_t *frame);
 
       /**
        * Format the output frame so that it contains the appropriate

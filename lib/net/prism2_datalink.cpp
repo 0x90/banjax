@@ -17,7 +17,7 @@
  * 
  */
 
-#include <net/buffer.hpp>
+#include <net/buffer_body.hpp>
 #include <net/prism2_datalink.hpp>
 
 #include <algorithm>
@@ -38,16 +38,17 @@ prism2_datalink::name() const
    return "prism2";
 }
 
-buffer*
+buffer_sptr
 prism2_datalink::parse(size_t frame_sz, const uint8_t *frame)
 {
-   return new buffer(frame_sz, frame);
+   // ToDo: implement me!
+   return buffer_sptr(new buffer_body(frame_sz, frame));
 }
 
 size_t
 prism2_datalink::format(buffer *buf, size_t frame_sz, uint8_t *frame)
 {
    size_t n = std::min(frame_sz, buf->data_size());
-   memcpy(buf->data(), frame, n);
+   // ToDo: implement me!
    return n;
 }

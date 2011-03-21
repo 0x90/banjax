@@ -19,7 +19,6 @@
 
 #include <net/buffer_fragment.hpp>
 #include <util/dump.hpp>
-#include <util/error_msg.hpp>
 #include <util/exceptions.hpp>
 
 using namespace net;

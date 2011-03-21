@@ -17,7 +17,6 @@
  * 
  */
 
-#include <util/error_msg.hpp>
 #include <util/syscall_error.hpp>
 
 using namespace util;

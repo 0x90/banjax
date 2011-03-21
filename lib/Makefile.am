@@ -25,7 +25,6 @@ libbanjax_la_SOURCES= \
 	net/linux_wnic.cpp \
 	net/offline_wnic.cpp \
 	net/pcap_wnic.cpp \
-	net/physical_wnic.cpp \
 	net/plain_datalink.cpp \
 	net/prism2_datalink.cpp \
 	net/radiotap_datalink.cpp \
@@ -67,7 +66,6 @@ nobase_libbanjax_la_HEADERS= \
 	net/linux_wnic.hpp \
 	net/offline_wnic.hpp \
 	net/pcap_wnic.hpp \
-	net/physical_wnic.hpp \
 	net/plain_datalink.hpp \
 	net/prism2_datalink.hpp \
 	net/radiotap_datalink.hpp \
@@ -83,7 +81,7 @@ nobase_libbanjax_la_HEADERS= \
 	util/dump.hpp \
 	util/error_log.hpp \
 	util/exceptions.hpp \
-	util/syscall_error.hpp \
+	util/syscall_error.hpp
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = banjax.pc

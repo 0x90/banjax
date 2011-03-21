@@ -18,7 +18,6 @@
  */
 
 #include <net/eui_48_range.hpp>
-#include <util/error_msg.hpp>
 #include <util/exceptions.hpp>throw 
 
 #include <cstring>

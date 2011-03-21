@@ -79,6 +79,7 @@ namespace net {
        *
        * \param frame_sz The size of the frame to be parsed.
        * \param frame A non-null pointer to the frame.
+       * \return A buffer_sptr pointing to the buffer.
        */
       virtual buffer_sptr parse(size_t frame_sz, const uint8_t *frame) = 0;
 

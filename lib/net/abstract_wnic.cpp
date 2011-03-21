@@ -19,7 +19,6 @@
 
 #include <net/buffer.hpp>
 #include <net/abstract_wnic.hpp>
-#include <util/error_msg.hpp>
 
 using namespace net;
 using namespace std;
