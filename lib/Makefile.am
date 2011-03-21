@@ -1,0 +1,89 @@
+# Copyright 2011 Stephen Glass.
+
+lib_LTLIBRARIES = libbanjax.la
+
+libbanjax_la_SOURCES= \
+	dot11/control_frame.cpp \
+	dot11/data_frame.cpp \
+	dot11/frame_control.cpp \
+	dot11/frame.cpp \
+	dot11/mgmt_frame.cpp \
+	dot11/sequence_control.cpp \
+	net/abstract_buffer.cpp \
+	net/abstract_wnic.cpp \
+	net/buffer_body.cpp \
+	net/buffer.cpp \
+	net/buffer_fragment.cpp \
+	net/buffer_header.cpp \
+	net/buffer_info.cpp \
+	net/channel.cpp \
+	net/datalink.cpp \
+	net/datalink_factory.cpp \
+	net/dummy_wnic.cpp \
+	net/eui_48.cpp \
+	net/eui_48_range.cpp \
+	net/linux_wnic.cpp \
+	net/offline_wnic.cpp \
+	net/pcap_wnic.cpp \
+	net/physical_wnic.cpp \
+	net/plain_datalink.cpp \
+	net/prism2_datalink.cpp \
+	net/radiotap_datalink.cpp \
+	net/txtime.cpp \
+	net/wnic.cpp \
+	net/wnic_factory.cpp \
+	net/wnic_read_logger.cpp \
+	net/wnic_timestamp_fix.cpp \
+	net/wnic_timestamp_swizzle.cpp \
+	net/wnic_wrapper.cpp \
+	net/wnic_write_logger.cpp \
+	util/dump.cpp \
+	util/error_log.cpp \
+	util/syscall_error.cpp
+
+libbanjax_ladir = $(includedir)/banjax
+
+nobase_libbanjax_la_HEADERS= \
+	dot11/control_frame.hpp \
+	dot11/data_frame.hpp \
+	dot11/frame_control.hpp \
+	dot11/frame.hpp \
+	dot11/frame_subtype.hpp \
+	dot11/frame_type.hpp \
+	dot11/mgmt_frame.hpp \
+	dot11/sequence_control.hpp \
+	net/abstract_buffer.hpp \
+	net/abstract_wnic.hpp \
+	net/buffer_body.hpp \
+	net/buffer_fragment.hpp \
+	net/buffer_header.hpp \
+	net/buffer.hpp \
+	net/buffer_info.hpp \
+	net/channel.hpp \
+	net/datalink.hpp \
+	net/dummy_wnic.hpp \
+	net/eui_48.hpp \
+	net/eui_48_range.hpp \
+	net/linux_wnic.hpp \
+	net/offline_wnic.hpp \
+	net/pcap_wnic.hpp \
+	net/physical_wnic.hpp \
+	net/plain_datalink.hpp \
+	net/prism2_datalink.hpp \
+	net/radiotap_datalink.hpp \
+	net/radiotap.hpp \
+	net/txtime.hpp \
+	net/wnic.hpp \
+	net/wnic_read_logger.hpp \
+	net/wnic_timestamp_fix.hpp \
+	net/wnic_timestamp_swizzle.hpp \
+	net/wnic_wrapper.hpp \
+	net/wnic_write_logger.hpp \
+	util/byteswab.hpp \
+	util/dump.hpp \
+	util/error_log.hpp \
+	util/exceptions.hpp \
+	util/syscall_error.hpp \
+
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = banjax.pc
