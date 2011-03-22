@@ -4,11 +4,9 @@
 bin_PROGRAMS = elc
 
 elc_SOURCES = \
-	main.cpp \
-	data_source.cpp \
-	data_source_factory.cpp \
-	nl80211_data_source.cpp
+	main.cpp
 
-elc_CPPFLAGS = 
+elc_CPPFLAGS = -I@top_srcdir@/lib
 
-elc_LDADD = 
+elc_LDADD = @top_srcdir@/lib/libbanjax.la -lpcap
+

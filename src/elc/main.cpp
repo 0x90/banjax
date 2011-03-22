@@ -1,7 +1,7 @@
 /* Copyright NICTA, 2011
  */
 
-#include <wnic.hpp>
+#include <net/wnic.hpp>
 
 #include <cstdlib>
 #include <iomanip>
@@ -19,7 +19,7 @@ main(int ac, char **av)
    }
 
    const char *what = *++av;
-   wmic_sptr s(wnic::open(what));
+   wnic_sptr s(wnic::open(what));
 
    // ToDo: compute ELC
 
