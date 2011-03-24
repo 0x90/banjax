@@ -51,6 +51,12 @@ offline_wnic::datalink_type() const
    return dl_->type();
 }
 
+void
+offline_wnic::filter(string filter_expr)
+{
+   // ToDo: implement me!
+}
+
 buffer_sptr
 offline_wnic::read()
 {

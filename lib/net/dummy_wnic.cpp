@@ -39,3 +39,8 @@ dummy_wnic::datalink_type() const
 {
    return dlt_;
 }
+
+void
+dummy_wnic::filter(string filter_expr)
+{
+}

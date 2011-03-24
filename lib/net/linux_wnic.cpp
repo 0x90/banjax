@@ -84,6 +84,12 @@ linux_wnic::datalink_type() const
    return dl_->type();
 }
 
+void
+linux_wnic::filter(string filter_expr)
+{
+   // ToDo: implement me!
+}
+
 buffer_sptr
 linux_wnic::read()
 {

@@ -50,6 +50,17 @@ pcap_wnic::~pcap_wnic()
    }
 }
 
+int
+pcap_wnic::datalink_type() const
+{
+   return dl_->type();
+}
+
+void
+pcap_wnic::filter(string filter_expr)
+{
+   // ToDo: implement me!
+}
 
 buffer_sptr
 pcap_wnic::read()
@@ -67,10 +78,4 @@ void
 pcap_wnic::write(const buffer& b)
 {
    pcap_inject(pcap_, b.data(), b.data_size());
-}
-
-int
-pcap_wnic::datalink_type() const
-{
-   return dl_->type();
 }

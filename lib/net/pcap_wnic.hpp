@@ -47,9 +47,14 @@ namespace net {
        */
       virtual ~pcap_wnic();
 
-      /* ToDo:
-      virtual void filter(const std::string& filt_spec);
-      */
+      /**
+       * Install the capture filter given by filter_expr. See
+       * pcap-filter(7) for details of the filter_expr syntax.
+       *
+       * \param filter_expr The filter expression.
+       * \throws invalid_argument If expr is not valid.
+       */
+      virtual void filter(std::string filter_expr);
 
       /**
        * Read from the wnic. In the event of an unrecoverable failure

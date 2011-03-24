@@ -67,6 +67,15 @@ namespace net {
       virtual int datalink_type() const = 0;
 
       /**
+       * Install the capture filter given by filter_expr. See
+       * pcap-filter(7) for details of the filter_expr syntax.
+       *
+       * \param filter_expr The filter expression.
+       * \throws invalid_argument If expr is not valid.
+       */
+      virtual void filter(std::string filter_expr) = 0;
+
+      /**
        * Return the name of this wnic device.
        *
        * \return A string naming this wnic.

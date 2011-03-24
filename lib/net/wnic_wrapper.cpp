@@ -26,25 +26,17 @@ wnic_wrapper::~wnic_wrapper()
 {
 }
 
+void
+wnic_wrapper::filter(string filter_expr)
+{
+   wnic_->filter(filter_expr);
+}
+
 string
 wnic_wrapper::name() const
 {
    return wnic_->name();
 }
-
-/** TBD
-void
-wnic_wrapper::filter(const string& filt_spec)
-{
-   wnic_->filter(filt_spec);
-}
-
-void
-wnic_wrapper::filter(const sock_fprog *filt_prog)
-{
-   wnic_->filter(filt_prog);
-}
-*/
 
 buffer_sptr
 wnic_wrapper::read()
