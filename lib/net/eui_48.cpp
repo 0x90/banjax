@@ -122,7 +122,7 @@ eui_48::data_size() const
    return sizeof(addr_);
 }
 
-uint32_t
+size_t
 eui_48::hash() const
 {
    return addr_[2] << 24 | addr_[3] << 16 | addr_[4] << 8 | addr_[5];
@@ -156,6 +156,12 @@ eui_48::is_special() const
    };
    const size_t nof_specials = sizeof(specials) / sizeof(specials[0]);
    return find_if(&specials[0], &specials[nof_specials], bind(&eui_48_range::contains, _1, *this)) != &specials[nof_specials];
+}
+
+size_t
+hash(const eui_48& addr)
+{
+   return addr.hash();
 }
 
 ostream&

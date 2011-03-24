@@ -57,8 +57,8 @@ namespace net {
       explicit eui_48(const char *mac_str, char sep=':');
 
       /**
-       * eui_48 constructor. Creates a new mac address instance from
-       * the address given by mac.
+       * eui_48 constructor. Creates a new eui_48 instance from the
+       * address given by mac.
        *
        * \param mac_sz Should always be MAC_SZ.
        * \param mac_str The mac address string.
@@ -67,7 +67,7 @@ namespace net {
       eui_48(size_t mac_sz, const uint8_t *mac);
 
       /**
-       * eui_48 copy-constructor. Initialize a new channel instance
+       * eui_48 copy-constructor. Initialize a new eui_48 instance
        * with the same state as other.
        *
        * \param other A reference to the object to initialize from.
@@ -75,8 +75,8 @@ namespace net {
       eui_48(const eui_48& other);
 
       /**
-       * eui_48 assignment operator. Assign this mac address so that
-       * it has the same value as other.
+       * eui_48 assignment operator. Assign this eui_48 instance so
+       * that it has the same value as other.
        *
        * \param other A reference to the object to initialize from.
        */
@@ -137,7 +137,7 @@ namespace net {
        *
        * \return A size_t containing the hash value.
        */
-      uint32_t hash() const;
+      std::size_t hash() const;
 
       /**
        * Return true iff this eui_48 instance represents a multicast
@@ -166,12 +166,22 @@ namespace net {
       void write(std::ostream& os) const;
 
    private:
+
       /**
        * The internal storage for the MAC address.
        */
       uint8_t addr_[MAC_SZ];
 
    };
+
+   
+   /**
+    * Returns the hash value for the specified eui_48 object.
+    *
+    * \param addr A const-reference to the object to hash.
+    * \param A size_t containing the hash value.
+    */
+   size_t hash(const eui_48& addr);
 
    /**
     * operator to stream an eui_48 MAC address to an ostream.
