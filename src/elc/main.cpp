@@ -13,8 +13,11 @@
 #include <cstdlib>
 #include <iomanip>
 #include <iostream>
+#include <map>
+#include <link.hpp>
 
 using namespace net;
+using namespace metrics;
 using namespace std;
 using dot11::frame;
 
@@ -27,6 +30,7 @@ main(int ac, char **av)
    }
 
    try {
+      map<eui_48, metrics::link> stats;
       const char *what = *++av;
       wnic_sptr w(wnic::open(what));
       w = wnic_sptr(new wnic_timestamp_swizzle(w));
@@ -34,14 +38,16 @@ main(int ac, char **av)
       // ToDo: install outbound-only filter
       const uint16_t rts_cts_threshold = UINT16_MAX;
       for(buffer_sptr b; b = w->read();){
-         
          frame f(b);
          eui_48 ra(f.address1());
-         eui_48 ta(f.address2());
-         
+         if(! ra.is_special()) {
+
          // ToDo:
-         // lookup the station
+         // lookup the station in the map, create if not there
          // add txtime + stuff to it (use duration?)
+
+         }
+
 
          // ToDo: if clock ticked then compute ELC, zero totals
       }

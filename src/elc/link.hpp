@@ -11,6 +11,8 @@
 #include <net/eui_48.hpp>
 #include <dot11/frame.hpp>
 
+#include <boost/shared_ptr.hpp>
+
 namespace metrics {
 
    /**
@@ -127,6 +129,12 @@ namespace metrics {
     * \return A reference to the modified ostream.
     */
    std::ostream& operator<<(std::ostream& os, const link& addr);
+
+   /**
+    * Alias for shared_ptr<link>.
+    */
+   typedef boost::shared_ptr<link> link_sptr;
+
 
 }
 
