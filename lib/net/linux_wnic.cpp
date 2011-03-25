@@ -19,7 +19,8 @@
 
 #ifdef __linux__
 
-#include <pcap.h>
+#include <pcap/pcap.h>
+#include <pcap/bpf.h>
 
 #include <net/buffer.hpp>
 #include <net/linux_wnic.hpp>
@@ -63,7 +64,8 @@ linux_wnic::linux_wnic(string name) :
    addr.sll_ifindex  = ifr.ifr_ifindex;
    if(-1 == bind(socket_, (struct sockaddr*) &addr, sizeof(addr))) {
       ostringstream msg;
-      msg << "bind(s, (struct sockaddr*) &addr, sizeof(addr)): " << strerror(errno);
+      msg << "bind(s, (struct sockaddr*) &addr, sizeof(addr)): ";
+      msg << strerror(errno) << endl;
       raise<syscall_error>(__PRETTY_FUNCTION__, __FILE__, __LINE__, msg.str());
    }
 
@@ -87,7 +89,34 @@ linux_wnic::datalink_type() const
 void
 linux_wnic::filter(string filter_expr)
 {
-   // ToDo: implement me!
+   const int SNAPLEN = 8192;
+   pcap_t *pcap = pcap_open_dead(datalink_type(), SNAPLEN);
+
+   struct bpf_program bpf;
+   if(-1 == pcap_compile(pcap, &bpf, filter_expr.c_str(), 1, PCAP_NETMASK_UNKNOWN)) {
+      ostringstream msg;
+      msg << "pcap_compile(pcap_, &bpf, \"";
+      msg << filter_expr;
+      msg << "\", 1, PCAP_NETMASK_UNKNOWN): ";
+      msg << pcap_geterr(pcap) << endl;
+      pcap_close(pcap);
+      raise<invalid_argument>(__PRETTY_FUNCTION__, __FILE__, __LINE__, msg.str());
+   }
+
+   // DANGER: bpf_program and sock_fprog are defined to be the same
+	// but this is purely a structural equivalence that may break in
+	// future.
+   struct sock_fprog *filt_prog = reinterpret_cast<sock_fprog*>(&bpf);
+   if(-1 == setsockopt(socket_, SOL_SOCKET, SO_ATTACH_FILTER, filt_prog, sizeof(sock_fprog))) {
+      ostringstream msg;
+      msg << "setsockopt(socket_, SOL_SOCKET, SO_ATTACH_FILTER, filt_prog, sizeof(sock_fprog)):";
+      msg << strerror(errno) << endl;
+      pcap_freecode(&bpf);
+      pcap_close(pcap);
+      raise<syscall_error>(__PRETTY_FUNCTION__, __FILE__, __LINE__, msg.str());
+   }
+   pcap_freecode(&bpf);
+   pcap_close(pcap);
 }
 
 buffer_sptr
@@ -102,11 +131,13 @@ linux_wnic::read()
       return dl_->parse(octets_sz, octets);
    } else if(-1 == octets_sz) {
       ostringstream msg;
-      msg << "recv(socket_, octets, sizeof(octets), MSG_TRUNC): " << strerror(errno);
+      msg << "recv(socket_, octets, sizeof(octets), MSG_TRUNC): ";
+      msg << strerror(errno) << endl;
       raise<syscall_error>(__PRETTY_FUNCTION__, __FILE__, __LINE__, msg.str());
    } else {
       ostringstream msg;
-      msg << "invalid size for buffer (size=" << octets_sz << ", should be 0 < size <= " << sizeof(octets) << ")";
+      msg << "invalid size for buffer (size=" << octets_sz;
+      msg << ", should be 0 < size <= " << sizeof(octets) << ")" << endl;
       raise<length_error>(__PRETTY_FUNCTION__, __FILE__, __LINE__, msg.str());
    }
 }
@@ -120,7 +151,8 @@ linux_wnic::write(const buffer& b)
    ssize_t sent = send(socket_, buf, buf_sz, 0);
    if(buf_sz != sent) {
       ostringstream msg;
-      msg << "send(socket_, buf, buf_sz, 0): " << strerror(errno);
+      msg << "send(socket_, buf, buf_sz, 0): ";
+      msg << strerror(errno) << endl;
       raise<syscall_error>(__PRETTY_FUNCTION__, __FILE__, __LINE__, msg.str());
    }
 }

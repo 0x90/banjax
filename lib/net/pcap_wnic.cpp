@@ -20,7 +20,6 @@
 #include <net/buffer.hpp>
 #include <net/pcap_wnic.hpp>
 #include <util/exceptions.hpp>
-#include <util/syscall_error.hpp>
 
 using namespace net;
 using namespace std;
@@ -59,7 +58,21 @@ pcap_wnic::datalink_type() const
 void
 pcap_wnic::filter(string filter_expr)
 {
-   // ToDo: implement me!
+   struct bpf_program bpf;
+   if(-1 == pcap_compile(pcap_, &bpf, filter_expr.c_str(), 1, PCAP_NETMASK_UNKNOWN)) {
+      ostringstream msg;
+      msg << "pcap_compile(pcap_, &bpf, \"";
+      msg << filter_expr;
+      msg << "\", 1, PCAP_NETMASK_UNKNOWN): " << pcap_geterr(pcap_) << endl;
+      raise<invalid_argument>(__PRETTY_FUNCTION__, __FILE__, __LINE__, msg.str());
+   }
+   if(-1 == pcap_setfilter(pcap_, &bpf)) {
+      ostringstream msg;
+      msg << "pcap_setfilter(pcap_, &bpf): " << pcap_geterr(pcap_) << endl;
+      pcap_freecode(&bpf); // NB: avoid leaking when pcap_setfilter fails
+      raise<runtime_error>(__PRETTY_FUNCTION__, __FILE__, __LINE__, msg.str());
+   }
+   pcap_freecode(&bpf);
 }
 
 buffer_sptr
