@@ -136,7 +136,7 @@ link::packet_succ_time(buffer_sptr b) const
 {
    buffer_info_sptr info(b->info());
    double usecs = 0.0;
-   uint8_t txc = info->get(RETRIES);
+   uint8_t txc = 1 + info->get(RETRIES);
    for(uint8_t i = 0; i < txc - 1; ++i) {
       usecs += avg_contention_time(i) + frame_fail_time(b);
    }
@@ -148,7 +148,7 @@ link::packet_fail_time(buffer_sptr b) const
 {
    buffer_info_sptr info(b->info());
    double usecs = 0.0;
-   uint8_t txc = info->get(RETRIES);
+   uint8_t txc = 1 + info->get(RETRIES);
    for(uint8_t i = 0; i < txc; ++i) {
       usecs += avg_contention_time(i) + frame_fail_time(b);
    }
