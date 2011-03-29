@@ -121,8 +121,6 @@ buffer_info::write(ostream& os) const
          sep = '|';
       }
    }
-
-   os << endl;
 }
 
 uint8_t

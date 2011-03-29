@@ -2,6 +2,20 @@ AC_INIT([elc], [0.1], [s.glass@nicta.com.au])
 AM_INIT_AUTOMAKE([-Wall -Werror])
 AC_CONFIG_MACRO_DIR([m4])
 
+# this macro is used to get the arguments supplied to the configure
+# script (./configure --enable-debug) Check if we have enable debug
+# support.
+AC_MSG_CHECKING(enable debug)
+debug_default="yes"
+AC_ARG_ENABLE(debug, [--enable-debug=[no/yes] turn on debugging [default=$debug_default]],, enable_debug=$debug_default)
+if test "x$enable_debug" = "xyes"; then
+	CXXFLAGS="$CXXFLAGS -g -DDEBUG -O0"
+AC_MSG_RESULT(yes)
+else
+	CXXFLAGS="$CXXFLAGS -O3"
+AC_MSG_RESULT(no)
+fi
+
 # Checks for prereequisite programs
 AC_PROG_AWK
 AC_PROG_CC

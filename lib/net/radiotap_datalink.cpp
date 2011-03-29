@@ -162,9 +162,9 @@ radiotap_datalink::parse(size_t frame_sz, const uint8_t *frame)
    const uint8_t *bitmaps = frame + offsetof(radiotap_header, bitmaps_);
    const uint8_t *limit = frame + hdr_sz;
    le_to_cpu(reinterpret_cast<const uint8_t*>(bitmaps), bitmap);
+   bitmaps += sizeof(uint32_t);
    uint32_t ext_bitmap = bitmap;
    while(ext_bitmap & RADIOTAP_EXT) {
-      bitmaps += sizeof(uint32_t);
       if(!(bitmaps < limit)) {
          ostringstream msg;
          msg << "bad radiotap header (expected " << MIN_HDR_SZ << " <= size <= " << frame_sz << ", actual size=" << hdr_sz << ")"<< endl;
@@ -172,6 +172,7 @@ radiotap_datalink::parse(size_t frame_sz, const uint8_t *frame)
          raise<invalid_argument>(__PRETTY_FUNCTION__, __FILE__, __LINE__, msg.str());
       }
       le_to_cpu(reinterpret_cast<const uint8_t*>(bitmaps), ext_bitmap);
+      bitmaps += sizeof(uint32_t);
    }
 
    value_t rxflags = 0;
@@ -199,7 +200,7 @@ radiotap_datalink::parse(size_t frame_sz, const uint8_t *frame)
          break;
       case RADIOTAP_RATE:
          extract(ofs, junk_u8, hdr_sz, frame_sz, frame);
-         info->set(RATE_Kbs, junk_u8 * 500); 
+         info->set(RATE_Kbs, junk_u8 * 500);
          break;
       case RADIOTAP_CHANNEL:
          extract(ofs, junk_u16, hdr_sz, frame_sz, frame);
@@ -266,6 +267,7 @@ radiotap_datalink::parse(size_t frame_sz, const uint8_t *frame)
       // from here onwards are "suggested fields"
       case RADIOTAP_TXFLAGS:
          extract(ofs, junk_u16, hdr_sz, frame_sz, frame);
+         info->set(TXFLAGS, (junk_u16 & RADIOTAP_TXFLAGS_FAIL) ? TXFLAGS_FAIL : 0);
          break;
       case RADIOTAP_RTS_RETRIES: // (sometimes RSSI!?)
          extract(ofs, junk_u8, hdr_sz, frame_sz, frame);

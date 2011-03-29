@@ -41,18 +41,19 @@ namespace net {
    const property_t SIGNAL_dBm = 0x10; // int8_t
    const property_t RETRIES    = 0x20; // uint8_t
    const property_t RXFLAGS    = 0x40; // uint64_t
+   const property_t TXFLAGS    = 0x80; // uint64_t
 
    /**
     * Max number of properties currently used by buffer_info.
     */
-   const size_t NOF_PROPS = 7;
+   const size_t NOF_PROPS = 8;
 
    /**
     * Property value type.
     */
    typedef uint64_t value_t;
 
-   /* RX flag bitmasks.
+   /* RX flags.
     */
    const value_t RXFLAGS_PREAMBLE_LONG  = 0x0001;
    const value_t RXFLAGS_PREAMBLE_SHORT = 0x0002;
@@ -66,6 +67,11 @@ namespace net {
    const value_t RXFLAGS_BAD_FCS        = 0x1000;
 
    /**
+    * TX flags.
+    */
+   const value_t TXFLAGS_FAIL           = 0x0001;
+
+   /**
     * buffer_info is a concrete, leaf class that provides meta
     * information for a buffer. All of the properties are optional and
     * user code must take care to check (using #has()) whether the
@@ -73,6 +79,7 @@ namespace net {
     */
    class buffer_info : public boost::noncopyable {
    public:
+
       /**
        * buffer_info default constructor.
        */

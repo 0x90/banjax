@@ -173,7 +173,6 @@ namespace net {
       uint8_t addr_[MAC_SZ];
 
    };
-
    
    /**
     * Returns the hash value for the specified eui_48 object.

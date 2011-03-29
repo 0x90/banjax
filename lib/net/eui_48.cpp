@@ -39,8 +39,8 @@ eui_48::eui_48(const char *mac, char sep)
 {
    CHECK_NOT_NULL(mac);
    CHECK(sep == ':' || sep == '-');
-   const size_t eui_48_sz = sizeof(addr_);
-   const size_t reqd_nofseps = sizeof(addr_) - 1;
+   const size_t eui_48_sz = MAC_SZ;
+   const size_t reqd_nofseps = MAC_SZ - 1;
    uint8_t *p = addr_, errs = 0, digits = 0, seps = 0;
    fill(&addr_[0], &addr_[MAC_SZ], 0x00);
    for(const char *s = mac; *s; ++s) {
@@ -91,20 +91,20 @@ eui_48::~eui_48()
 bool
 eui_48::operator==(const eui_48& other) const
 {
-   return memcmp(addr_, other.addr_, sizeof(addr_)) == 0;
+   return memcmp(addr_, other.addr_, MAC_SZ) == 0;
 }
 
 bool
 eui_48::operator<(const eui_48& other) const
 {
-   return memcmp(addr_, other.addr_, sizeof(addr_)) == 0;
+   return memcmp(addr_, other.addr_, MAC_SZ) < 0;
 }
 
 eui_48
 eui_48::operator&(const eui_48& other)
 {
-   uint8_t a[sizeof(addr_)];
-   for(size_t i = 0; i < sizeof(addr_); ++i) {
+   uint8_t a[MAC_SZ];
+   for(size_t i = 0; i < MAC_SZ; ++i) {
       a[i] = addr_[i] & other.addr_[i];
    }
    return eui_48(MAC_SZ, a);
@@ -119,7 +119,7 @@ eui_48::data() const
 size_t
 eui_48::data_size() const
 {
-   return sizeof(addr_);
+   return MAC_SZ;
 }
 
 size_t
@@ -133,7 +133,7 @@ eui_48::write(ostream& os) const
 {
    ios_base::fmtflags save = os.flags();
    os << setw(2) << hex << setfill('0') << static_cast<int>(addr_[0]);
-   for(size_t i = 1; i < sizeof(addr_); ++i) {
+   for(size_t i = 1; i < MAC_SZ; ++i) {
       os << ":" << setw(2) << hex << setfill('0') << static_cast<uint16_t>(addr_[i]);
    }
    os.flags(save);
