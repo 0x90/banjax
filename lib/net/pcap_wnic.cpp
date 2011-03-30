@@ -83,6 +83,9 @@ pcap_wnic::read()
    const uint8_t *octets = pcap_next(pcap_, &hdr);
    if(octets) {
       b = dl_->parse(hdr.caplen, octets);
+      uint64_t ts = (hdr.ts.tv_sec * 1000000) + hdr.ts.tv_usec;
+      buffer_info_sptr info(b->info());
+      info->set(TIMESTAMP_WALLCLOCK, ts);
    }
    return b;
 }

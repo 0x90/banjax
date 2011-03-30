@@ -17,6 +17,7 @@
  * 
  */
 
+#define __STDC_CONSTANT_MACROS
 #include <net/buffer.hpp>
 #include <net/offline_wnic.hpp>
 #include <util/exceptions.hpp>
@@ -79,6 +80,9 @@ offline_wnic::read()
    const uint8_t *octets = pcap_next(pcap_, &hdr);
    if(octets) {
       b = dl_->parse(hdr.caplen, octets);
+      uint64_t ts = (hdr.ts.tv_sec * UINT64_C(1000000)) + hdr.ts.tv_usec;
+      buffer_info_sptr info(b->info());
+      info->set(TIMESTAMP_WALLCLOCK, ts);
    }
    return b;
 }

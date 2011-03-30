@@ -34,6 +34,7 @@ libbanjax_la_SOURCES= \
 	net/wnic_read_logger.cpp \
 	net/wnic_timestamp_fix.cpp \
 	net/wnic_timestamp_swizzle.cpp \
+	net/wnic_wallclock_fix.cpp \
 	net/wnic_wrapper.cpp \
 	net/wnic_write_logger.cpp \
 	util/dump.cpp \
@@ -75,6 +76,7 @@ nobase_libbanjax_la_HEADERS= \
 	net/wnic_read_logger.hpp \
 	net/wnic_timestamp_fix.hpp \
 	net/wnic_timestamp_swizzle.hpp \
+	net/wnic_wallclock_fix.cpp \
 	net/wnic_wrapper.hpp \
 	net/wnic_write_logger.hpp \
 	util/byteswab.hpp \

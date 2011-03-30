@@ -21,7 +21,7 @@
 #include <net/buffer_info.hpp>
 #include <net/wnic_timestamp_fix.hpp>
 #include <net/txtime.hpp>
-#include <util/exceptions.hpp>e
+#include <util/exceptions.hpp>
 
 using namespace net;
 using namespace std;

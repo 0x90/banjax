@@ -189,9 +189,8 @@ link::frame_succ_time(buffer_sptr b) const
    const uint32_t T_RTS_CTS = rts_cts_time(FRAME_SZ);
    const uint32_t DATA_RATE = info->get(RATE_Kbs);
    const uint32_t T_DATA = txtime_ofdm(DATA_RATE, FRAME_SZ);
-   const uint32_t ACK_RATE = ack_rate(DATA_RATE);
    const uint32_t ACK_SZ = 14;
-   const uint32_t T_ACK = txtime_ofdm(ACK_RATE, ACK_SZ);
+   const uint32_t T_ACK = txtime_ofdm(ack_rate(DATA_RATE), ACK_SZ);
 
    return T_RTS_CTS + T_DATA + T_SIFS + T_ACK + T_DIFS;
 }
@@ -204,8 +203,7 @@ link::frame_fail_time(buffer_sptr b) const
    const uint32_t CRC_SZ = 4;
    const uint32_t FRAME_SZ = b->data_size() + CRC_SZ;
    const uint32_t T_RTS_CTS = rts_cts_time(FRAME_SZ);
-   const uint32_t DATA_RATE = info->get(RATE_Kbs);
-   const uint32_t T_DATA = txtime_ofdm(DATA_RATE, FRAME_SZ);
+   const uint32_t T_DATA = txtime_ofdm(info->get(RATE_Kbs), FRAME_SZ);
    const uint32_t T_ACKTIMEOUT = 50;
 
    return T_RTS_CTS + T_DATA + T_SIFS + T_ACKTIMEOUT + T_DIFS;

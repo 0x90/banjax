@@ -6,9 +6,8 @@
 
 #define __STDC_LIMIT_MACROS
 #include <net/wnic.hpp>
-#include <net/wnic_timestamp_fix.hpp>
-#include <net/wnic_timestamp_swizzle.hpp>
 #include <dot11/frame.hpp>
+#include <net/wnic_wallclock_fix.hpp>
 
 #include <cstdlib>
 #include <iomanip>
@@ -32,22 +31,21 @@ main(int ac, char **av)
    try {
       const char *what = *++av;
       wnic_sptr w(wnic::open(what));
-//      w = wnic_sptr(new wnic_timestamp_swizzle(w));
-//      w = wnic_sptr(new wnic_timestamp_fix(w));
+      w = wnic_sptr(new wnic_wallclock_fix(w));
       w->filter("wlan type data"); // ToDo: add test for outbound-only frames
 
       const uint16_t rts_cts_threshold = UINT16_MAX;
-
       typedef map<eui_48, metrics::link_sptr> linkmap;
       linkmap links;
       buffer_sptr b(w->read());
-//      uint64_t tick = b->info()->get(TIMESTAMP2);
+      buffer_info_sptr info(b->info());
+      uint64_t tick = info->get(TIMESTAMP_WALLCLOCK);
       for(b; b = w->read();){
          frame f(b);
+         info = b->info();
          eui_48 ra(f.address1());
-         if(!ra.is_special()) {
-/*
-            // find/create the link stats
+         // find/create the link stats + update with packet
+         if(info->has(TXFLAGS) && !ra.is_special()) {
             link_sptr l;
             linkmap::iterator i(links.find(ra));
             if(links.end() != i) {
@@ -57,26 +55,22 @@ main(int ac, char **av)
                l = link_sptr(new metrics::link(ra, ta, rts_cts_threshold));
                links[ra] = l;
             }
-            // add frame to link
             l->add(b);
-*/
-            cout << dec;
-            cout << b->info()->get(RATE_Kbs) << ", ";
-            cout << b->info()->get(RETRIES) << endl;
-            cout << hex << *b << endl;
          }
-/*
-         if((b->info()->get(TIMESTAMP2) - tick) >= 1000000) {
+         // time to print results?
+         uint64_t timestamp = info->get(TIMESTAMP_WALLCLOCK);
+         uint64_t delta = timestamp - tick;
+         if(1000000 <= delta) {
             // write output
+            cout << timestamp / 1000000.0 << " " << delta / 1000000.0 << endl;
             for(linkmap::iterator i = links.begin(); i != links.end(); ++i) {
                cout << *(i->second) << endl;
             }
             cout << endl;
             // zero all counts
             links.clear();
-            tick = b->info()->get(TIMESTAMP2);
+            tick = timestamp;
          }
-*/
       }
    } catch(const exception& x) {
       cerr << x.what() << endl;

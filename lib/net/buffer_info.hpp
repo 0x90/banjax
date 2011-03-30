@@ -34,19 +34,20 @@ namespace net {
 
    /* Property labels (comment defines actual type).
     */
-   const property_t TIMESTAMP1 = 0x01; // uint64_t
-   const property_t TIMESTAMP2 = 0x02; // uint64_t
-   const property_t RATE_Kbs   = 0x04; // uint32_t
-   const property_t FREQ_MHz   = 0x08; // uint32_t
-   const property_t SIGNAL_dBm = 0x10; // int8_t
-   const property_t RETRIES    = 0x20; // uint8_t
-   const property_t RXFLAGS    = 0x40; // uint64_t
-   const property_t TXFLAGS    = 0x80; // uint64_t
+   const property_t TIMESTAMP1          = 0x001; // uint64_t
+   const property_t TIMESTAMP2          = 0x002; // uint64_t
+   const property_t TIMESTAMP_WALLCLOCK = 0x004; // uint64_t
+   const property_t RATE_Kbs            = 0x008; // uint32_t
+   const property_t FREQ_MHz            = 0x010; // uint32_t
+   const property_t SIGNAL_dBm          = 0x020; // int8_t
+   const property_t RETRIES             = 0x040; // uint8_t
+   const property_t RXFLAGS             = 0x080; // uint64_t
+   const property_t TXFLAGS             = 0x100; // uint64_t
 
    /**
     * Max number of properties currently used by buffer_info.
     */
-   const size_t NOF_PROPS = 8;
+   const size_t NOF_PROPS = 9;
 
    /**
     * Property value type.
