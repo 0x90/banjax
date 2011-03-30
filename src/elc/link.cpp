@@ -5,6 +5,7 @@
  * 
  */
 
+#define __STDC_CONSTANT_MACROS
 #include <link.hpp>
 #include <net/txtime.hpp>
 #include <util/exceptions.hpp>
@@ -95,7 +96,6 @@ link::add(buffer_sptr b)
       ++n_pkt_succ_;
       t_pkt_succ_ += packet_succ_time(b);
    }
-
 }
 
 size_t
@@ -107,14 +107,17 @@ link::hash() const
 void
 link::write(ostream& os) const
 {
-//   os << to_ << " ";
-   os << to_ << endl;
-   os << n_pkt_succ_ << endl;
-   os << packet_octets_ << endl;
-   os << packet_count_ << endl;
-   os << t_pkt_succ_ << endl;
-   os << t_pkt_fail_ << endl;
-   os << metric() << endl;
+#if 0
+   os << to_ << " " << metric();
+#else
+   os << to_ << " ";
+   os << n_pkt_succ_ << " ";
+   os << packet_octets_ << " ";
+   os << packet_count_ << " ";
+   os << t_pkt_succ_ << " ";
+   os << t_pkt_fail_ << " ";
+   os << metric();
+#endif
 }
 
 ostream&
@@ -161,6 +164,10 @@ link::avg_contention_time(uint8_t txc) const
    return max_contention_time(txc) / 2.0;
 }
 
+const uint32_t T_SIFS = 16;
+const uint32_t T_SLOT = 9;
+const uint32_t T_DIFS = T_SIFS + 2 * T_SLOT;
+
 double
 link::max_contention_time(uint8_t txc) const
 {
@@ -169,15 +176,9 @@ link::max_contention_time(uint8_t txc) const
     txc %= 10;
   }
   /* end hack */
-  
-  const uint32_t T_SLOT = 9;
   const uint32_t CW = pow(2, txc+3) - 1;
-  return min(CW, 1023u) * T_SLOT;
+  return min(CW, UINT32_C(1023)) * T_SLOT;
 }
-
-const uint32_t T_SIFS = 16;
-const uint32_t T_SLOT = 9;
-const uint32_t T_DIFS = T_SIFS + 2 * T_SLOT;
 
 double 
 link::frame_succ_time(buffer_sptr b) const
