@@ -87,7 +87,7 @@ link::add(buffer_sptr b)
    packet_octets_ += b->data_size() - IEEE80211_HDR_SZ - LLC_HDR_SZ - IP_HDR_SZ - UDP_HDR_SZ;
    ++packet_count_;
 
-   // compute the t_pktime taken to send this packet - whether good or bad
+   // compute the time taken to send this packet - whether good or bad
    buffer_info_sptr info(b->info());
    uint32_t tx_flags = info->get(TXFLAGS);
    if(tx_flags & TXFLAGS_FAIL) {
@@ -176,7 +176,7 @@ link::max_contention_time(uint8_t txc) const
     txc %= 10;
   }
   /* end hack */
-  const uint32_t CW = pow(2, txc+3) - 1;
+  const uint32_t CW = pow(2, txc+4) - 1;
   return min(CW, UINT32_C(1023)) * T_SLOT;
 }
 
