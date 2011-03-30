@@ -43,7 +43,7 @@ main(int ac, char **av)
       }
    }
    if(errs || NULL == what) {
-      cerr << "usage: elc [-i input] [-r rts_cts_threshold]" << endl;
+      cerr << "usage: elc [-r rts_cts_threshold] -i input" << endl;
       exit(EXIT_FAILURE);
    }
 
