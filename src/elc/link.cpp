@@ -111,9 +111,9 @@ link::write(ostream& os) const
    os << to_ << " " << metric();
 #else
    os << to_ << " ";
-   os << n_pkt_succ_ << " ";
    os << packet_octets_ << " ";
    os << packet_count_ << " ";
+   os << n_pkt_succ_ << " ";
    os << t_pkt_succ_ << " ";
    os << t_pkt_fail_ << " ";
    os << metric();
