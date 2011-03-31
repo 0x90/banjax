@@ -178,8 +178,10 @@ link::max_contention_time(uint8_t txc) const
     txc %= 10;
   }
   /* end hack */
+  const uint32_t CWMIN = 15;
+  const uint32_t CWMAX = 1023;
   const uint32_t CW = pow(2, txc+4) - 1;
-  return min(CW, UINT32_C(1023)) * T_SLOT;
+  return min(max(CW, CWMIN), CWMAX) * T_SLOT;
 }
 
 double 
