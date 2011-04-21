@@ -89,8 +89,8 @@ link::add(buffer_sptr b)
 
    // compute the time taken to send this packet - whether good or bad
    buffer_info_sptr info(b->info());
-   uint32_t tx_flags = info->get(TXFLAGS);
-   if(tx_flags & TXFLAGS_FAIL) {
+   uint32_t tx_flags = info->tx_flags();
+   if(tx_flags & TX_FLAGS_FAIL) {
       t_pkt_fail_ += packet_fail_time(b);
    } else {
       ++n_pkt_succ_;
@@ -139,7 +139,7 @@ link::packet_succ_time(buffer_sptr b) const
 {
    buffer_info_sptr info(b->info());
    double usecs = 0.0;
-   uint8_t txc = 1 + info->get(RETRIES);
+   uint8_t txc = 1 + info->data_retries();
    for(uint8_t i = 0; i < txc - 1; ++i) {
       usecs += avg_contention_time(i) + frame_fail_time(b);
    }
@@ -151,7 +151,7 @@ link::packet_fail_time(buffer_sptr b) const
 {
    buffer_info_sptr info(b->info());
    double usecs = 0.0;
-   uint8_t txc = 1 + info->get(RETRIES);
+   uint8_t txc = 1 + info->data_retries();
    for(uint8_t i = 0; i < txc; ++i) {
       usecs += avg_contention_time(i) + frame_fail_time(b);
    }
@@ -190,7 +190,7 @@ link::frame_succ_time(buffer_sptr b) const
    const uint32_t CRC_SZ = 4;
    const uint32_t FRAME_SZ = b->data_size() + CRC_SZ;
    const uint32_t T_RTS_CTS = rts_cts_time(FRAME_SZ);
-   const uint32_t DATA_RATE = info->get(RATE_Kbs);
+   const uint32_t DATA_RATE = info->rate_Kbs();
    const uint32_t T_DATA = txtime_ofdm(DATA_RATE, FRAME_SZ);
    const uint32_t ACK_SZ = 14;
    const uint32_t T_ACK = txtime_ofdm(ack_rate(DATA_RATE), ACK_SZ);
@@ -206,7 +206,7 @@ link::frame_fail_time(buffer_sptr b) const
    const uint32_t CRC_SZ = 4;
    const uint32_t FRAME_SZ = b->data_size() + CRC_SZ;
    const uint32_t T_RTS_CTS = rts_cts_time(FRAME_SZ);
-   const uint32_t T_DATA = txtime_ofdm(info->get(RATE_Kbs), FRAME_SZ);
+   const uint32_t T_DATA = txtime_ofdm(info->rate_Kbs(), FRAME_SZ);
    const uint32_t T_ACKTIMEOUT = 50;
 
    return T_RTS_CTS + T_DATA + T_SIFS + T_ACKTIMEOUT + T_DIFS;

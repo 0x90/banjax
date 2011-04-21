@@ -32,45 +32,37 @@ namespace net {
     */
    typedef uint32_t property_t;
 
-   /* Property labels (comment defines actual type).
+   /* Property labels.
     */
-   const property_t TIMESTAMP1          = 0x001; // uint64_t
-   const property_t TIMESTAMP2          = 0x002; // uint64_t
-   const property_t TIMESTAMP_WALLCLOCK = 0x004; // uint64_t
-   const property_t RATE_Kbs            = 0x008; // uint32_t
-   const property_t FREQ_MHz            = 0x010; // uint32_t
-   const property_t SIGNAL_dBm          = 0x020; // int8_t
-   const property_t RETRIES             = 0x040; // uint8_t
-   const property_t RXFLAGS             = 0x080; // uint64_t
-   const property_t TXFLAGS             = 0x100; // uint64_t
-
-   /**
-    * Max number of properties currently used by buffer_info.
-    */
-   const size_t NOF_PROPS = 9;
-
-   /**
-    * Property value type.
-    */
-   typedef uint64_t value_t;
+   const property_t DATA_RETRIES        = 0x001;
+   const property_t FREQ_MHz            = 0x002;
+   const property_t RATE_Kbs            = 0x004;
+   const property_t RATE_TUPLES         = 0x008;
+   const property_t RTS_RETRIES         = 0x010;
+   const property_t RX_FLAGS            = 0x020;
+   const property_t SIGNAL_dBm          = 0x040;
+   const property_t TIMESTAMP1          = 0x080;
+   const property_t TIMESTAMP2          = 0x100;
+   const property_t TIMESTAMP_WALLCLOCK = 0x200;
+   const property_t TX_FLAGS            = 0x400;
 
    /* RX flags.
     */
-   const value_t RXFLAGS_PREAMBLE_LONG  = 0x0001;
-   const value_t RXFLAGS_PREAMBLE_SHORT = 0x0002;
-   const value_t RXFLAGS_CODING_DSSS    = 0x0010;
-   const value_t RXFLAGS_CODING_OFDM    = 0x0020;
-   const value_t RXFLAGS_CODING_FHSS    = 0x0040;
-   const value_t RXFLAGS_CODING_DYNAMIC = 0x0080;
-   const value_t RXFLAGS_RATE_FULL      = 0x0100;
-   const value_t RXFLAGS_RATE_HALF      = 0x0200;
-   const value_t RXFLAGS_RATE_QUARTER   = 0x0400;
-   const value_t RXFLAGS_BAD_FCS        = 0x1000;
+   const uint32_t RX_FLAGS_BAD_FCS        = 0x0001;
+   const uint32_t RX_FLAGS_CODING_DSSS    = 0x0002;
+   const uint32_t RX_FLAGS_CODING_DYNAMIC = 0x0004;
+   const uint32_t RX_FLAGS_CODING_FHSS    = 0x0008;
+   const uint32_t RX_FLAGS_CODING_OFDM    = 0x0010;
+   const uint32_t RX_FLAGS_PREAMBLE_LONG  = 0x0020;
+   const uint32_t RX_FLAGS_PREAMBLE_SHORT = 0x0040;
+   const uint32_t RX_FLAGS_RATE_FULL      = 0x0080;
+   const uint32_t RX_FLAGS_RATE_HALF      = 0x0100;
+   const uint32_t RX_FLAGS_RATE_QUARTER   = 0x0200;
 
    /**
     * TX flags.
     */
-   const value_t TXFLAGS_FAIL           = 0x0001;
+   const uint32_t TX_FLAGS_FAIL           = 0x0001;
 
    /**
     * buffer_info is a concrete, leaf class that provides meta
@@ -99,16 +91,6 @@ namespace net {
       void clear(property_t props = ~0);
 
       /**
-       * Return the value of the specified property. If the value is
-       * not present in then an invalid_argument exception will be
-       * raised.
-       *
-       * \param property_t The property to return.
-       * \throws 
-       */
-      value_t get(property_t prop) const;
-
-      /**
        * Test whether the specified properties are available. Note
        * that you can test for the presence of multiple properties by
        * combining them with the bitwise or operator ('|').
@@ -119,12 +101,151 @@ namespace net {
       bool has(property_t props) const;
 
       /**
-       * Sets the specified property to value.
-       * 
-       * \param prop The property to set.
-       * \param value The new value for the property.
+       * Returns the number of times the data frame is re-transmitted.
+       *
+       * \return A uint8_t specifying the re-transmission count.
        */
-      void set(property_t prop, value_t value);
+      uint8_t data_retries() const;
+
+      /**
+       * Sets the number of time the data frame is re-transmitted.
+       *
+       * \param r A uint8_t specifying the re-transmission count.
+       *
+       */
+      void data_retries(uint8_t r);
+
+      /**
+       * Returns the frequency in MHz at which this frame is transmitted.
+       *
+       * \return The frequency (in units of 1MHz).
+       */
+      uint32_t freq_MHz() const;
+
+      /**
+       * Sets the frequency in MHz at which this frame is transmitted.
+       *
+       * \param f The frequency (in units of 1MHz).
+       */
+      void freq_MHz(uint32_t f);
+
+      /**
+       * Returns the data rate in units of Kb/s.
+       *
+       * \return A uint32_t specifying the data rate in Kb/s.
+       */
+      uint32_t rate_Kbs() const;
+
+      /**
+       * Sets the data rate in units of Kb/s.
+       *
+       * \param r A uint32_t specifying the data rate in Kb/s.
+       */
+      void rate_Kbs(uint32_t r);
+
+      /**
+       * Return the count of RTS retries.
+       *
+       * \return A uint8_t containing the RTS retry count.
+       */
+      uint8_t rts_retries() const;
+
+      /**
+       * Sets the count of RTS retries.
+       *
+       * \param r A uint8_t containing the RTS retry count.
+       */
+      void rts_retries(uint8_t r);
+
+      /**
+       * Return the RX flags.
+       *
+       * \return A uint32_t containing the RX flags.
+       */
+      uint32_t rx_flags() const;
+
+      /**
+       * Sets the RX flags.
+       *
+       * \param f A uint32_t containing the RX flags.
+       */
+      void rx_flags(uint32_t f);
+
+      /**
+       * Returns the RSSI in units of dBm.
+       *
+       * \return The RSSI in dBm.
+       */
+      int8_t signal_dBm() const;
+
+      /**
+       * Sets the RSSI in units of dBm.
+       *
+       * \param s The RSSI in dBm.
+       */
+      void signal_dBm(int8_t s);
+
+      /**
+       * Return the timestamp1 value. This represents the time when
+       * the frame begins to arrive at the receiver.
+       *
+       * \return A uint64_t containing the timestamp1.
+       */
+      uint64_t timestamp1() const;
+
+      /**
+       * Sets the timestamp1 value. This represents the time when the
+       * frame begins to arrive at the receiver.
+       *
+       * \param t A uint64_t containing the timestamp1.
+       */
+      void timestamp1(uint64_t t);
+
+      /**
+       * Return the timestamp2 value. This represents the time when
+       * the frame stops at the receiver.
+       *
+       * \return A uint64_t containing the timestamp2.
+       */
+      uint64_t timestamp2() const;
+
+      /**
+       * Sets the timestamp2 value. This represents the time when the
+       * frame begins to arrive at the receiver.
+       *
+       * \param t A uint64_t containing the timestamp2.
+       */
+      void timestamp2(uint64_t t);
+
+      /**
+       * Return the wallclock time for the arrival of this frame. This
+       * value has limited resolution.
+       *
+       * \return A uint64_t containing the wallclock timestamp.
+       */
+      uint64_t timestamp_wallclock() const;
+
+      /**
+       * Sets the wallclock time for the arrival of this frame. This
+       * value has limited resolution.
+       *
+       * \param t A uint64_t containing the wallclock timestamp.
+       */
+      void timestamp_wallclock(uint64_t t);
+
+      /**
+       * Return the TX flags.
+       *
+       * \return A uint32_t containing the TX flags.
+       */
+      uint32_t tx_flags() const;
+
+      /**
+       * Sets the TX flags.
+       *
+       * \param f A uint32_t containing the TX flags.
+       */
+      void tx_flags(uint32_t f);
 
       /**
        * Write this buffer info to an output stream.
@@ -153,9 +274,54 @@ namespace net {
       property_t present_;
 
       /**
-       * The properties held by this buffer_info object.
+       * The number of times the data frame is retried.
        */
-      value_t props_[NOF_PROPS];
+      uint8_t data_retries_;
+
+      /**
+       * Frequency in MHz.
+       */
+      uint32_t freq_MHz_;
+
+      /**
+       * Rate in Kb/s.
+       */
+      uint32_t rate_Kbs_;
+
+      /**
+       * Number of RTS retries.
+       */
+      uint8_t rts_retries_;
+
+      /**
+       * RX flags.
+       */
+      uint32_t rx_flags_;
+
+      /**
+       * RSSI in dBm.
+       */
+      uint8_t signal_dBm_;
+
+      /**
+       * Timestamp of beginning of frame in microseconds.
+       */
+      uint64_t timestamp1_;
+
+      /**
+       * Timestamp of end of frame in microseconds.
+       */
+      uint64_t timestamp2_;
+
+      /**
+       * Timestamp for frame arrival in microseconds.
+       */
+      uint64_t timestamp_wallclock_;
+
+      /**
+       * TX flags.
+       */
+      uint32_t tx_flags_;
 
    };
 

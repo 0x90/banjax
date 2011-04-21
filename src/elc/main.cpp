@@ -55,14 +55,14 @@ main(int ac, char **av)
       linkmap links;
       buffer_sptr b(w->read());
       buffer_info_sptr info(b->info());
-      uint64_t tick = info->get(TIMESTAMP_WALLCLOCK);
+      uint64_t tick = info->timestamp_wallclock();
       for(b; b = w->read();){
          frame f(b);
          info = b->info();
          eui_48 ra(f.address1());
          frame_control fc(f.fc());
          // find/create the link stats + update with packet
-         if(info->has(TXFLAGS) && fc.type() == DATA_FRAME && !ra.is_special()) {
+         if(info->has(TX_FLAGS) && fc.type() == DATA_FRAME && !ra.is_special()) {
             link_sptr l;
             linkmap::iterator i(links.find(ra));
             if(links.end() != i) {
@@ -75,7 +75,7 @@ main(int ac, char **av)
             l->add(b);
          }
          // time to print results?
-         uint64_t timestamp = info->get(TIMESTAMP_WALLCLOCK);
+         uint64_t timestamp = info->timestamp_wallclock();
          uint64_t delta = timestamp - tick;
          if(1000000 <= delta) {
             // write output

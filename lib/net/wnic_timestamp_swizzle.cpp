@@ -44,13 +44,13 @@ wnic_timestamp_swizzle::read()
       buffer_info_sptr info(buf->info());
       if(info->has(TIMESTAMP1) ^ (info->has(TIMESTAMP2))) {
          if(info->has(TIMESTAMP1)) {
-            uint64_t t = info->get(TIMESTAMP1);
-            info->set(TIMESTAMP2, t);
+            uint64_t t = info->timestamp1();
+            info->timestamp2(t);
             info->clear(TIMESTAMP1);
          }
          else if(info->has(TIMESTAMP2)) {
-            uint64_t t = info->get(TIMESTAMP2);           
-            info->set(TIMESTAMP1, t);
+            uint64_t t = info->timestamp2();
+            info->timestamp1(t);
             info->clear(TIMESTAMP2);
          }        
       }

@@ -40,98 +40,226 @@ buffer_info::clear(property_t props)
    present_ &= ~props;
 }
 
-value_t
-buffer_info::get(property_t prop) const
-{
-   return props_[bit(prop)];
-}
-
 bool
 buffer_info::has(property_t props) const
 {
    return((present_ & props) == props);
 }
 
-void
-buffer_info::set(property_t prop, value_t value)
+uint8_t
+buffer_info::data_retries() const
 {
-   uint8_t n = bit(prop);
-   props_[n] = value;
-   present_ |= prop;
+   PRECONDITION(has(DATA_RETRIES));
+   return data_retries_;
+}
+
+void
+buffer_info::data_retries(uint8_t r)
+{
+   data_retries_ = r;
+   present_ |= DATA_RETRIES;
+}
+
+uint32_t
+buffer_info::freq_MHz() const
+{
+   PRECONDITION(has(FREQ_MHz));
+   return freq_MHz_;
+}
+
+void
+buffer_info::freq_MHz(uint32_t f)
+{
+   freq_MHz_ = f;
+   present_ |= FREQ_MHz;
+}
+
+uint32_t
+buffer_info::rate_Kbs() const
+{
+   PRECONDITION(has(RATE_Kbs));
+   return rate_Kbs_;
+}
+
+void
+buffer_info::rate_Kbs(uint32_t r)
+{
+   rate_Kbs_ = r;
+   present_ |= RATE_Kbs;
+}
+
+uint8_t
+buffer_info::rts_retries() const
+{
+   PRECONDITION(has(RTS_RETRIES));
+   return rts_retries_;
+}
+
+void
+buffer_info::rts_retries(uint8_t r)
+{
+   rts_retries_ = r;
+   present_ |= RTS_RETRIES;
+}
+
+uint32_t
+buffer_info::rx_flags() const
+{
+   PRECONDITION(has(RX_FLAGS));
+   return rx_flags_;
+}
+
+void
+buffer_info::rx_flags(uint32_t f)
+{
+   rx_flags_ = f;
+   present_ |= RX_FLAGS;
+}
+
+int8_t
+buffer_info::signal_dBm() const
+{
+   PRECONDITION(has(SIGNAL_dBm));
+   return signal_dBm_;
+}
+
+void
+buffer_info::signal_dBm(int8_t s)
+{
+   signal_dBm_ = s;
+   present_ |= SIGNAL_dBm;
+}
+
+uint64_t
+buffer_info::timestamp1() const
+{
+   PRECONDITION(has(TIMESTAMP1));
+   return timestamp1_;
+}
+
+void
+buffer_info::timestamp1(uint64_t t)
+{
+   timestamp1_ = t;
+   present_ |= TIMESTAMP1;
+}
+
+uint64_t
+buffer_info::timestamp2() const
+{
+   PRECONDITION(has(TIMESTAMP2));
+   return timestamp2_;
+}
+
+void
+buffer_info::timestamp2(uint64_t t)
+{
+   timestamp2_ = t;
+   present_ |= TIMESTAMP2;
+}
+
+uint64_t
+buffer_info::timestamp_wallclock() const
+{
+   PRECONDITION(has(TIMESTAMP_WALLCLOCK));
+   return timestamp_wallclock_;
+}
+
+void
+buffer_info::timestamp_wallclock(uint64_t t)
+{
+   timestamp_wallclock_ = t;
+   present_ |= TIMESTAMP_WALLCLOCK;
+}
+
+uint32_t
+buffer_info::tx_flags() const
+{
+   PRECONDITION(has(TX_FLAGS));
+   return tx_flags_;
+}
+
+void
+buffer_info::tx_flags(uint32_t f)
+{
+   tx_flags_ = f;
+   present_ |= TX_FLAGS;
 }
 
 void
 buffer_info::write(ostream& os) const
 {
    if(has(TIMESTAMP1))
-      os << "TIMESTAMP1: " << get(TIMESTAMP1) << ", ";
+      os << "TIMESTAMP1: " << timestamp1() << ", ";
    if(has(TIMESTAMP2))
-      os << "TIMESTAMP2: " << get(TIMESTAMP2) << ", ";
+      os << "TIMESTAMP2: " << timestamp2() << ", ";
    if(has(RATE_Kbs))
-      os << "RATE_Kbs: " << get(RATE_Kbs) << ", ";
+      os << "RATE_Kbs: " << rate_Kbs() << ", ";
    if(has(FREQ_MHz))
-      os << "FREQ_MHz: " << get(FREQ_MHz) << ", ";
+      os << "FREQ_MHz: " << freq_MHz() << ", ";
    if(has(SIGNAL_dBm))
-      os << "SIGNAL_dBm: " << static_cast<int16_t>(static_cast<int8_t>(get(SIGNAL_dBm))) << ", ";
-   if(has(RETRIES))
-      os << "RETRIES: " << get(RETRIES) << ", ";
+      os << "SIGNAL_dBm: " << static_cast<int16_t>(signal_dBm()) << ", ";
+   if(has(DATA_RETRIES))
+      os << "DATA RETRIES: " << data_retries() << ", ";
+   if(has(RTS_RETRIES))
+      os << "RTS RETRIES: " << rts_retries() << ", ";
 
-   if(has(RXFLAGS)) {
-      uint64_t flags = get(RXFLAGS);
+   if(has(RX_FLAGS)) {
+      uint32_t flags = rx_flags();
       os << "FLAGS:";
       char sep = ' ';
-      if(flags & RXFLAGS_PREAMBLE_LONG) {
-         os << sep << "RXFLAGS_PREAMBLE_LONG";
+      if(flags & RX_FLAGS_PREAMBLE_LONG) {
+         os << sep << "RX_FLAGS_PREAMBLE_LONG";
          sep = '|';
       }
-      if(flags & RXFLAGS_PREAMBLE_SHORT) {
-         os << sep << "RXFLAGS_PREAMBLE_SHORT";
+      if(flags & RX_FLAGS_PREAMBLE_SHORT) {
+         os << sep << "RX_FLAGS_PREAMBLE_SHORT";
          sep = '|';
       }
-      if(flags & RXFLAGS_CODING_DSSS) {
-         os << sep << "RXFLAGS_CODING_DSSS";
+      if(flags & RX_FLAGS_CODING_DSSS) {
+         os << sep << "RX_FLAGS_CODING_DSSS";
          sep = '|';
       }
-      if(flags & RXFLAGS_CODING_OFDM) {
-         os << sep << "RXFLAGS_CODING_OFDM";
+      if(flags & RX_FLAGS_CODING_OFDM) {
+         os << sep << "RX_FLAGS_CODING_OFDM";
          sep = '|';
       }
-      if(flags & RXFLAGS_CODING_FHSS) {
-         os << sep << "RXFLAGS_CODING_FHSS";
+      if(flags & RX_FLAGS_CODING_FHSS) {
+         os << sep << "RX_FLAGS_CODING_FHSS";
          sep = '|';
       }
-      if(flags & RXFLAGS_CODING_DYNAMIC) {
-         os << sep << "RXFLAGS_CODING_DYNAMIC";
+      if(flags & RX_FLAGS_CODING_DYNAMIC) {
+         os << sep << "RX_FLAGS_CODING_DYNAMIC";
          sep = '|';
       }
-      if(flags & RXFLAGS_RATE_FULL) {
-         os << sep << "RXFLAGS_RATE_FULL";
+      if(flags & RX_FLAGS_RATE_FULL) {
+         os << sep << "RX_FLAGS_RATE_FULL";
          sep = '|';
       }
-      if(flags & RXFLAGS_RATE_HALF) {
-         os << sep << "RXFLAGS_RATE_HALF";
+      if(flags & RX_FLAGS_RATE_HALF) {
+         os << sep << "RX_FLAGS_RATE_HALF";
          sep = '|';
       }
-      if(flags & RXFLAGS_RATE_QUARTER) {
-         os << sep << "RXFLAGS_RATE_QUARTER";
+      if(flags & RX_FLAGS_RATE_QUARTER) {
+         os << sep << "RX_FLAGS_RATE_QUARTER";
          sep = '|';
       }
-      if(flags & RXFLAGS_BAD_FCS) {
-         os << sep << "RXFLAGS_BAD_FCS";
+      if(flags & RX_FLAGS_BAD_FCS) {
+         os << sep << "RX_FLAGS_BAD_FCS";
          sep = '|';
       }
+      os << ", ";
    }
-}
 
-uint8_t
-buffer_info::bit(property_t prop) const
-{
-   CHECK_NOT_EQUAL(prop, 0);
-   CHECK_EQUAL((prop & (-prop)), prop);
-   for(uint8_t i = 0; i < NOF_PROPS; ++i) {
-      prop >>= 1;
-      if(prop == 0)
-         return i;
+   if(has(TX_FLAGS)) {
+      uint32_t flags = rx_flags();
+      os << "FLAGS:";
+      char sep = ' ';
+      if(flags & TX_FLAGS_FAIL) {
+         os << sep << "TX_FLAGS_FAIL";
+         sep = '|';
+      }
+      os << ", ";
    }
 }
 

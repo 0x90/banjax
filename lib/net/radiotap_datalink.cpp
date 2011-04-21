@@ -51,6 +51,7 @@ const uint32_t RADIOTAP_RXFLAGS           = 0x4000;
 const uint32_t RADIOTAP_TXFLAGS           = 0x8000;
 const uint32_t RADIOTAP_RTS_RETRIES       = 0x10000;
 const uint32_t RADIOTAP_DATA_RETRIES      = 0x20000;
+const uint32_t RADIOTAP_RATE_TUPLES       = 0x01000000;
 const uint32_t RADIOTAP_EXT               = 0x80000000;
 
 const uint8_t  RADIOTAP_FLAGS_CFP         = 0x01;
@@ -175,7 +176,7 @@ radiotap_datalink::parse(size_t frame_sz, const uint8_t *frame)
       bitmaps += sizeof(uint32_t);
    }
 
-   value_t rxflags = 0;
+   uint32_t rx_flags = 0;
    size_t ofs = bitmaps - frame;
    buffer_info_sptr info(new buffer_info);
    for(uint32_t i = RADIOTAP_TSFT; i < RADIOTAP_EXT; i <<= 1) {
@@ -187,24 +188,24 @@ radiotap_datalink::parse(size_t frame_sz, const uint8_t *frame)
       switch(bit) {
       case RADIOTAP_TSFT:
          extract(ofs, junk_u64, hdr_sz, frame_sz, frame);
-         info->set(TIMESTAMP1, junk_u64);
+         info->timestamp1(junk_u64);
          break;
       case RADIOTAP_FLAGS:
          extract(ofs, junk_u8, hdr_sz, frame_sz, frame);
          if(junk_u8 & RADIOTAP_FLAGS_FCS) {
             frame_sz -= sizeof(uint32_t); // remove FCS (banjax *never* provides FCS field)
          }
-         rxflags |= (junk_u8 & RADIOTAP_FLAGS_SHORTPRE) ? RXFLAGS_PREAMBLE_SHORT : RXFLAGS_PREAMBLE_LONG;
-         rxflags |= (junk_u8 & RADIOTAP_FLAGS_BAD_FCS) ? RXFLAGS_BAD_FCS : 0;
-         info->set(RXFLAGS, rxflags);
+         rx_flags |= (junk_u8 & RADIOTAP_FLAGS_SHORTPRE) ? RX_FLAGS_PREAMBLE_SHORT : RX_FLAGS_PREAMBLE_LONG;
+         rx_flags |= (junk_u8 & RADIOTAP_FLAGS_BAD_FCS) ? RX_FLAGS_BAD_FCS : 0;
+         info->rx_flags(rx_flags);
          break;
       case RADIOTAP_RATE:
          extract(ofs, junk_u8, hdr_sz, frame_sz, frame);
-         info->set(RATE_Kbs, junk_u8 * 500);
+         info->rate_Kbs(junk_u8 * 500);
          break;
       case RADIOTAP_CHANNEL:
          extract(ofs, junk_u16, hdr_sz, frame_sz, frame);
-         info->set(FREQ_MHz, junk_u16);
+         info->freq_MHz(junk_u16);
          extract(ofs, junk_u16, hdr_sz, frame_sz, frame); 
          if(junk_u16 & (RADIOTAP_CHAN_TURBO | RADIOTAP_CHAN_STURBO)) {
             ostringstream msg;
@@ -213,17 +214,17 @@ radiotap_datalink::parse(size_t frame_sz, const uint8_t *frame)
             msg << hex << dump(frame_sz, frame) << endl;
             raise<runtime_error>(__PRETTY_FUNCTION__, __FILE__, __LINE__, msg.str());
          }
-         rxflags |= (junk_u16 & RADIOTAP_CHAN_CCK)  ? RXFLAGS_CODING_DSSS : 0;
-         rxflags |= (junk_u16 & RADIOTAP_CHAN_OFDM) ? RXFLAGS_CODING_OFDM : 0;
-         rxflags |= (junk_u16 & RADIOTAP_CHAN_GFSK) ? RXFLAGS_CODING_FHSS : 0;
-         rxflags |= (junk_u16 & RADIOTAP_CHAN_DYN)  ? RXFLAGS_CODING_DYNAMIC : 0;
+         rx_flags |= (junk_u16 & RADIOTAP_CHAN_CCK)  ? RX_FLAGS_CODING_DSSS : 0;
+         rx_flags |= (junk_u16 & RADIOTAP_CHAN_OFDM) ? RX_FLAGS_CODING_OFDM : 0;
+         rx_flags |= (junk_u16 & RADIOTAP_CHAN_GFSK) ? RX_FLAGS_CODING_FHSS : 0;
+         rx_flags |= (junk_u16 & RADIOTAP_CHAN_DYN)  ? RX_FLAGS_CODING_DYNAMIC : 0;
          if(junk_u16 & RADIOTAP_CHAN_QUARTER_RATE)
-            rxflags |= RXFLAGS_RATE_QUARTER;
+            rx_flags |= RX_FLAGS_RATE_QUARTER;
          else if(junk_u16 & RADIOTAP_CHAN_HALF_RATE)
-            rxflags |= RXFLAGS_RATE_HALF;
+            rx_flags |= RX_FLAGS_RATE_HALF;
          else
-            rxflags |= RXFLAGS_RATE_FULL;
-         info->set(RXFLAGS, rxflags);
+            rx_flags |= RX_FLAGS_RATE_FULL;
+         info->rx_flags(rx_flags);
          break;
       case RADIOTAP_FHSS:
          extract(ofs, junk_u8, hdr_sz, frame_sz, frame);
@@ -231,7 +232,7 @@ radiotap_datalink::parse(size_t frame_sz, const uint8_t *frame)
          break;
       case RADIOTAP_DBM_ANTSIGNAL:
          extract(ofs, junk_s8, hdr_sz, frame_sz, frame);
-         info->set(SIGNAL_dBm, junk_s8);
+         info->signal_dBm(junk_s8);
          break;
       case RADIOTAP_DBM_ANTNOISE:
          extract(ofs, junk_s8, hdr_sz, frame_sz, frame);
@@ -256,7 +257,7 @@ radiotap_datalink::parse(size_t frame_sz, const uint8_t *frame)
          break;
       case RADIOTAP_DB_ANTSIGNAL:
          extract(ofs, junk_u8, hdr_sz, frame_sz, frame);
-         info->set(SIGNAL_dBm, junk_u8);
+         info->signal_dBm(junk_u8);
          break;
       case RADIOTAP_DB_ANTNOISE:
          extract(ofs, junk_u8, hdr_sz, frame_sz, frame);
@@ -267,14 +268,19 @@ radiotap_datalink::parse(size_t frame_sz, const uint8_t *frame)
       // from here onwards are "suggested fields"
       case RADIOTAP_TXFLAGS:
          extract(ofs, junk_u16, hdr_sz, frame_sz, frame);
-         info->set(TXFLAGS, (junk_u16 & RADIOTAP_TXFLAGS_FAIL) ? TXFLAGS_FAIL : 0);
+         info->tx_flags((junk_u16 & RADIOTAP_TXFLAGS_FAIL) ? TX_FLAGS_FAIL : 0);
          break;
-      case RADIOTAP_RTS_RETRIES: // (sometimes RSSI!?)
+      case RADIOTAP_RTS_RETRIES:
          extract(ofs, junk_u8, hdr_sz, frame_sz, frame);
+         info->rts_retries(junk_u8);
          break;
       case RADIOTAP_DATA_RETRIES:
          extract(ofs, junk_u8, hdr_sz, frame_sz, frame);
-         info->set(RETRIES, junk_u8);
+         info->data_retries(junk_u8);
+         break;
+      //  DANGER! DANGER! proprietary extension
+      case RADIOTAP_RATE_TUPLES:
+         ofs += 15; // temporary
          break;
       default:
          break;

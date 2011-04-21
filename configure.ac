@@ -51,6 +51,6 @@ AC_CHECK_LIB([nl-genl], [genl_connect, genl_ctrl_alloc_cache, genl_ctrl_search_b
 AM_INIT_AUTOMAKE([subdir-objects])
 
 # Generate these output files
-AC_CONFIG_FILES([Makefile lib/Makefile lib/banjax.pc src/Makefile src/elc/Makefile])
+AC_CONFIG_FILES([Makefile lib/Makefile lib/banjax.pc src/Makefile src/elc/Makefile src/tscal/Makefile])
 
 AC_OUTPUT

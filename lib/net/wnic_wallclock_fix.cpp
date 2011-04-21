@@ -46,7 +46,7 @@ wnic_wallclock_fix::read()
       if(!info->has(TIMESTAMP_WALLCLOCK)) {
          struct timeval ts;
          gettimeofday(&ts, NULL);
-         info->set(TIMESTAMP_WALLCLOCK, (ts.tv_sec * UINT64_C(1000000)) + ts.tv_usec);
+         info->timestamp_wallclock((ts.tv_sec * UINT64_C(1000000)) + ts.tv_usec);
       }
    }
    return buf;

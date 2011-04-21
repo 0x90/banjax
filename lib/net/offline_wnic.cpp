@@ -82,7 +82,7 @@ offline_wnic::read()
       b = dl_->parse(hdr.caplen, octets);
       uint64_t ts = (hdr.ts.tv_sec * UINT64_C(1000000)) + hdr.ts.tv_usec;
       buffer_info_sptr info(b->info());
-      info->set(TIMESTAMP_WALLCLOCK, ts);
+      info->timestamp_wallclock(ts);
    }
    return b;
 }

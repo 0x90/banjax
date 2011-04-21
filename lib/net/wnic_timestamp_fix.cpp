@@ -42,21 +42,21 @@ wnic_timestamp_fix::read()
    buffer_sptr buf(wnic_->read());
    if(buf) {
       buffer_info_sptr info(buf->info());
-      if(info->has(RATE_Kbs | RXFLAGS | TIMESTAMP1) ^ (info->has(RATE_Kbs | RXFLAGS | TIMESTAMP2))) {
+      if(info->has(RATE_Kbs | RX_FLAGS | TIMESTAMP1) ^ (info->has(RATE_Kbs | RX_FLAGS | TIMESTAMP2))) {
 
          // compute txtime
          uint32_t t = 0;
          const uint32_t CRC_SZ = 4;
-         uint32_t rate = info->get(RATE_Kbs);
-         uint64_t rxflags = info->get(RXFLAGS);
-         bool short_preamble = rxflags & RXFLAGS_PREAMBLE_SHORT;
-         if(rxflags & RXFLAGS_CODING_FHSS) {
+         uint32_t rate = info->rate_Kbs();
+         uint64_t rxflags = info->rx_flags();
+         bool short_preamble = rxflags & RX_FLAGS_PREAMBLE_SHORT;
+         if(rxflags & RX_FLAGS_CODING_FHSS) {
             t = txtime_fhss(rate, buf->data_size() + CRC_SZ, short_preamble);
-         } else if(rxflags & RXFLAGS_CODING_DSSS) {
+         } else if(rxflags & RX_FLAGS_CODING_DSSS) {
             t = txtime_dsss(rate, buf->data_size() + CRC_SZ, short_preamble);
-         } else if(rxflags & RXFLAGS_CODING_DYNAMIC) {
+         } else if(rxflags & RX_FLAGS_CODING_DYNAMIC) {
             t = txtime_dsss_ofdm(rate, buf->data_size() + CRC_SZ, short_preamble);
-         } else if(rxflags & RXFLAGS_CODING_OFDM) {
+         } else if(rxflags & RX_FLAGS_CODING_OFDM) {
             t = txtime_ofdm(rate, buf->data_size() + CRC_SZ);
          } else {
             ostringstream msg;
@@ -66,9 +66,9 @@ wnic_timestamp_fix::read()
 
          // adjust timestamp
          if(info->has(TIMESTAMP1)) {
-            info->set(TIMESTAMP2, info->get(TIMESTAMP1) + t);
+            info->timestamp2(info->timestamp1() + t);
          } else if(info->has(TIMESTAMP2)) {
-            info->set(TIMESTAMP1, info->get(TIMESTAMP2) - t);
+            info->timestamp1(info->timestamp2() - t);
          }
 
       } else {

@@ -2,4 +2,5 @@
 #
 
 SUBDIRS = \
-	elc
+	elc \
+	tscal
