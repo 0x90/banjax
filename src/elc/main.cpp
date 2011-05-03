@@ -5,7 +5,8 @@
  */
 
 #define __STDC_LIMIT_MACROS
-#include <link.hpp>
+#include <elc_link_metric.hpp>
+#include <link_metric.hpp>
 #include <net/wnic.hpp>
 #include <dot11/frame.hpp>
 #include <net/wnic_wallclock_fix.hpp>
@@ -51,7 +52,7 @@ main(int ac, char **av)
       wnic_sptr w(wnic::open(what));
       w = wnic_sptr(new wnic_wallclock_fix(w));
       w->filter("wlan type data"); // ToDo: add test for outbound-only frames
-      typedef map<eui_48, metrics::link_sptr> linkmap;
+      typedef map<eui_48, metrics::link_metric_sptr> linkmap;
       linkmap links;
       buffer_sptr b(w->read());
       buffer_info_sptr info(b->info());
@@ -63,13 +64,13 @@ main(int ac, char **av)
          frame_control fc(f.fc());
          // find/create the link stats + update with packet
          if(info->has(TX_FLAGS) && fc.type() == DATA_FRAME && !ra.is_special()) {
-            link_sptr l;
+            link_metric_sptr l;
             linkmap::iterator i(links.find(ra));
             if(links.end() != i) {
                l = i->second;
             } else {
                eui_48 ta(f.address2());
-               l = link_sptr(new metrics::link(ra, ta, rts_cts_threshold));
+               l = link_metric_sptr(new elc_link_metric(ra, ta, rts_cts_threshold));
                links[ra] = l;
             }
             l->add(b);

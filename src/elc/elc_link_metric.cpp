@@ -6,7 +6,7 @@
  */
 
 #define __STDC_CONSTANT_MACROS
-#include <link.hpp>
+#include <elc_link_metric.hpp>
 #include <net/txtime.hpp>
 #include <util/exceptions.hpp>
 
@@ -17,10 +17,10 @@
 
 using namespace net;
 using namespace std;
-using metrics::link;
+using metrics::elc_link_metric;
 using util::raise;
 
-link::link(const eui_48& to, const eui_48& from, uint16_t rts_cts_threshold) :
+elc_link_metric::elc_link_metric(const eui_48& to, const eui_48& from, uint16_t rts_cts_threshold) :
    to_(to),
    from_(from),
    rts_cts_threshold_(rts_cts_threshold),
@@ -32,52 +32,12 @@ link::link(const eui_48& to, const eui_48& from, uint16_t rts_cts_threshold) :
 {
 }
 
-link::link(const link& other) :
-   to_(other.to_),
-   from_(other.from_),
-   rts_cts_threshold_(other.rts_cts_threshold_),
-   n_pkt_succ_(other.n_pkt_succ_),
-   t_pkt_succ_(other.t_pkt_succ_),
-   t_pkt_fail_(other.t_pkt_fail_),
-   packet_octets_(other.packet_octets_),
-   packet_count_(other.packet_count_)
+elc_link_metric::~elc_link_metric()
 {
-}
-
-metrics::link&
-link::operator=(const link& other)
-{
-   if(this != &other) {
-      to_ = other.to_;
-      from_ = other.from_;
-      rts_cts_threshold_ = other.rts_cts_threshold_;     
-      n_pkt_succ_ = other.n_pkt_succ_;
-      t_pkt_succ_ = other.t_pkt_succ_;
-      t_pkt_fail_ = other.t_pkt_fail_;
-      packet_octets_ = other.packet_octets_;
-      packet_count_ = other.packet_count_;
-   }
-   return *this;
-}
-
-link::~link()
-{
-}
-
-bool
-link::operator==(const link& other) const
-{
-   return to_ == other.to_ ;
-}
-
-bool
-link::operator<(const link& other) const
-{
-   return to_ < other.to_;
 }
 
 void
-link::add(buffer_sptr b)
+elc_link_metric::add(buffer_sptr b)
 {
    // update totals for packet size and count
    const uint32_t LLC_HDR_SZ = 8;
@@ -98,14 +58,15 @@ link::add(buffer_sptr b)
    }
 }
 
-size_t
-link::hash() const
+double
+elc_link_metric::metric() const
 {
-   return to_.hash();
+   const double AVG_PKT_SZ = packet_octets_ / static_cast<double>(packet_count_);
+   return (n_pkt_succ_ * AVG_PKT_SZ) / (t_pkt_succ_ + t_pkt_fail_);
 }
 
 void
-link::write(ostream& os) const
+elc_link_metric::write(ostream& os) const
 {
 #if 0
    os << to_ << " " << metric();
@@ -120,22 +81,8 @@ link::write(ostream& os) const
 #endif
 }
 
-ostream&
-metrics::operator<<(ostream& os, const link& addr)
-{
-   addr.write(os);
-   return os;
-}
-
 double
-link::metric() const
-{
-   const double AVG_PKT_SZ = packet_octets_ / static_cast<double>(packet_count_);
-   return (n_pkt_succ_ * AVG_PKT_SZ) / (t_pkt_succ_ + t_pkt_fail_);
-}
-
-double
-link::packet_succ_time(buffer_sptr b) const
+elc_link_metric::packet_succ_time(buffer_sptr b) const
 {
    buffer_info_sptr info(b->info());
    double usecs = 0.0;
@@ -147,7 +94,7 @@ link::packet_succ_time(buffer_sptr b) const
 }
 
 double
-link::packet_fail_time(buffer_sptr b) const
+elc_link_metric::packet_fail_time(buffer_sptr b) const
 {
    buffer_info_sptr info(b->info());
    double usecs = 0.0;
@@ -159,7 +106,7 @@ link::packet_fail_time(buffer_sptr b) const
 }
 
 double
-link::avg_contention_time(uint8_t txc) const
+elc_link_metric::avg_contention_time(uint8_t txc) const
 {
    return max_contention_time(txc) / 2.0;
 }
@@ -169,7 +116,7 @@ const uint32_t T_SLOT = 9;
 const uint32_t T_DIFS = T_SIFS + 2 * T_SLOT;
 
 double
-link::max_contention_time(uint8_t txc) const
+elc_link_metric::max_contention_time(uint8_t txc) const
 {
   /* ath5k hack: collapse contention window after 10 attempts */
   if(txc >= 10) {
@@ -183,7 +130,7 @@ link::max_contention_time(uint8_t txc) const
 }
 
 double 
-link::frame_succ_time(buffer_sptr b) const
+elc_link_metric::frame_succ_time(buffer_sptr b) const
 {
    buffer_info_sptr info(b->info());
 
@@ -199,7 +146,7 @@ link::frame_succ_time(buffer_sptr b) const
 }
 
 double
-link::frame_fail_time(buffer_sptr b) const
+elc_link_metric::frame_fail_time(buffer_sptr b) const
 {
    buffer_info_sptr info(b->info());
 
@@ -213,7 +160,7 @@ link::frame_fail_time(buffer_sptr b) const
 }
 
 double
-link::rts_cts_time(uint32_t frame_sz) const
+elc_link_metric::rts_cts_time(uint32_t frame_sz) const
 {
    double usecs = 0.0;
    if(rts_cts_threshold_ <= frame_sz) {
@@ -225,7 +172,7 @@ link::rts_cts_time(uint32_t frame_sz) const
 }
 
 uint32_t
-link:: ack_rate(uint32_t rate_Kbs) const
+elc_link_metric:: ack_rate(uint32_t rate_Kbs) const
 {
    static const uint32_t RATES[][2] = {
       {  6000,  6000 },

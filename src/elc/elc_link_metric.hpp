@@ -5,9 +5,10 @@
  *
  */
 
-#ifndef METRICS_LINK_HPP
-#define METRICS_LINK_HPP
+#ifndef METRICS_ELC_LINK_METRIC_HPP
+#define METRICS_ELC_LINK_METRIC_HPP
 
+#include <link_metric.hpp>
 #include <net/eui_48.hpp>
 #include <net/buffer.hpp>
 
@@ -16,91 +17,48 @@
 namespace metrics {
 
    /**
-    * link represents the link between two stations.
+    * elc_link_metric represents an ELC link metric between two stations.
     */
-   class link {
+   class elc_link_metric : public link_metric {
    public:
 
       /**
-       * link constructor. Creates a new uni-directional link between
+       * elc_link_metric constructor. Creates a new uni-directional elc_link_metric between
        * "from" and "to".
        *
-       * \param to The address of the receiving side of this link.
-       * \param from The address of the sending side of this link.
+       * \param to The address of the receiving side of this elc_link_metric.
+       * \param from The address of the sending side of this elc_link_metric.
        * \param rts_cts_threshold Use RTS/CTS when rts_cts_threshold <= frame size
        */
-      explicit link(const net::eui_48& to, const net::eui_48& from, uint16_t rts_cts_threshold);
+      explicit elc_link_metric(const net::eui_48& to, const net::eui_48& from, uint16_t rts_cts_threshold);
 
       /**
-       * link copy-constructor. Initialize a new channel instance
-       * with the same state as other.
-       *
-       * \param other A reference to the object to initialize from.
+       * elc_link_metric destructor.
        */
-      link(const link& other);
+     virtual ~elc_link_metric();
 
       /**
-       * link assignment operator. Assign this mac address so that
-       * it has the same value as other.
-       *
-       * \param other A reference to the object to initialize from.
-       */
-      link& operator=(const link& other);
-
-      /**
-       * link destructor.
-       */
-     ~link();
-
-      /**
-       * link equality comparison operator. Compares this MAC
-       * address with rhs and returns true if this is equal to rhs;
-       * otherwise returns false.
-       *
-       * \param rhs The link to compare against (RHS of expr).
-       * \return true if the this is less than rhs; otherwise false.
-       */
-      bool operator==(const link& rhs) const;
-
-      /**
-       * link less than comparison operator. Compares this MAC
-       * address with rhs and returns true if this is smaller than
-       * rhs; otherwise returns false.
-       *
-       * \param rhs The link to compare against (RHS of expr).
-       * \return true if the this is less than rhs; otherwise false.
-       */
-      bool operator<(const link& rhs) const;
-
-      /**
-       * Add a frame to the link and update the link statistics.
+       * Add a frame to the elc_link_metric and update the elc_link_metric statistics.
        *
        * \param b A shared_pointer to the buffer containing the frame.
        */
-      void add(net::buffer_sptr b);
+      virtual void add(net::buffer_sptr b);
 
       /**
-       * Returns the hash value for the specified link object.
+       * Compute and return the link metric.
        *
-       * \param A size_t containing the hash value.
+       * \return A double specifying the link metric value.
        */
-      std::size_t hash() const;
+      virtual double metric() const;
 
       /**
        * Write this object in human-readable form to ostream os.
        *
        * \param os A reference to the stream to write to.
        */
-      void write(std::ostream& os) const;
+      virtual void write(std::ostream& os) const;
 
    private:
-
-      /**
-       * Compute and return the link quality metric.
-       *
-       * \return A double specifying the ELC value in b/us.
-       */
-      double metric() const;
 
       /**
        * Compute the time taken to successfully send packet b.
@@ -175,12 +133,12 @@ namespace metrics {
    private:
 
       /**
-       * The receiver side of the link.
+       * The receiver side of the elc_link_metric.
        */
       net::eui_48 to_;
 
       /**
-       * The sender side of the link.
+       * The sender side of the elc_link_metric.
        */
       net::eui_48 from_;
 
@@ -205,40 +163,16 @@ namespace metrics {
       double t_pkt_fail_;
 
       /**
-       * The cumulative size for packets sent on this link.
+       * The cumulative size for packets sent on this elc_link_metric.
        */
       uint32_t packet_octets_;
 
       /**
-       * The number of packets sent on this link.
+       * The number of packets sent on this elc_link_metric.
        */
       uint32_t packet_count_;
    };
 
-
-   /**
-    * Returns the hash value for the specified link object.
-    *
-    * \param l A const-reference to the object to hash.
-    * \param A size_t containing the hash value.
-    */
-   size_t hash(const link& l);
-
-   /**
-    * operator to stream a link to an ostream.
-    *
-    * \param os The stream to write to.
-    * \param addr The link to be streamed.
-    * \return A reference to the modified ostream.
-    */
-   std::ostream& operator<<(std::ostream& os, const link& addr);
-
-   /**
-    * Alias for shared_ptr<link>.
-    */
-   typedef boost::shared_ptr<link> link_sptr;
-
-
 }
 
-#endif // METRICS_LINK_HPP
+#endif // METRICS_ELC_LINK_METRIC_HPP

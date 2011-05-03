@@ -4,7 +4,8 @@
 bin_PROGRAMS = elc
 
 elc_SOURCES = \
-	link.cpp \
+	elc_link_metric.cpp \
+	link_metric.cpp \
 	main.cpp
 
 elc_CPPFLAGS = -I@top_srcdir@/lib
