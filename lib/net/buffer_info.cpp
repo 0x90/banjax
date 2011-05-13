@@ -21,6 +21,7 @@
 #include <util/exceptions.hpp>
 #include <iostream>
 #include <iomanip>
+#include <string.h>
 
 using namespace net;
 using namespace std;
@@ -261,6 +262,27 @@ buffer_info::write(ostream& os) const
       }
       os << ", ";
    }
+
+   if(has(RATES_Kbs)) {
+      os << "RATES: ";
+      for(size_t i = 0; i < rates_.size(); +i) {
+         os << rates_[i] << ", ";
+      }
+   }
+}
+
+vector<uint32_t>
+buffer_info::rates() const
+{
+   PRECONDITION(has(RATES_Kbs));
+   return rates_;
+}
+
+void
+buffer_info::rates(const vector<uint32_t>& rates)
+{
+   rates_ = rates;
+   present_ |= RATES_Kbs;
 }
 
 ostream&

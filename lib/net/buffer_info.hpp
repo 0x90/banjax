@@ -24,6 +24,7 @@
 #include <boost/shared_ptr.hpp>
 #include <stdint.h>
 #include <iosfwd>
+#include <vector>
 
 namespace net {
 
@@ -34,35 +35,40 @@ namespace net {
 
    /* Property labels.
     */
-   const property_t DATA_RETRIES        = 0x001;
-   const property_t FREQ_MHz            = 0x002;
-   const property_t RATE_Kbs            = 0x004;
-   const property_t RATE_TUPLES         = 0x008;
-   const property_t RTS_RETRIES         = 0x010;
-   const property_t RX_FLAGS            = 0x020;
-   const property_t SIGNAL_dBm          = 0x040;
-   const property_t TIMESTAMP1          = 0x080;
-   const property_t TIMESTAMP2          = 0x100;
-   const property_t TIMESTAMP_WALLCLOCK = 0x200;
-   const property_t TX_FLAGS            = 0x400;
+   const property_t DATA_RETRIES          = 0x001;
+   const property_t FREQ_MHz              = 0x002;
+   const property_t RATE_Kbs              = 0x004;
+   const property_t RATES_Kbs             = 0x008;
+   const property_t RTS_RETRIES           = 0x010;
+   const property_t RX_FLAGS              = 0x020;
+   const property_t SIGNAL_dBm            = 0x040;
+   const property_t TIMESTAMP1            = 0x080;
+   const property_t TIMESTAMP2            = 0x100;
+   const property_t TIMESTAMP_WALLCLOCK   = 0x200;
+   const property_t TX_FLAGS              = 0x400;
+
+   /**
+    * Property label type.
+    */
+   typedef uint32_t flags_t;
 
    /* RX flags.
     */
-   const uint32_t RX_FLAGS_BAD_FCS        = 0x0001;
-   const uint32_t RX_FLAGS_CODING_DSSS    = 0x0002;
-   const uint32_t RX_FLAGS_CODING_DYNAMIC = 0x0004;
-   const uint32_t RX_FLAGS_CODING_FHSS    = 0x0008;
-   const uint32_t RX_FLAGS_CODING_OFDM    = 0x0010;
-   const uint32_t RX_FLAGS_PREAMBLE_LONG  = 0x0020;
-   const uint32_t RX_FLAGS_PREAMBLE_SHORT = 0x0040;
-   const uint32_t RX_FLAGS_RATE_FULL      = 0x0080;
-   const uint32_t RX_FLAGS_RATE_HALF      = 0x0100;
-   const uint32_t RX_FLAGS_RATE_QUARTER   = 0x0200;
+   const flags_t RX_FLAGS_BAD_FCS        = 0x0001;
+   const flags_t RX_FLAGS_CODING_DSSS    = 0x0002;
+   const flags_t RX_FLAGS_CODING_DYNAMIC = 0x0004;
+   const flags_t RX_FLAGS_CODING_FHSS    = 0x0008;
+   const flags_t RX_FLAGS_CODING_OFDM    = 0x0010;
+   const flags_t RX_FLAGS_PREAMBLE_LONG  = 0x0020;
+   const flags_t RX_FLAGS_PREAMBLE_SHORT = 0x0040;
+   const flags_t RX_FLAGS_RATE_FULL      = 0x0080;
+   const flags_t RX_FLAGS_RATE_HALF      = 0x0100;
+   const flags_t RX_FLAGS_RATE_QUARTER   = 0x0200;
 
    /**
     * TX flags.
     */
-   const uint32_t TX_FLAGS_FAIL           = 0x0001;
+   const flags_t TX_FLAGS_FAIL           = 0x0001;
 
    /**
     * buffer_info is a concrete, leaf class that provides meta
@@ -104,6 +110,7 @@ namespace net {
        * Returns the number of times the data frame is re-transmitted.
        *
        * \return A uint8_t specifying the re-transmission count.
+       * \throws runtime_error When the property is not present.
        */
       uint8_t data_retries() const;
 
@@ -111,7 +118,6 @@ namespace net {
        * Sets the number of time the data frame is re-transmitted.
        *
        * \param r A uint8_t specifying the re-transmission count.
-       *
        */
       void data_retries(uint8_t r);
 
@@ -160,16 +166,16 @@ namespace net {
       /**
        * Return the RX flags.
        *
-       * \return A uint32_t containing the RX flags.
+       * \return A flags_t containing the RX flags.
        */
-      uint32_t rx_flags() const;
+      flags_t rx_flags() const;
 
       /**
        * Sets the RX flags.
        *
-       * \param f A uint32_t containing the RX flags.
+       * \param f A flags_t containing the RX flags.
        */
-      void rx_flags(uint32_t f);
+      void rx_flags(flags_t f);
 
       /**
        * Returns the RSSI in units of dBm.
@@ -236,16 +242,16 @@ namespace net {
       /**
        * Return the TX flags.
        *
-       * \return A uint32_t containing the TX flags.
+       * \return A flags_t containing the TX flags.
        */
-      uint32_t tx_flags() const;
+      flags_t tx_flags() const;
 
       /**
        * Sets the TX flags.
        *
-       * \param f A uint32_t containing the TX flags.
+       * \param f A flags_t containing the TX flags.
        */
-      void tx_flags(uint32_t f);
+      void tx_flags(flags_t f);
 
       /**
        * Write this buffer info to an output stream.
@@ -253,6 +259,22 @@ namespace net {
        * \param os A reference to the ostream to write to.
        */
       void write(std::ostream& os) const;
+
+      // Warning: proprietary extension!
+
+      /**
+       * Returns a vector of transmission rates for the frame. 
+       *
+       * \return A vector<uint32_t> containing the rates in Kb/s.
+       */
+      std::vector<uint32_t> rates() const;
+
+      /**
+       * Set the rate vector to the specified value.
+       *
+       * \param rates The vector<uint32_t> of transmission rates in Kb/s.
+       */
+      void rates(const std::vector<uint32_t>& rates);
 
    private:
 
@@ -296,7 +318,7 @@ namespace net {
       /**
        * RX flags.
        */
-      uint32_t rx_flags_;
+      flags_t rx_flags_;
 
       /**
        * RSSI in dBm.
@@ -321,7 +343,12 @@ namespace net {
       /**
        * TX flags.
        */
-      uint32_t tx_flags_;
+      flags_t tx_flags_;
+
+      /**
+       * Rates.
+       */
+      std::vector<uint32_t> rates_;
 
    };
 

@@ -99,7 +99,7 @@ namespace metrics {
        * includes inter-frame spacing, acknowledgment and
        * the RTS/CTS if necessary.
        *
-       * \param A shared_ptr to the buffer.
+       * \param b A shared_ptr to the buffer.
        * \return The time, in microseconds, necessary to send the frame.
        */
       double frame_succ_time(net::buffer_sptr b) const;
@@ -109,7 +109,7 @@ namespace metrics {
        * includes inter-frame spacing, ACKTIMEOUT and the RTS/CTS if
        * necessary.
        *
-       * \param A shared_ptr to the buffer.
+       * \param b A shared_ptr to the buffer.
        * \return The time, in microseconds, used by the failed exchange.
        */
       double frame_fail_time(net::buffer_sptr b) const;

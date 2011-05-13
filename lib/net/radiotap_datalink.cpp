@@ -17,6 +17,8 @@
  * 
  */
 
+#define __STDC_CONSTANT_MACROS
+
 #include <net/buffer_body.hpp>
 #include <net/radiotap_datalink.hpp>
 #include <util/byteswab.hpp>
@@ -26,6 +28,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <pcap.h>
+#include <vector>
 
 using namespace std;
 using namespace net;
@@ -265,7 +268,7 @@ radiotap_datalink::parse(size_t frame_sz, const uint8_t *frame)
       case RADIOTAP_RXFLAGS:
          extract(ofs, junk_u16, hdr_sz, frame_sz, frame);
          break;
-      // from here onwards are "suggested fields"
+         // from here onwards are "suggested fields"
       case RADIOTAP_TXFLAGS:
          extract(ofs, junk_u16, hdr_sz, frame_sz, frame);
          info->tx_flags((junk_u16 & RADIOTAP_TXFLAGS_FAIL) ? TX_FLAGS_FAIL : 0);
@@ -278,9 +281,21 @@ radiotap_datalink::parse(size_t frame_sz, const uint8_t *frame)
          extract(ofs, junk_u8, hdr_sz, frame_sz, frame);
          info->data_retries(junk_u8);
          break;
-      //  DANGER! DANGER! proprietary extension
+         //  Warning: proprietary extension!
       case RADIOTAP_RATE_TUPLES:
-         ofs += 15; // temporary
+	      {
+            vector<uint32_t> rates;
+            for(size_t i = 0; i < 5; ++i) {
+               uint8_t rate, flags, tries;
+               extract(ofs, rate, hdr_sz, frame_sz, frame);
+               extract(ofs, flags, hdr_sz, frame_sz, frame);
+               extract(ofs, tries, hdr_sz, frame_sz, frame);
+               for(uint8_t i = 0; i < tries; ++i) {
+                  rates.push_back(rate * UINT32_C(500));
+               }
+            }
+            info->rates(rates);
+         }
          break;
       default:
          break;

@@ -1,5 +1,4 @@
 /* -*- Mode: C++; tab-width: 3; -*- */
-
 /* 
  * Copyright NICTA, 2011
  */
@@ -51,7 +50,7 @@ main(int ac, char **av)
    try {
       wnic_sptr w(wnic::open(what));
       w = wnic_sptr(new wnic_wallclock_fix(w));
-      w->filter("wlan type data"); // ToDo: add test for outbound-only frames
+      w->filter("wlan type data"); // ToDo: add BPF test for outbound-only frames
       typedef map<eui_48, metrics::link_metric_sptr> linkmap;
       linkmap links;
       buffer_sptr b(w->read());

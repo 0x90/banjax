@@ -5,6 +5,8 @@ bin_PROGRAMS = elc
 
 elc_SOURCES = \
 	elc_link_metric.cpp \
+	elc_mrr_link_metric.cpp \
+	group_metric.cpp \
 	link_metric.cpp \
 	main.cpp
 
