@@ -2,6 +2,6 @@
 ** Metric implementation
 *** TODO Implement RTS retries
 *** TODO Implement nl80211 comparison
+*** TODO Complete group_metric
 ** Banjax update
 *** TODO Sync banjax and ELC banjax lib
-
