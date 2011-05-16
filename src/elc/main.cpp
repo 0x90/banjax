@@ -5,6 +5,8 @@
 
 #define __STDC_LIMIT_MACROS
 #include <elc_link_metric.hpp>
+#include <elc_mrr_link_metric.hpp>
+#include <group_metric.hpp>
 #include <link_metric.hpp>
 #include <net/wnic.hpp>
 #include <dot11/frame.hpp>
@@ -27,12 +29,16 @@ main(int ac, char **av)
 {
    opterr = 0;
    int opt, errs = 0;
+   uint16_t metric = 0;
    const char *what = NULL;
    uint16_t rts_cts_threshold = UINT16_MAX;
-   while((opt = getopt(ac, av, "i:r:")) != -1) {
+   while((opt = getopt(ac, av, "i:r:m")) != -1) {
       switch(opt) {
       case 'i':
          what = strdupa(optarg);
+         break;
+      case 'm':
+         ++metric;
          break;
       case 'r':
          rts_cts_threshold = atoi(optarg);
@@ -46,6 +52,8 @@ main(int ac, char **av)
       cerr << "usage: elc [-r rts_cts_threshold] -i input" << endl;
       exit(EXIT_FAILURE);
    }
+
+   cout << "m = " << metric << endl;
 
    try {
       wnic_sptr w(wnic::open(what));
@@ -69,7 +77,23 @@ main(int ac, char **av)
                l = i->second;
             } else {
                eui_48 ta(f.address2());
-               l = link_metric_sptr(new elc_link_metric(ra, ta, rts_cts_threshold));
+               switch(metric) {
+               default:
+               case 0:
+                  l = link_metric_sptr(new elc_link_metric(ra, ta, rts_cts_threshold));                 
+                  break;
+               case 1:
+                  l = link_metric_sptr(new elc_mrr_link_metric(ra, ta, rts_cts_threshold));                 
+                  break;
+               case 2:
+               	{
+                     boost::shared_ptr<group_metric> g(new group_metric);
+                     g->add(link_metric_sptr(new elc_link_metric(ra, ta, rts_cts_threshold)));
+                     g->add(link_metric_sptr(new elc_mrr_link_metric(ra, ta, rts_cts_threshold)));
+                     l = g;
+                  }
+                  break;
+               }
                links[ra] = l;
             }
             l->add(b);
@@ -80,7 +104,7 @@ main(int ac, char **av)
          if(1000000 <= delta) {
             // write output
             for(linkmap::iterator i = links.begin(); i != links.end(); ++i) {
-               cout << fixed << setprecision(6) << timestamp /1000000.0 << " " << delta / 1000000.0 << " ";
+               cout << fixed << setprecision(0) << timestamp /1000000.0 << " " << setprecision(3) << delta / 1000000.0 << " ";
                cout << *(i->second) << endl;
             }
             // zero all counts
@@ -94,4 +118,5 @@ main(int ac, char **av)
       cerr << "unhandled exception!" << endl;
    }
    exit(EXIT_FAILURE);
+
 }

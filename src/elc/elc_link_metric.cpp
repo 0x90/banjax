@@ -68,9 +68,8 @@ elc_link_metric::metric() const
 void
 elc_link_metric::write(ostream& os) const
 {
-#if 0
    os << to_ << " " << metric();
-#else
+#if 0
    os << to_ << " ";
    os << packet_octets_ << " ";
    os << packet_count_ << " ";

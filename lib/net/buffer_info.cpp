@@ -201,13 +201,13 @@ buffer_info::write(ostream& os) const
    if(has(SIGNAL_dBm))
       os << "SIGNAL_dBm: " << static_cast<int16_t>(signal_dBm()) << ", ";
    if(has(DATA_RETRIES))
-      os << "DATA RETRIES: " << data_retries() << ", ";
+      os << "DATA RETRIES: " << static_cast<uint16_t>(data_retries()) << ", ";
    if(has(RTS_RETRIES))
-      os << "RTS RETRIES: " << rts_retries() << ", ";
+      os << "RTS RETRIES: " <<  static_cast<uint16_t>(rts_retries()) << ", ";
 
    if(has(RX_FLAGS)) {
+      os << "RX FLAGS: ";
       uint32_t flags = rx_flags();
-      os << "FLAGS:";
       char sep = ' ';
       if(flags & RX_FLAGS_PREAMBLE_LONG) {
          os << sep << "RX_FLAGS_PREAMBLE_LONG";
@@ -253,8 +253,8 @@ buffer_info::write(ostream& os) const
    }
 
    if(has(TX_FLAGS)) {
-      uint32_t flags = rx_flags();
-      os << "FLAGS:";
+      os << "TX FLAGS:";
+      flags_t flags = tx_flags();
       char sep = ' ';
       if(flags & TX_FLAGS_FAIL) {
          os << sep << "TX_FLAGS_FAIL";
@@ -264,10 +264,13 @@ buffer_info::write(ostream& os) const
    }
 
    if(has(RATES_Kbs)) {
-      os << "RATES: ";
-      for(size_t i = 0; i < rates_.size(); +i) {
-         os << rates_[i] << ", ";
+      os << "RATES:";
+      char sep = ' ';
+      for(size_t i = 0; i < rates_.size(); ++i) {
+         os << sep << rates_[i];
+         sep='|';
       }
+      os << ", ";
    }
 }
 

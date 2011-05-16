@@ -54,7 +54,7 @@ const uint32_t RADIOTAP_RXFLAGS           = 0x4000;
 const uint32_t RADIOTAP_TXFLAGS           = 0x8000;
 const uint32_t RADIOTAP_RTS_RETRIES       = 0x10000;
 const uint32_t RADIOTAP_DATA_RETRIES      = 0x20000;
-const uint32_t RADIOTAP_RATE_TUPLES       = 0x01000000;
+const uint32_t RADIOTAP_RATE_TUPLES       = 0x10000000;
 const uint32_t RADIOTAP_EXT               = 0x80000000;
 
 const uint8_t  RADIOTAP_FLAGS_CFP         = 0x01;
@@ -290,7 +290,7 @@ radiotap_datalink::parse(size_t frame_sz, const uint8_t *frame)
                extract(ofs, rate, hdr_sz, frame_sz, frame);
                extract(ofs, flags, hdr_sz, frame_sz, frame);
                extract(ofs, tries, hdr_sz, frame_sz, frame);
-               for(uint8_t i = 0; i < tries; ++i) {
+               for(uint16_t i = 0; i < tries; ++i) {
                   rates.push_back(rate * UINT32_C(500));
                }
             }
