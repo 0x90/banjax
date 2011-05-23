@@ -73,6 +73,8 @@ elc_link_metric::write(ostream& os) const
    os << to_ << " ";
    os << packet_octets_ << " ";
    os << packet_count_ << " ";
+   os << static_cast<double>(packet_octets_) / static_cast<double>(packet_count_) << endl;
+   os << (t_pkt_succ_ + t_pkt_fail_) / n_pkt_succ_;
    os << n_pkt_succ_ << " ";
    os << t_pkt_succ_ << " ";
    os << t_pkt_fail_ << " ";
