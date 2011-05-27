@@ -4,10 +4,11 @@
  */
 
 #define __STDC_LIMIT_MACROS
-#include <elc_link_metric.hpp>
-#include <elc_mrr_link_metric.hpp>
-#include <group_metric.hpp>
-#include <link_metric.hpp>
+#include <elc_metric.hpp>
+#include <elc_mrr_metric.hpp>
+#include <metric_demux.hpp>
+#include <metric_group.hpp>
+#include <metric.hpp>
 #include <net/wnic.hpp>
 #include <dot11/frame.hpp>
 #include <net/wnic_wallclock_fix.hpp>
@@ -15,7 +16,6 @@
 #include <cstdlib>
 #include <iomanip>
 #include <iostream>
-#include <map>
 #include <string.h>
 #include <unistd.h>
 
@@ -37,9 +37,6 @@ main(int ac, char **av)
       case 'i':
          what = strdupa(optarg);
          break;
-      case 'm':
-         ++metric;
-         break;
       case 'r':
          rts_cts_threshold = atoi(optarg);
          break;
@@ -53,14 +50,15 @@ main(int ac, char **av)
       exit(EXIT_FAILURE);
    }
 
-   cout << "m = " << metric << endl;
+   metric_group_sptr proto(new metric_group);
+   proto->add(metric_sptr(new elc_metric(rts_cts_threshold)));
+   proto->add(metric_sptr(new elc_mrr_metric(rts_cts_threshold)));
+   metric_sptr m(metric_sptr(new metric_demux(proto)));
 
    try {
       wnic_sptr w(wnic::open(what));
       w = wnic_sptr(new wnic_wallclock_fix(w));
       w->filter("wlan type data"); // ToDo: add BPF test for outbound-only frames
-      typedef map<eui_48, metrics::link_metric_sptr> linkmap;
-      linkmap links;
       buffer_sptr b(w->read());
       buffer_info_sptr info(b->info());
       uint64_t tick = info->timestamp_wallclock();
@@ -69,46 +67,17 @@ main(int ac, char **av)
          info = b->info();
          eui_48 ra(f.address1());
          frame_control fc(f.fc());
-         // find/create the link stats + update with packet
          if(info->has(TX_FLAGS) && fc.type() == DATA_FRAME && !ra.is_special()) {
-            link_metric_sptr l;
-            linkmap::iterator i(links.find(ra));
-            if(links.end() != i) {
-               l = i->second;
-            } else {
-               eui_48 ta(f.address2());
-               switch(metric) {
-               default:
-               case 0:
-                  l = link_metric_sptr(new elc_link_metric(ra, ta, rts_cts_threshold));                 
-                  break;
-               case 1:
-                  l = link_metric_sptr(new elc_mrr_link_metric(ra, ta, rts_cts_threshold));                 
-                  break;
-               case 2:
-               	{
-                     boost::shared_ptr<group_metric> g(new group_metric);
-                     g->add(link_metric_sptr(new elc_link_metric(ra, ta, rts_cts_threshold)));
-                     g->add(link_metric_sptr(new elc_mrr_link_metric(ra, ta, rts_cts_threshold)));
-                     l = g;
-                  }
-                  break;
-               }
-               links[ra] = l;
-            }
-            l->add(b);
+            m->add(b);
          }
-         // time to print results?
+         // is it time to print results yet?
          uint64_t timestamp = info->timestamp_wallclock();
          uint64_t delta = timestamp - tick;
          if(1000000 <= delta) {
-            // write output
-            for(linkmap::iterator i = links.begin(); i != links.end(); ++i) {
-               cout << fixed << setprecision(0) << timestamp /1000000.0 << " " << setprecision(3) << delta / 1000000.0 << " ";
-               cout << *(i->second) << endl;
-            }
-            // zero all counts
-            links.clear();
+            cout << "TIME: " << fixed << setprecision(0) << timestamp /1000000.0 << ", ";
+            cout << "DELTA: " << setprecision(3) << delta / 1000000.0 << endl;
+            cout << *m << endl;
+            m->reset();
             tick = timestamp;
          }
       }

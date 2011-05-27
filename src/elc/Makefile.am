@@ -4,10 +4,11 @@
 bin_PROGRAMS = elc
 
 elc_SOURCES = \
-	elc_link_metric.cpp \
-	elc_mrr_link_metric.cpp \
-	group_metric.cpp \
-	link_metric.cpp \
+	elc_metric.cpp \
+	elc_mrr_metric.cpp \
+	metric_demux.cpp \
+	metric_group.cpp \
+	metric.cpp \
 	main.cpp
 
 elc_CPPFLAGS = -I@top_srcdir@/lib

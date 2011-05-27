@@ -5,10 +5,10 @@
  *
  */
 
-#ifndef METRICS_ELC_LINK_METRIC_HPP
-#define METRICS_ELC_LINK_METRIC_HPP
+#ifndef METRICS_ELC_MRR_METRIC_HPP
+#define METRICS_ELC_MRR_METRIC_HPP
 
-#include <link_metric.hpp>
+#include <metric.hpp>
 #include <net/eui_48.hpp>
 #include <net/buffer.hpp>
 
@@ -17,32 +17,57 @@
 namespace metrics {
 
    /**
-    * elc_link_metric represents an ELC link metric between two stations.
+    * elc_mrr_metric represents an ELC link metric between two stations.
     */
-   class elc_link_metric : public link_metric {
+   class elc_mrr_metric : public metric {
    public:
 
       /**
-       * elc_link_metric constructor. Creates a new uni-directional elc_link_metric between
+       * elc_mrr_metric constructor. Creates a new uni-directional elc_mrr_metric between
        * "from" and "to".
        *
-       * \param to The address of the receiving side of this elc_link_metric.
-       * \param from The address of the sending side of this elc_link_metric.
+       * \param to The address of the receiving side of this elc_mrr_metric.
+       * \param from The address of the sending side of this elc_mrr_metric.
        * \param rts_cts_threshold Use RTS/CTS when rts_cts_threshold <= frame size
        */
-      explicit elc_link_metric(const net::eui_48& to, const net::eui_48& from, uint16_t rts_cts_threshold);
+      explicit elc_mrr_metric(uint16_t rts_cts_threshold);
 
       /**
-       * elc_link_metric destructor.
+       * elc_metric copy constuctor.
+       *
+       * \param other The other elc_metric to initialize from.
        */
-     virtual ~elc_link_metric();
+      elc_mrr_metric(const elc_mrr_metric& other);
 
       /**
-       * Add a frame to the elc_link_metric and update the elc_link_metric statistics.
+       * elc_metric assignment operator.
+       *
+       * \param other The other elc_metric to assign from.
+       * \return A reference to this elc_metric.
+       */
+      elc_mrr_metric& operator=(const elc_mrr_metric& other);
+
+      /**
+       * elc_mrr_metric destructor.
+       */
+     virtual ~elc_mrr_metric();
+
+      /**
+       * Add a frame to the elc_mrr_metric and update the elc_mrr_metric statistics.
        *
        * \param b A shared_pointer to the buffer containing the frame.
        */
       virtual void add(net::buffer_sptr b);
+
+      /**
+       * Return a pointer to a clone (deep copy) of this
+       * elc_mrr_metric instance. The clone is allocated on the heap
+       * using new and the caller is responsible for ensuring it is
+       * deleted.
+       *
+       * \return A poiner to a new elc_mrr_metric instance.
+       */
+      virtual elc_mrr_metric *clone() const;
 
       /**
        * Compute and return the link metric.
@@ -50,6 +75,11 @@ namespace metrics {
        * \return A double specifying the link metric value.
        */
       virtual double metric() const;
+
+      /**
+       * Resets this metric to its initial state.
+       */
+      virtual void reset();
 
       /**
        * Write this object in human-readable form to ostream os.
@@ -100,9 +130,10 @@ namespace metrics {
        * the RTS/CTS if necessary.
        *
        * \param b A shared_ptr to the buffer.
+       * \param rate_Kbs The rate the frame was sent at.
        * \return The time, in microseconds, necessary to send the frame.
        */
-      double frame_succ_time(net::buffer_sptr b) const;
+      double frame_succ_time(net::buffer_sptr b, uint32_t rate_Kbs) const;
 
       /**
        * Compute the time taken to unsuccessfully send frame b. This
@@ -110,9 +141,10 @@ namespace metrics {
        * necessary.
        *
        * \param b A shared_ptr to the buffer.
+       * \param rate_Kbs The rate the frame was sent at.
        * \return The time, in microseconds, used by the failed exchange.
        */
-      double frame_fail_time(net::buffer_sptr b) const;
+      double frame_fail_time(net::buffer_sptr b, uint32_t rate_Kbs) const;
 
       /**
        * Return the amount of time taken by the RTS/CTS exchange.
@@ -133,12 +165,12 @@ namespace metrics {
    private:
 
       /**
-       * The receiver side of the elc_link_metric.
+       * The receiver side of the elc_mrr_metric.
        */
       net::eui_48 to_;
 
       /**
-       * The sender side of the elc_link_metric.
+       * The sender side of the elc_mrr_metric.
        */
       net::eui_48 from_;
 
@@ -163,16 +195,16 @@ namespace metrics {
       double t_pkt_fail_;
 
       /**
-       * The cumulative size for packets sent on this elc_link_metric.
+       * The cumulative size for packets sent on this elc_mrr_metric.
        */
       uint32_t packet_octets_;
 
       /**
-       * The number of packets sent on this elc_link_metric.
+       * The number of packets sent on this elc_mrr_metric.
        */
       uint32_t packet_count_;
    };
 
 }
 
-#endif // METRICS_ELC_LINK_METRIC_HPP
+#endif // METRICS_ELC_MRR_METRIC_HPP
