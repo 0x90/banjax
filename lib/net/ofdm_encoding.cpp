@@ -42,13 +42,19 @@ ofdm_encoding::slot_time() const
 }
 
 uint16_t
-ofdm_encoding::txtime(bool ignored, uint16_t frame_sz, uint16_t rate_Kbs) const
+ofdm_encoding::txtime(uint16_t frame_sz, uint32_t rate_Kbs, bool ignored) const
 {
    const float NDBPS = ndbps(rate_Kbs);
    const uint16_t PREAMBLE = 16;
    const uint16_t SIGNAL = 4;
    const uint16_t SYM = 4;
    return PREAMBLE + SIGNAL + SYM * ceill((16 + (8 * frame_sz) + 6) / NDBPS);
+}
+
+void
+ofdm_encoding::write(ostream& os) const
+{
+   os << "OFDM";
 }
 
 uint16_t

@@ -41,7 +41,7 @@ namespace net {
 
       /**
        * Returns the DCF Inter-Frame Space (DIFS) time under this
-       * encoding. By default a DIFS = 2 * slot_time + SIFS.
+       * encoding. By default a DIFS = SIFS + 2 * slot_time.
        */
       virtual uint16_t DIFS() const;
 
@@ -61,13 +61,12 @@ namespace net {
        * Return the airtime (in microseconds) that it would take to
        * send a frame of the given size using this encoding.
        *
-       * \param has_short_preamble true if short preamble was used; otherwise false.
        * \param frame_sz The size of the frame in octets.
        * \param rate_kbs The data rate in units of 1Kb/s.
-       * \throws invalid_argument_exception When either frame_sz is
-       * zero or rate_Kbs is not permitted using this encoding.
+       * \param has_short_preamble true if short preamble is used; otherwise false.
+       * \throws invalid_argument_exception When rate_Kbs is not supported using this encoding.
        */
-      uint16_t txtime(bool has_short_preamble, uint16_t frame_sz, uint16_t rate_Kbs) const;
+      virtual uint16_t txtime(uint16_t frame_sz, uint32_t rate_Kbs, bool has_short_preamble) const = 0;
 
       /**
        * Write this object in human-readable form to ostream os.
