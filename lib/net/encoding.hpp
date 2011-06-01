@@ -20,6 +20,8 @@
 #ifndef NET_ENCODING_HPP
 #define NET_ENCODING_HPP
 
+#include <boost/noncopyable.hpp>
+#include <boost/shared_ptr.hpp>
 #include <iosfwd>
 #include <stdint.h>
 
@@ -27,7 +29,7 @@ namespace net {
 
    /**
     * encoding is an interface that specifies the timing
-    * characteristics of the IEEE 802.11 radio channel. Concrete
+    * characteristics of the IEEE 802.11 channel encoding. Concrete
     * subclasses implement this class for 802.11a/g (OFDM), 802.11b/g
     * (DSSS/OFDM) and 802.11b (DSSS) encodings.
     */
@@ -38,6 +40,20 @@ namespace net {
        * (Virtual) encoding destructor.
        */
       virtual ~encoding();
+
+      /**
+       * Return the value of CWMIN for this encoding.
+       *
+       * \return A uint16_t specifying the CWMIN value.
+       */
+      virtual uint16_t CWMIN() const = 0;
+
+      /**
+       * Return the value of CWMAX for this encoding.
+       *
+       * \return A uint16_t specifying the CWMAX value.
+       */
+      virtual uint16_t CWMAX() const = 0;
 
       /**
        * Returns the DCF Inter-Frame Space (DIFS) time under this
@@ -59,7 +75,9 @@ namespace net {
 
       /**
        * Return the airtime (in microseconds) that it would take to
-       * send a frame of the given size using this encoding.
+       * send a frame of the given size using this encoding. Note the
+       * frame size must include the FCS which is normally removed by
+       * banjax.
        *
        * \param frame_sz The size of the frame in octets.
        * \param rate_kbs The data rate in units of 1Kb/s.
@@ -73,9 +91,9 @@ namespace net {
        *
        * \param os A reference to the stream to write to.
        */
-      void write(std::ostream& os) const = 0;
+      virtual void write(std::ostream& os) const = 0;
 
-   private:
+   protected:
 
       /**
        * Default constructor for encoding.

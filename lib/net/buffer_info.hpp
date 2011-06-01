@@ -20,6 +20,8 @@
 #ifndef NET_BUFFER_INFO_HPP
 #define NET_BUFFER_INFO_HPP
 
+#include <net/encoding.hpp>
+
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
 #include <stdint.h>
@@ -120,6 +122,16 @@ namespace net {
        * \param r A uint8_t specifying the re-transmission count.
        */
       void data_retries(uint8_t r);
+
+      /**
+       * Returns the frame encoding used by this frame. This is a
+       * convenience function that uses the rx_flags to construct the
+       * correct kind of encoding. The rx_flags must be present or a
+       * logic_error exception will be raised.
+       *
+       * \returns A (possibly null) encoding_sptr.
+       */
+      encoding_sptr frame_encoding() const;
 
       /**
        * Returns the frequency in MHz at which this frame is transmitted.

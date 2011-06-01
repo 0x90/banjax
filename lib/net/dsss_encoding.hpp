@@ -20,6 +20,8 @@
 #ifndef NET_DSSS_ENCODING_HPP
 #define NET_DSSS_ENCODING_HPP
 
+#include <net/encoding.hpp>
+
 #include <iosfwd>
 #include <stdint.h>
 
@@ -27,15 +29,21 @@ namespace net {
 
    /**
     * dsss_encoding is a specification class that defines the timing
-    * characteristics for the IEEE 802.11b DSSS channel encoding.
+    * characteristics for the IEEE 802.11b DSSS and HR-DSSS channel
+    * (the HR-DSSS and DSSS use the same TXTIME calculation and share
+    * most of the same PHY characteristics). Most of the details for
+    * which are found in table 15-2 and table 18-5 of IEEE 802.11
+    * (2007) and the HR TXTIME calculation in section 18.3.4.
     */
-   class dsss_encoding : public boost::noncopyable {
+   class dsss_encoding : public encoding {
    public:
 
       /**
-       * Default constructor for dsss_encoding.
+       * Return a pointer to an instance of this class.
+       *
+       * \return An encoding_sptr pointing to a dsss_encoding instance.
        */
-      dsss_encoding();
+      static encoding_sptr get();
 
       /**
        * (Virtual) dsss_encoding destructor.
@@ -43,7 +51,22 @@ namespace net {
       virtual ~dsss_encoding();
 
       /**
-       * Returns the Short Inter-Frame Spacing (SIFS) time for the DSSS encoding.
+       * Return the value of CWMIN for this encoding.
+       *
+       * \return A uint16_t specifying the CWMIN value.
+       */
+      virtual uint16_t CWMIN() const;
+
+      /**
+       * Return the value of CWMAX for this encoding.
+       *
+       * \return A uint16_t specifying the CWMAX value.
+       */
+      virtual uint16_t CWMAX() const;
+
+      /**
+       * Returns the Short Inter-Frame Spacing (SIFS) time for the
+       * DSSS encoding.
        *
        * \return A uint16_t specifying the SIFS time.
        */
@@ -55,8 +78,11 @@ namespace net {
       virtual uint16_t slot_time() const;
 
       /**
-       * Return the airtime (in microsbool ignored, uint16_t frame_sz, uint16_t rate_Kbseconds) that it would take to
-       * send a frame of the given size using the DSSS encoding.
+       * Return the airtime (in microsbool ignored, uint16_t frame_sz,
+       * uint16_t rate_Kbseconds) that it would take to send a frame
+       * of the given size using the DSSS encoding. Note the frame
+       * size must include the FCS which is normally removed by
+       * banjax.
        *
        * \param frame_sz The size of the frame in octets.
        * \param rate_kbs The data rate in units of 1Kb/s.
@@ -70,7 +96,14 @@ namespace net {
        *
        * \param os A reference to the stream to write to.
        */
-      void write(std::ostream& os) const;
+      virtual void write(std::ostream& os) const;
+
+   private:
+
+      /**
+       * Default constructor for dsss_encoding.
+       */
+      dsss_encoding();
 
    };
 

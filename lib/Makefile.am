@@ -19,10 +19,15 @@ libbanjax_la_SOURCES= \
 	net/channel.cpp \
 	net/datalink.cpp \
 	net/datalink_factory.cpp \
+	net/dsss_encoding.cpp \
+	net/dsss_ofdm_encoding.cpp \
 	net/dummy_wnic.cpp \
+	net/encoding.cpp \
 	net/eui_48.cpp \
 	net/eui_48_range.cpp \
+	net/fhss_encoding.cpp \
 	net/linux_wnic.cpp \
+	net/ofdm_encoding.cpp \
 	net/offline_wnic.cpp \
 	net/pcap_wnic.cpp \
 	net/plain_datalink.cpp \
@@ -62,6 +67,7 @@ nobase_libbanjax_la_HEADERS= \
 	net/channel.hpp \
 	net/datalink.hpp \
 	net/dummy_wnic.hpp \
+	net/encoding.hpp \
 	net/eui_48.hpp \
 	net/eui_48_range.hpp \
 	net/linux_wnic.hpp \

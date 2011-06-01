@@ -18,15 +18,37 @@
  */
 
 #include <net/ofdm_encoding.hpp>
+#include <util/exceptions.hpp>
+
+#include <iostream>
+#include <math.h>
+#include <sstream>
 
 using namespace net;
+using namespace std;
+using util::raise;
 
-ofdm_encoding::ofdm_encoding()
+encoding_sptr
+ofdm_encoding::get()
 {
+   static encoding_sptr enc(new ofdm_encoding);
+   return enc;
 }
 
 ofdm_encoding::~ofdm_encoding()
 {
+}
+
+uint16_t
+ofdm_encoding::CWMIN() const
+{
+   return 15;
+}
+
+uint16_t
+ofdm_encoding::CWMAX() const
+{
+   return 1023;
 }
 
 uint16_t
@@ -55,6 +77,10 @@ void
 ofdm_encoding::write(ostream& os) const
 {
    os << "OFDM";
+}
+
+ofdm_encoding::ofdm_encoding()
+{
 }
 
 uint16_t

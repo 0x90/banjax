@@ -19,10 +19,17 @@
 
 #include <net/dsss_encoding.hpp>
 
-using namespace net;
+#include <math.h>
+#include <iostream>
 
-dsss_encoding::dsss_encoding()
+using namespace net;
+using namespace std;
+
+encoding_sptr
+dsss_encoding::get()
 {
+   static encoding_sptr enc(new dsss_encoding);
+   return enc;
 }
 
 dsss_encoding::~dsss_encoding()
@@ -30,27 +37,44 @@ dsss_encoding::~dsss_encoding()
 }
 
 uint16_t
+dsss_encoding::CWMIN() const
+{
+   return 31;
+}
+
+uint16_t
+dsss_encoding::CWMAX() const
+{
+   return 1023;
+}
+
+uint16_t
 dsss_encoding::SIFS() const
 {
-   return 16; // ToDo!!!
+   return 10;
 }
 
 uint16_t
 dsss_encoding::slot_time() const
 {
-   return 9; // ToDo!!!
+   return 20;
 }
 
 uint16_t
-dsss_encoding::txtime(uint16_t frame_sz, uint32_t rate_Kbs, bool has_short_preamble)
+dsss_encoding::txtime(uint16_t frame_sz, uint32_t rate_Kbs, bool has_short_preamble) const
 {
    float RATE_Mbs = rate_Kbs / 1000;
-   const uint16_t PREAMBLE = (has_short_preamble ? 72 + 24 : 144 + 48);
-   return PREAMBLE + ceill((frame_sz * 8) / RATE_Mbs);
+   const uint16_t PREAMBLE = has_short_preamble ? 72 : 144;
+   const uint16_t PLCP = has_short_preamble ? 24 : 48;
+   return PREAMBLE + PLCP + ceill((frame_sz * 8) / RATE_Mbs);
 }
 
 void
 dsss_encoding::write(ostream& os) const
 {
    os << "DSSS";
+}
+
+dsss_encoding::dsss_encoding()
+{
 }

@@ -18,13 +18,21 @@
  */
 
 #include <net/buffer_info.hpp>
+#include <net/encoding.hpp>
+#include <net/dsss_encoding.hpp>
+#include <net/dsss_ofdm_encoding.hpp>
+#include <net/fhss_encoding.hpp>
+#include <net/ofdm_encoding.hpp>
 #include <util/exceptions.hpp>
+
 #include <iostream>
 #include <iomanip>
+#include <sstream>
 #include <string.h>
 
 using namespace net;
 using namespace std;
+using util::raise;
 
 buffer_info::buffer_info() :
    present_(0)
@@ -59,6 +67,27 @@ buffer_info::data_retries(uint8_t r)
 {
    data_retries_ = r;
    present_ |= DATA_RETRIES;
+}
+
+encoding_sptr
+buffer_info::frame_encoding() const
+{
+   encoding_sptr enc;
+   flags_t flags = rx_flags();
+   if(flags & RX_FLAGS_CODING_DSSS) {
+      enc = dsss_encoding::get();
+   } else if(flags & RX_FLAGS_CODING_DYNAMIC) {
+      enc = dsss_ofdm_encoding::get();
+   } else if(flags & RX_FLAGS_CODING_FHSS) {
+      enc = fhss_encoding::get();
+   } else if(flags & RX_FLAGS_CODING_OFDM) {
+      enc = ofdm_encoding::get();
+   } else {
+      ostringstream msg;
+      msg << "unrecognized channel encoding (rxflags=" << hex << showbase << flags << ")";
+      raise<logic_error>(__PRETTY_FUNCTION__, __FILE__, __LINE__, msg.str());
+   }
+   return enc;
 }
 
 uint32_t
