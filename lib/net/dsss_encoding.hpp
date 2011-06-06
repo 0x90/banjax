@@ -58,11 +58,11 @@ namespace net {
       virtual uint16_t CWMIN() const;
 
       /**
-       * Return the value of CWMAX for this encoding.
+       * Return the name of this encoding.
        *
-       * \return A uint16_t specifying the CWMAX value.
+       * \return A string naming this encoding.
        */
-      virtual uint16_t CWMAX() const;
+      virtual std::string name() const;
 
       /**
        * Returns the Short Inter-Frame Spacing (SIFS) time for the
@@ -78,25 +78,37 @@ namespace net {
       virtual uint16_t slot_time() const;
 
       /**
-       * Return the airtime (in microsbool ignored, uint16_t frame_sz,
-       * uint16_t rate_Kbseconds) that it would take to send a frame
-       * of the given size using the DSSS encoding. Note the frame
-       * size must include the FCS which is normally removed by
-       * banjax.
+       * Return the airtime (in microseconds) that it would take to
+       * send a frame of the given size using the OFDM encoding. Note
+       * the frame size must include the FCS which is normally removed
+       * by banjax.
        *
        * \param frame_sz The size of the frame in octets.
        * \param rate_kbs The data rate in units of 1Kb/s.
-       * \param has_short_preamble  true if short preamble is used; otherwise false.
+       * \param ignored The OFDM encoding does not support short preambles.
        * \throws invalid_argument_exception When rate_Kbs is not permitted using this encoding.
        */
-      virtual uint16_t txtime(uint16_t frame_sz, uint32_t rate_Kbs, bool has_short_preamble) const;
+      virtual uint16_t txtime(uint16_t frame_sz, uint32_t rate_Kbs, bool ignored) const;
+
+   protected:
 
       /**
-       * Write this object in human-readable form to ostream os.
+       * Return the set of basic rates for this encoding. These are
+       * the mandatory rates that must be supported by all stations
+       * using this encoding.
        *
-       * \param os A reference to the stream to write to.
+       * \return A set of the basic rates in units of 1Kb/s.
        */
-      virtual void write(std::ostream& os) const;
+      virtual rateset basic_rates() const;
+
+      /**
+       * Return the set of supported rates for this encoding. These
+       * are all of the rates that may be supported by stations using
+       * this encoding.
+       *
+       * \return A set of supported rates in units of 1Kb/s.
+       */
+      virtual rateset supported_rates() const;
 
    private:
 

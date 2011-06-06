@@ -23,15 +23,21 @@
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
 #include <iosfwd>
+#include <set>
 #include <stdint.h>
 
 namespace net {
 
    /**
+    * Alias for set of transmission rates in units of 1Kb/s.
+    */
+   typedef std::set<uint32_t> rateset;
+
+   /**
     * encoding is an interface that specifies the timing
     * characteristics of the IEEE 802.11 channel encoding. Concrete
     * subclasses implement this class for 802.11a/g (OFDM), 802.11b/g
-    * (DSSS/OFDM) and 802.11b (DSSS) encodings.
+    * (DSSS/OFDM) and 802.11b (FHSS+DSSS) encodings.
     */
    class encoding : public boost::noncopyable {
    public:
@@ -53,13 +59,50 @@ namespace net {
        *
        * \return A uint16_t specifying the CWMAX value.
        */
-      virtual uint16_t CWMAX() const = 0;
+      virtual uint16_t CWMAX() const;
 
       /**
        * Returns the DCF Inter-Frame Space (DIFS) time under this
        * encoding. By default a DIFS = SIFS + 2 * slot_time.
        */
       virtual uint16_t DIFS() const;
+
+      /**
+       * Return the default TX rate for this encoding. This is the
+       * rate from the basic rate set which used to send broadcast
+       * traffic and frames to stations whose supported data rates are
+       * unknown. We expect it to be the lowest rate.
+       *
+       * \return The default rate in units of 1Kb/s.
+       */
+      virtual uint32_t default_rate() const;
+
+      /**
+       * Tests whether rate_Kbs is a legal rate for this encoding.
+       *
+       * \param rate_Kbs The rate in units of 1Kb/s.
+       * \return true if the rate is legal; otherwise returns false.
+       */
+      virtual bool is_legal_rate(uint32_t rate_Kbs) const;
+
+      /**
+       * Return the name of this encoding.
+       *
+       * \return A string naming this encoding.
+       */
+      virtual std::string name() const = 0;
+
+      /**
+       * Return the rate used to answer the given frame rate. This is
+       * the highest rate in the basic rate set that is less than, or
+       * equal to, the specified rate_Kbs.
+       *
+       * \param data_rate_Kbs The original frame rate in units of 1Kb/s.
+       * \return The response data rate in units of 1Kb/s.
+       * \throws invalid_argument_exception When rate_Kbs is not in
+       *         the supported rate set for this encoding.
+       */
+      virtual uint32_t response_rate(uint32_t rate_Kbs) const;
 
       /**
        * Returns the Short Inter-Frame Spacing (SIFS) time for this encoding.
@@ -82,7 +125,8 @@ namespace net {
        * \param frame_sz The size of the frame in octets.
        * \param rate_kbs The data rate in units of 1Kb/s.
        * \param has_short_preamble true if short preamble is used; otherwise false.
-       * \throws invalid_argument_exception When rate_Kbs is not supported using this encoding.
+       * \throws invalid_argument_exception When rate_Kbs is not
+       *         supported using this encoding.
        */
       virtual uint16_t txtime(uint16_t frame_sz, uint32_t rate_Kbs, bool has_short_preamble) const = 0;
 
@@ -91,7 +135,7 @@ namespace net {
        *
        * \param os A reference to the stream to write to.
        */
-      virtual void write(std::ostream& os) const = 0;
+      virtual void write(std::ostream& os) const;
 
    protected:
 
@@ -99,6 +143,26 @@ namespace net {
        * Default constructor for encoding.
        */
       encoding();
+
+      /**
+       * Return the set of basic rates for this encoding. These are
+       * the mandatory rates that must be supported by all stations
+       * using this encoding.
+       *
+       * \return A reference to a set of basic rates in units of
+       *         1Kb/s.
+       */
+      virtual rateset basic_rates() const = 0;
+
+      /**
+       * Return the set of supported rates for this encoding. These
+       * are all of the rates that may be supported by stations using
+       * this encoding.
+       *
+       * \return A reference to a set of supported rates in units of
+       *         1Kb/s.
+       */
+      virtual rateset supported_rates() const = 0;
 
    };
 

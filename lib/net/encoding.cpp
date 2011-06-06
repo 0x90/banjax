@@ -18,11 +18,22 @@
  */
 
 #include <net/encoding.hpp>
+#include <util/exceptions.hpp>
+
+#include <iomanip>
+#include <iostream>
 
 using namespace net;
+using namespace std;
 
 encoding::~encoding()
 {
+}
+
+uint16_t
+encoding::CWMAX() const
+{
+   return 1023;
 }
 
 uint16_t
@@ -31,6 +42,58 @@ encoding::DIFS() const
    return SIFS() + (2 * slot_time());
 }
 
+uint32_t
+encoding::default_rate() const
+{
+   return *(basic_rates().begin());
+}
+
+bool
+encoding::is_legal_rate(uint32_t rate_Kbs) const
+{
+   rateset rates(supported_rates());
+   return(rates.find(rate_Kbs) != rates.end());
+}
+
+
+uint32_t
+encoding::response_rate(uint32_t rate_Kbs) const
+{
+   CHECK(is_legal_rate(rate_Kbs));
+
+   rateset rates(basic_rates());
+   uint32_t response_rate = *(rates.begin());
+   for(rateset::const_iterator i(rates.begin()); i != rates.end(); ++i) {
+      if(*i <= rate_Kbs) {
+         response_rate = *i;
+      } else
+         break;
+   }
+   return response_rate;
+}
+
+void
+encoding::write(ostream& os) const
+{
+   os << "encoding: " << name() << ", ";
+   os << "slot time: " << slot_time() << ", ";
+   os << "SIFS: " << SIFS() << ", ";
+   os << "DIFS: " << DIFS() << ", ";
+   os << "CWMIN: " << CWMIN() << ", ";
+   os << "CWMAX: " << CWMAX() << ", ";
+
+   os << "RATES:";
+   uint32_t d = default_rate();
+   rateset rates(supported_rates());
+   for(rateset::const_iterator i(rates.begin()); i != rates.end(); ++i) {
+      os << " " << (*i * 1000);
+      if(*i == d) {
+         os << "*";
+      }
+   }
+   os << ",";
+
+}
 
 encoding::encoding()
 {

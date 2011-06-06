@@ -45,10 +45,10 @@ dsss_ofdm_encoding::CWMIN() const
    return 31;
 }
 
-uint16_t
-dsss_ofdm_encoding::CWMAX() const
+string
+dsss_ofdm_encoding::name() const
 {
-   return 1023;
+   return "DSSS/OFDM";
 }
 
 uint16_t
@@ -60,54 +60,56 @@ dsss_ofdm_encoding::SIFS() const
 uint16_t
 dsss_ofdm_encoding::slot_time() const
 {
-   return 20; // Note: could also be 9 for short slot times
+   return 20;
 }
 
 uint16_t
 dsss_ofdm_encoding::txtime(uint16_t frame_sz, uint32_t rate_Kbs, bool has_short_preamble) const
 {
-   const float NDBPS = ndbps(rate_Kbs);
+   CHECK(is_legal_rate(rate_Kbs));
+
+   uint32_t usecs = 0;
+   rateset dsss_rates(basic_rates());
    const uint16_t PREAMBLE_DSSS = has_short_preamble ? 72 : 144;
    const uint16_t PLCP_DSSS = has_short_preamble ? 24 : 48;
-   const uint16_t PREAMBLE_OFDM = 8;
-   const uint16_t PLCP_OFDM = 4;
-   const uint8_t PLCP_SVC_BITS = 16;
-   const uint8_t PAD_BITS = 6;
-   const uint16_t SIGNAL_EXT = 6;
-   return PREAMBLE_DSSS + PLCP_DSSS + PREAMBLE_OFDM + PLCP_OFDM + 4 * ceill((PLCP_SVC_BITS + (8 * frame_sz) + PAD_BITS) / NDBPS) + SIGNAL_EXT;
+   if(dsss_rates.find(rate_Kbs) != dsss_rates.end()) {
+      // IEEE 802.11-2007 section 18.3.4 TXTIME calculation
+      float RATE_Mbs = rate_Kbs / 1000;
+      usecs = PREAMBLE_DSSS + PLCP_DSSS + ceill((frame_sz * 8) / RATE_Mbs);
+   } else {
+      // IEEE 802.11-2007 section 19.8.3 TXTIME calculation 
+      const float NDBPS = (rate_Kbs * 4) / 1000; // cf IEEE 802.11-2007 table 17.3
+      const uint16_t PREAMBLE_OFDM = 8;
+      const uint16_t PLCP_OFDM = 4;
+      const uint8_t PLCP_SVC_BITS = 16;
+      const uint8_t PAD_BITS = 6;
+      const uint16_t SIGNAL_EXT = 6;
+      usecs = PREAMBLE_DSSS + PLCP_DSSS + PREAMBLE_OFDM + PLCP_OFDM + 4 * ceill((PLCP_SVC_BITS + (8 * frame_sz) + PAD_BITS) / NDBPS) + SIGNAL_EXT;
+   }
+   return usecs;
 }
 
-void
-dsss_ofdm_encoding::write(ostream& os) const
+rateset
+dsss_ofdm_encoding::basic_rates() const
 {
-   os << "DSSS/OFDM";
+   static const uint32_t RATES[] = {
+      1000, 2000, 5500, 11000
+   };
+   static const size_t RATES_SZ = sizeof(RATES) / sizeof(RATES[0]);
+   return rateset(&RATES[0], &RATES[RATES_SZ]);
+}
+
+rateset
+dsss_ofdm_encoding::supported_rates() const
+{
+   static const uint32_t RATES[] = {
+      1000, 2000, 5500, 11000, 6000, 9000, 12000, 18000, 24000, 36000, 48000, 54000
+   };
+   static const size_t RATES_SZ = sizeof(RATES) / sizeof(RATES[0]);
+   return rateset(&RATES[0], &RATES[RATES_SZ]);
 }
 
 dsss_ofdm_encoding::dsss_ofdm_encoding()
 {
 }
 
-uint16_t
-dsss_ofdm_encoding::ndbps(uint32_t rate_Kbs) const
-{
-   const uint32_t RATE_Mbs = rate_Kbs / 1000;
-   static const uint8_t RATE_NSYMS[][2] = {
-      {  6,  24 },
-      {  9,  36 },
-      { 12,  48 },
-      { 18,  72 },
-      { 24,  96 },
-      { 36, 144 },
-      { 48, 192 },
-      { 54, 216 }
-   };
-   static const size_t NOF_RATE_NSYMS = sizeof(RATE_NSYMS) / sizeof(RATE_NSYMS[0]);
-   for(size_t i = 0; i < NOF_RATE_NSYMS; ++i) {
-      if(RATE_Mbs == RATE_NSYMS[i][0]) {
-         return RATE_NSYMS[i][1];
-      }
-   }
-   ostringstream msg;
-   msg << "invalid data rate (rate = " << rate_Kbs << ")" << endl;
-   raise<invalid_argument>(__PRETTY_FUNCTION__, __FILE__, __LINE__, msg.str());
-}

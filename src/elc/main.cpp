@@ -1,4 +1,5 @@
 /* -*- Mode: C++; tab-width: 3; -*- */
+
 /* 
  * Copyright NICTA, 2011
  */
@@ -11,6 +12,7 @@
 #include <metric.hpp>
 #include <net/wnic.hpp>
 #include <dot11/frame.hpp>
+#incldue <net/wnic_timestamp_fix.hpp>
 #include <net/wnic_wallclock_fix.hpp>
 
 #include <cstdlib>
@@ -58,6 +60,7 @@ main(int ac, char **av)
    try {
       wnic_sptr w(wnic::open(what));
       w = wnic_sptr(new wnic_wallclock_fix(w));
+      w = wnic_sptr(new wnic_timestamp_fix(w));
       w->filter("wlan type data"); // ToDo: add BPF test for outbound-only frames
       buffer_sptr b(w->read());
       buffer_info_sptr info(b->info());

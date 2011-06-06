@@ -29,11 +29,9 @@ namespace net {
 
    /**
     * fhss_encoding is a specification class that defines the timing
-    * characteristics for the IEEE 802.11b/g DSSS/OFDM channel
+    * characteristics for the IEEE 802.11b FHSS channel
     * encoding. Timing characteristics can be found in table 14-31 of
-    * IEEE 802.11 (2007). The TXTIME calculation is not actually given
-    * in the spec and so we use the formula from the "Theoretical
-    * Throughput Limits" document (IEEE 802.11-06/928r2).
+    * IEEE 802.11 (2007).
     * 
     */
    class fhss_encoding : public encoding {
@@ -47,6 +45,11 @@ namespace net {
       static encoding_sptr get();
 
       /**
+       * (Virtual) fhss_encoding destructor.
+       */
+      virtual ~fhss_encoding();
+
+      /**
        * Return the value of CWMIN for this encoding.
        *
        * \return A uint16_t specifying the CWMIN value.
@@ -54,16 +57,11 @@ namespace net {
       virtual uint16_t CWMIN() const;
 
       /**
-       * Return the value of CWMAX for this encoding.
+       * Return the name of this encoding.
        *
-       * \return A uint16_t specifying the CWMAX value.
+       * \return A string naming this encoding.
        */
-      virtual uint16_t CWMAX() const;
-
-      /**
-       * (Virtual) fhss_encoding destructor.
-       */
-      virtual ~fhss_encoding();
+      virtual std::string name() const;
 
       /**
        * Returns the Short Inter-Frame Spacing (SIFS) time for the
@@ -91,12 +89,25 @@ namespace net {
        */
       virtual uint16_t txtime(uint16_t frame_sz, uint32_t rate_Kbs, bool has_short_preamble) const;
 
+   protected:
+
       /**
-       * Write this object in human-readable form to ostream os.
+       * Return the set of basic rates for this encoding. These are
+       * the mandatory rates that must be supported by all stations
+       * using this encoding.
        *
-       * \param os A reference to the stream to write to.
+       * \return A set of the basic rates in units of 1Kb/s.
        */
-      virtual void write(std::ostream& os) const;
+      virtual rateset basic_rates() const;
+
+      /**
+       * Return the set of supported rates for this encoding. These
+       * are all of the rates that may be supported by stations using
+       * this encoding.
+       *
+       * \return A set of supported rates in units of 1Kb/s.
+       */
+      virtual rateset supported_rates() const;
 
    private:
 

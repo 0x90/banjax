@@ -45,10 +45,10 @@ ofdm_encoding::CWMIN() const
    return 15;
 }
 
-uint16_t
-ofdm_encoding::CWMAX() const
+string
+ofdm_encoding::name() const
 {
-   return 1023;
+   return "OFDM";
 }
 
 uint16_t
@@ -66,44 +66,35 @@ ofdm_encoding::slot_time() const
 uint16_t
 ofdm_encoding::txtime(uint16_t frame_sz, uint32_t rate_Kbs, bool ignored) const
 {
-   const float NDBPS = ndbps(rate_Kbs);
+   CHECK(is_legal_rate(rate_Kbs));
+
+   const float NDBPS = (rate_Kbs * 4) / 1000; // cf IEEE 802.11-2007 table 17.3.
    const uint16_t PREAMBLE = 16;
    const uint16_t SIGNAL = 4;
    const uint16_t SYM = 4;
    return PREAMBLE + SIGNAL + SYM * ceill((16 + (8 * frame_sz) + 6) / NDBPS);
 }
 
-void
-ofdm_encoding::write(ostream& os) const
+rateset
+ofdm_encoding::basic_rates() const
 {
-   os << "OFDM";
+   static const uint32_t RATES[] = {
+      6000, 12000, 24000
+   };
+   static const size_t RATES_SZ = sizeof(RATES) / sizeof(RATES[0]);
+   return rateset(&RATES[0], &RATES[RATES_SZ]);
+}
+
+rateset
+ofdm_encoding::supported_rates() const
+{
+   static const uint32_t RATES[] = {
+      6000, 9000, 12000, 18000, 24000, 36000, 48000, 54000
+   };
+   static const size_t RATES_SZ = sizeof(RATES) / sizeof(RATES[0]);
+   return rateset(&RATES[0], &RATES[RATES_SZ]);
 }
 
 ofdm_encoding::ofdm_encoding()
 {
-}
-
-uint16_t
-ofdm_encoding::ndbps(uint32_t rate_Kbs) const
-{
-   const uint32_t RATE_Mbs = rate_Kbs / 1000;
-   static const uint8_t RATE_NSYMS[][2] = {
-      {  6,  24 },
-      {  9,  36 },
-      { 12,  48 },
-      { 18,  72 },
-      { 24,  96 },
-      { 36, 144 },
-      { 48, 192 },
-      { 54, 216 }
-   };
-   static const size_t NOF_RATE_NSYMS = sizeof(RATE_NSYMS) / sizeof(RATE_NSYMS[0]);
-   for(size_t i = 0; i < NOF_RATE_NSYMS; ++i) {
-      if(RATE_Mbs == RATE_NSYMS[i][0]) {
-         return RATE_NSYMS[i][1];
-      }
-   }
-   ostringstream msg;
-   msg << "invalid data rate (rate = " << rate_Kbs << ")" << endl;
-   raise<invalid_argument>(__PRETTY_FUNCTION__, __FILE__, __LINE__, msg.str());
 }

@@ -42,10 +42,10 @@ dsss_encoding::CWMIN() const
    return 31;
 }
 
-uint16_t
-dsss_encoding::CWMAX() const
+string
+dsss_encoding::name() const
 {
-   return 1023;
+   return "DSSS";
 }
 
 uint16_t
@@ -69,10 +69,24 @@ dsss_encoding::txtime(uint16_t frame_sz, uint32_t rate_Kbs, bool has_short_pream
    return PREAMBLE + PLCP + ceill((frame_sz * 8) / RATE_Mbs);
 }
 
-void
-dsss_encoding::write(ostream& os) const
+rateset
+dsss_encoding::basic_rates() const
 {
-   os << "DSSS";
+   static const uint32_t RATES[] = {
+      1000, 2000
+   };
+   static const size_t RATES_SZ = sizeof(RATES) / sizeof(RATES[0]);
+   return rateset(&RATES[0], &RATES[RATES_SZ]);
+}
+
+rateset
+dsss_encoding::supported_rates() const
+{
+   static const uint32_t RATES[] = {
+      1000, 2000, 5500, 11000
+   };
+   static const size_t RATES_SZ = sizeof(RATES) / sizeof(RATES[0]);
+   return rateset(&RATES[0], &RATES[RATES_SZ]);
 }
 
 dsss_encoding::dsss_encoding()

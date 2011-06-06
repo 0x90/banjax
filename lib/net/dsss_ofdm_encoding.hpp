@@ -45,6 +45,11 @@ namespace net {
       static encoding_sptr get();
 
       /**
+       * (Virtual) dsss_ofdm_encoding destructor.
+       */
+      virtual ~dsss_ofdm_encoding();
+
+      /**
        * Return the value of CWMIN for this encoding.
        *
        * \return A uint16_t specifying the CWMIN value.
@@ -52,16 +57,11 @@ namespace net {
       virtual uint16_t CWMIN() const;
 
       /**
-       * Return the value of CWMAX for this encoding.
+       * Return the name of this encoding.
        *
-       * \return A uint16_t specifying the CWMAX value.
+       * \return A string naming this encoding.
        */
-      virtual uint16_t CWMAX() const;
-
-      /**
-       * (Virtual) dsss_ofdm_encoding destructor.
-       */
-      virtual ~dsss_ofdm_encoding();
+      virtual std::string name() const;
 
       /**
        * Returns the Short Inter-Frame Spacing (SIFS) time for the
@@ -89,12 +89,25 @@ namespace net {
        */
       virtual uint16_t txtime(uint16_t frame_sz, uint32_t rate_Kbs, bool has_short_preamble) const;
 
+   protected:
+
       /**
-       * Write this object in human-readable form to ostream os.
+       * Return the set of basic rates for this encoding. These are
+       * the mandatory rates that must be supported by all stations
+       * using this encoding.
        *
-       * \param os A reference to the stream to write to.
+       * \return A set of the basic rates in units of 1Kb/s.
        */
-      virtual void write(std::ostream& os) const;
+      virtual rateset basic_rates() const;
+
+      /**
+       * Return the set of supported rates for this encoding. These
+       * are all of the rates that may be supported by stations using
+       * this encoding.
+       *
+       * \return A set of supported rates in units of 1Kb/s.
+       */
+      virtual rateset supported_rates() const;
 
    private:
 
@@ -102,16 +115,6 @@ namespace net {
        * Default constructor for dsss_ofdm_encoding.
        */
       dsss_ofdm_encoding();
-
-      /**
-       * Number of data bits per symbol (NDBPS) lookup. This is
-       * defined by IEEE 802.11-2007 table 17.3.
-       *
-       * \param rate_Kbs The data rate of the frame in units of 1Kb/s.
-       * \return The number of data bits per symbol.
-       * \throws invalid_argument When rate_Kbs is not permitted using this encoding.
-       */
-      uint16_t ndbps(uint32_t rate_Kbs) const;
 
    };
 
