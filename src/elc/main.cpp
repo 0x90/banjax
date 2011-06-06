@@ -12,7 +12,7 @@
 #include <metric.hpp>
 #include <net/wnic.hpp>
 #include <dot11/frame.hpp>
-#incldue <net/wnic_timestamp_fix.hpp>
+#include <net/wnic_timestamp_fix.hpp>
 #include <net/wnic_wallclock_fix.hpp>
 
 #include <cstdlib>
