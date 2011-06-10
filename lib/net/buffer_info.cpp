@@ -55,6 +55,41 @@ buffer_info::has(property_t props) const
    return((present_ & props) == props);
 }
 
+encoding_sptr
+buffer_info::channel_encoding() const
+{
+   encoding_sptr enc;
+   flags_t flags = channel_flags();
+   if(flags & CHANNEL_CODING_DSSS) {
+      enc = dsss_encoding::get();
+   } else if(flags & CHANNEL_CODING_DYNAMIC) {
+      enc = dsss_ofdm_encoding::get();
+   } else if(flags & CHANNEL_CODING_FHSS) {
+      enc = fhss_encoding::get();
+   } else if(flags & CHANNEL_CODING_OFDM) {
+      enc = ofdm_encoding::get();
+   } else {
+      ostringstream msg;
+      msg << "unrecognized channel encoding (rxflags=" << hex << showbase << flags << ")";
+      raise<logic_error>(__PRETTY_FUNCTION__, __FILE__, __LINE__, msg.str());
+   }
+   return enc;
+}
+
+flags_t
+buffer_info::channel_flags() const
+{
+   PRECONDITION(has(CHANNEL_FLAGS));
+   return channel_flags_;
+}
+
+void
+buffer_info::channel_flags(flags_t f)
+{
+   channel_flags_ = f;
+   present_ |= CHANNEL_FLAGS;
+}
+
 uint8_t
 buffer_info::data_retries() const
 {
@@ -67,27 +102,6 @@ buffer_info::data_retries(uint8_t r)
 {
    data_retries_ = r;
    present_ |= DATA_RETRIES;
-}
-
-encoding_sptr
-buffer_info::frame_encoding() const
-{
-   encoding_sptr enc;
-   flags_t flags = rx_flags();
-   if(flags & RX_FLAGS_CODING_DSSS) {
-      enc = dsss_encoding::get();
-   } else if(flags & RX_FLAGS_CODING_DYNAMIC) {
-      enc = dsss_ofdm_encoding::get();
-   } else if(flags & RX_FLAGS_CODING_FHSS) {
-      enc = fhss_encoding::get();
-   } else if(flags & RX_FLAGS_CODING_OFDM) {
-      enc = ofdm_encoding::get();
-   } else {
-      ostringstream msg;
-      msg << "unrecognized channel encoding (rxflags=" << hex << showbase << flags << ")";
-      raise<logic_error>(__PRETTY_FUNCTION__, __FILE__, __LINE__, msg.str());
-   }
-   return enc;
 }
 
 uint32_t
@@ -223,6 +237,50 @@ buffer_info::write(ostream& os) const
       os << "TIMESTAMP1: " << timestamp1() << ", ";
    if(has(TIMESTAMP2))
       os << "TIMESTAMP2: " << timestamp2() << ", ";
+
+   if(has(CHANNEL_FLAGS)) {
+      os << "CHANNEL FLAGS:";
+      uint32_t flags = channel_flags();
+      char sep = ' ';
+      if(flags & CHANNEL_PREAMBLE_LONG) {
+         os << sep << "CHANNEL_PREAMBLE_LONG";
+         sep = '|';
+      }
+      if(flags & CHANNEL_PREAMBLE_SHORT) {
+         os << sep << "CHANNEL_PREAMBLE_SHORT";
+         sep = '|';
+      }
+      if(flags & CHANNEL_CODING_DSSS) {
+         os << sep << "CHANNEL_CODING_DSSS";
+         sep = '|';
+      }
+      if(flags & CHANNEL_CODING_OFDM) {
+         os << sep << "CHANNEL_CODING_OFDM";
+         sep = '|';
+      }
+      if(flags & CHANNEL_CODING_FHSS) {
+         os << sep << "CHANNEL_CODING_FHSS";
+         sep = '|';
+      }
+      if(flags & CHANNEL_CODING_DYNAMIC) {
+         os << sep << "CHANNEL_CODING_DYNAMIC";
+         sep = '|';
+      }
+      if(flags & CHANNEL_RATE_FULL) {
+         os << sep << "CHANNEL_RATE_FULL";
+         sep = '|';
+      }
+      if(flags & CHANNEL_RATE_HALF) {
+         os << sep << "CHANNEL_RATE_HALF";
+         sep = '|';
+      }
+      if(flags & CHANNEL_RATE_QUARTER) {
+         os << sep << "CHANNEL_RATE_QUARTER";
+         sep = '|';
+      }
+      os << ", ";
+   }
+
    if(has(RATE_Kbs))
       os << "RATE_Kbs: " << rate_Kbs() << ", ";
    if(has(FREQ_MHz))
@@ -235,45 +293,9 @@ buffer_info::write(ostream& os) const
       os << "RTS RETRIES: " <<  static_cast<uint16_t>(rts_retries()) << ", ";
 
    if(has(RX_FLAGS)) {
-      os << "RX FLAGS: ";
+      os << "RX FLAGS:";
       uint32_t flags = rx_flags();
       char sep = ' ';
-      if(flags & RX_FLAGS_PREAMBLE_LONG) {
-         os << sep << "RX_FLAGS_PREAMBLE_LONG";
-         sep = '|';
-      }
-      if(flags & RX_FLAGS_PREAMBLE_SHORT) {
-         os << sep << "RX_FLAGS_PREAMBLE_SHORT";
-         sep = '|';
-      }
-      if(flags & RX_FLAGS_CODING_DSSS) {
-         os << sep << "RX_FLAGS_CODING_DSSS";
-         sep = '|';
-      }
-      if(flags & RX_FLAGS_CODING_OFDM) {
-         os << sep << "RX_FLAGS_CODING_OFDM";
-         sep = '|';
-      }
-      if(flags & RX_FLAGS_CODING_FHSS) {
-         os << sep << "RX_FLAGS_CODING_FHSS";
-         sep = '|';
-      }
-      if(flags & RX_FLAGS_CODING_DYNAMIC) {
-         os << sep << "RX_FLAGS_CODING_DYNAMIC";
-         sep = '|';
-      }
-      if(flags & RX_FLAGS_RATE_FULL) {
-         os << sep << "RX_FLAGS_RATE_FULL";
-         sep = '|';
-      }
-      if(flags & RX_FLAGS_RATE_HALF) {
-         os << sep << "RX_FLAGS_RATE_HALF";
-         sep = '|';
-      }
-      if(flags & RX_FLAGS_RATE_QUARTER) {
-         os << sep << "RX_FLAGS_RATE_QUARTER";
-         sep = '|';
-      }
       if(flags & RX_FLAGS_BAD_FCS) {
          os << sep << "RX_FLAGS_BAD_FCS";
          sep = '|';

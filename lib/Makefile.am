@@ -35,6 +35,7 @@ libbanjax_la_SOURCES= \
 	net/radiotap_datalink.cpp \
 	net/txtime.cpp \
 	net/wnic.cpp \
+	net/wnic_encoding_fix.cpp \
 	net/wnic_factory.cpp \
 	net/wnic_read_logger.cpp \
 	net/wnic_timestamp_fix.cpp \
@@ -79,6 +80,7 @@ nobase_libbanjax_la_HEADERS= \
 	net/radiotap.hpp \
 	net/txtime.hpp \
 	net/wnic.hpp \
+	net/wnic_encoding_fix.hpp \
 	net/wnic_read_logger.hpp \
 	net/wnic_timestamp_fix.hpp \
 	net/wnic_timestamp_swizzle.hpp \

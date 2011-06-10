@@ -9,6 +9,7 @@
 #define METRICS_ELC_METRIC_HPP
 
 #include <metric.hpp>
+#include <net/encoding.hpp>
 #include <net/eui_48.hpp>
 #include <net/buffer.hpp>
 
@@ -109,19 +110,21 @@ namespace metrics {
        * Return the average contention window time for transmission
        * attempt txc.
        *
+       * \param enc The encoding used by the PHY layer.
        * \param txc The number of the transmission attempt.
        * \return The time, in microseconds, that will be waited on average.
        */
-      double avg_contention_time(uint8_t txc) const;
+      double avg_contention_time(net::encoding_sptr enc, uint8_t txc) const;
 
       /**
        * Return the contention window time for transmission attempt
        * txc.
        *
+       * \param enc The encoding used by the PHY layer.
        * \param txc The number of the transmission attempt.
        * \return The time, in microseconds, used for the contention window.
        */
-      double max_contention_time(uint8_t txc) const;
+      double max_contention_time(net::encoding_sptr enc, uint8_t txc) const;
 
       /**
        * Compute the time taken to successfully send frame b. This
@@ -146,18 +149,12 @@ namespace metrics {
       /**
        * Return the amount of time taken by the RTS/CTS exchange.
        *
+       * \param enc A pointer to the frame encoding.
        * \param frame_sz The size of the data frame.
+       * \param has_short_preamble true if short preambles are in use; otherwise false.
        * \return The time, in microseconds, used  by the RTS/CTS exchange.
        */
-      double rts_cts_time(uint32_t frame_sz) const;
-
-      /**
-       * Return the ACK rate for a given rate.
-       *
-       * \param rate_Kbs The data rate in units of 1Kb/s.
-       * \return The acknowledgment data rate in units of 1Kb/s.
-       */
-      uint32_t ack_rate(uint32_t rate_Kbs) const;
+      double rts_cts_time(net::encoding_sptr enc, uint32_t frame_sz, bool short_preamble) const;
 
    private:
 

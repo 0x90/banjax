@@ -19,6 +19,7 @@
 
 #include <net/buffer.hpp>
 #include <net/buffer_info.hpp>
+#include <net/encoding.hpp>
 #include <net/wnic_timestamp_fix.hpp>
 #include <net/txtime.hpp>
 #include <util/exceptions.hpp>
@@ -42,27 +43,15 @@ wnic_timestamp_fix::read()
    buffer_sptr buf(wnic_->read());
    if(buf) {
       buffer_info_sptr info(buf->info());
-      if(info->has(RATE_Kbs | RX_FLAGS | TIMESTAMP1) ^ (info->has(RATE_Kbs | RX_FLAGS | TIMESTAMP2))) {
+      if(info->has(RATE_Kbs | CHANNEL_FLAGS | TIMESTAMP1) ^ (info->has(RATE_Kbs | CHANNEL_FLAGS | TIMESTAMP2))) {
 
          // compute txtime
          uint32_t t = 0;
          const uint32_t CRC_SZ = 4;
-         uint32_t rate = info->rate_Kbs();
-         uint64_t rxflags = info->rx_flags();
-         bool short_preamble = rxflags & RX_FLAGS_PREAMBLE_SHORT;
-         if(rxflags & RX_FLAGS_CODING_FHSS) {
-            t = txtime_fhss(rate, buf->data_size() + CRC_SZ, short_preamble);
-         } else if(rxflags & RX_FLAGS_CODING_DSSS) {
-            t = txtime_dsss(rate, buf->data_size() + CRC_SZ, short_preamble);
-         } else if(rxflags & RX_FLAGS_CODING_DYNAMIC) {
-            t = txtime_dsss_ofdm(rate, buf->data_size() + CRC_SZ, short_preamble);
-         } else if(rxflags & RX_FLAGS_CODING_OFDM) {
-            t = txtime_ofdm(rate, buf->data_size() + CRC_SZ);
-         } else {
-            ostringstream msg;
-            msg << "unknown channel encoding (" << *info << ")" << endl;
-            raise<logic_error>(__PRETTY_FUNCTION__, __FILE__, __LINE__, msg.str());
-         }
+         uint32_t rate_Kbs = info->rate_Kbs();
+         bool has_short_preamble = info->channel_flags() & CHANNEL_PREAMBLE_SHORT;
+         encoding_sptr enc(info->channel_encoding());
+         t = enc->txtime(buf->data_size() + CRC_SZ, rate_Kbs, has_short_preamble);
 
          // adjust timestamp
          if(info->has(TIMESTAMP1)) {
@@ -73,7 +62,7 @@ wnic_timestamp_fix::read()
 
       } else {
          ostringstream msg;
-         msg << "cannot fix frame (" << *info << ")" << endl;
+         msg << "cannot fix timestamp (" << *info << ")" << endl;
          raise<runtime_error>(__PRETTY_FUNCTION__, __FILE__, __LINE__, msg.str());
       }
    }

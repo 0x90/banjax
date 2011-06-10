@@ -179,7 +179,8 @@ radiotap_datalink::parse(size_t frame_sz, const uint8_t *frame)
       bitmaps += sizeof(uint32_t);
    }
 
-   uint32_t rx_flags = 0;
+   flags_t rx_flags = 0;
+   flags_t chan_flags = 0;
    size_t ofs = bitmaps - frame;
    buffer_info_sptr info(new buffer_info);
    for(uint32_t i = RADIOTAP_TSFT; i < RADIOTAP_EXT; i <<= 1) {
@@ -196,9 +197,10 @@ radiotap_datalink::parse(size_t frame_sz, const uint8_t *frame)
       case RADIOTAP_FLAGS:
          extract(ofs, junk_u8, hdr_sz, frame_sz, frame);
          if(junk_u8 & RADIOTAP_FLAGS_FCS) {
-            frame_sz -= sizeof(uint32_t); // remove FCS (banjax *never* provides FCS field)
+            frame_sz -= sizeof(uint32_t); // remove FCS - banjax *never* provides FCS field
          }
-         rx_flags |= (junk_u8 & RADIOTAP_FLAGS_SHORTPRE) ? RX_FLAGS_PREAMBLE_SHORT : RX_FLAGS_PREAMBLE_LONG;
+         chan_flags |= (junk_u8 & RADIOTAP_FLAGS_SHORTPRE) ? CHANNEL_PREAMBLE_SHORT : CHANNEL_PREAMBLE_LONG;
+         info->channel_flags(chan_flags);
          rx_flags |= (junk_u8 & RADIOTAP_FLAGS_BAD_FCS) ? RX_FLAGS_BAD_FCS : 0;
          info->rx_flags(rx_flags);
          break;
@@ -217,17 +219,17 @@ radiotap_datalink::parse(size_t frame_sz, const uint8_t *frame)
             msg << hex << dump(frame_sz, frame) << endl;
             raise<runtime_error>(__PRETTY_FUNCTION__, __FILE__, __LINE__, msg.str());
          }
-         rx_flags |= (junk_u16 & RADIOTAP_CHAN_CCK)  ? RX_FLAGS_CODING_DSSS : 0;
-         rx_flags |= (junk_u16 & RADIOTAP_CHAN_OFDM) ? RX_FLAGS_CODING_OFDM : 0;
-         rx_flags |= (junk_u16 & RADIOTAP_CHAN_GFSK) ? RX_FLAGS_CODING_FHSS : 0;
-         rx_flags |= (junk_u16 & RADIOTAP_CHAN_DYN)  ? RX_FLAGS_CODING_DYNAMIC : 0;
+         chan_flags |= (junk_u16 & RADIOTAP_CHAN_CCK)  ? CHANNEL_CODING_DSSS : 0;
+         chan_flags |= (junk_u16 & RADIOTAP_CHAN_OFDM) ? CHANNEL_CODING_OFDM : 0;
+         chan_flags |= (junk_u16 & RADIOTAP_CHAN_GFSK) ? CHANNEL_CODING_FHSS : 0;
+         chan_flags |= (junk_u16 & RADIOTAP_CHAN_DYN)  ? CHANNEL_CODING_DYNAMIC : 0;
          if(junk_u16 & RADIOTAP_CHAN_QUARTER_RATE)
-            rx_flags |= RX_FLAGS_RATE_QUARTER;
+            chan_flags |= CHANNEL_RATE_QUARTER;
          else if(junk_u16 & RADIOTAP_CHAN_HALF_RATE)
-            rx_flags |= RX_FLAGS_RATE_HALF;
+            chan_flags |= CHANNEL_RATE_HALF;
          else
-            rx_flags |= RX_FLAGS_RATE_FULL;
-         info->rx_flags(rx_flags);
+            chan_flags |= CHANNEL_RATE_FULL;
+         info->channel_flags(chan_flags);
          break;
       case RADIOTAP_FHSS:
          extract(ofs, junk_u8, hdr_sz, frame_sz, frame);

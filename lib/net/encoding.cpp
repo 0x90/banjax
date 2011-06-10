@@ -82,16 +82,20 @@ encoding::write(ostream& os) const
    os << "CWMIN: " << CWMIN() << ", ";
    os << "CWMAX: " << CWMAX() << ", ";
 
-   os << "RATES:";
+   os << "RATES: ";
    uint32_t d = default_rate();
    rateset rates(supported_rates());
-   for(rateset::const_iterator i(rates.begin()); i != rates.end(); ++i) {
-      os << " " << (*i * 1000);
-      if(*i == d) {
-         os << "*";
+   rateset::const_iterator i(rates.begin());
+   if(i != rates.end()) {
+      os << *i;
+      while(++i != rates.end()) {
+         os << "|" << (*i * 1000);
+         if(*i == d) {
+            os << "*";
+         }
       }
    }
-   os << ",";
+   os << ", ";
 
 }
 

@@ -115,11 +115,12 @@ elc_mrr_metric::packet_succ_time(buffer_sptr b) const
    double usecs = 0.0;
    buffer_info_sptr info(b->info());
    vector<uint32_t> rates(info->rates());
+   encoding_sptr enc(info->channel_encoding());
    uint8_t txc = rates.size();
    for(uint8_t i = 0; i < txc - 1; ++i) {
-      usecs += avg_contention_time(i) + frame_fail_time(b, rates[i]);
+      usecs += avg_contention_time(enc, i) + frame_fail_time(b, rates[i]);
    }
-   return usecs + avg_contention_time(txc) + frame_succ_time(b, rates[txc - 1]);
+   return usecs + avg_contention_time(enc, txc) + frame_succ_time(b, rates[txc - 1]);
 }
 
 double
@@ -128,98 +129,78 @@ elc_mrr_metric::packet_fail_time(buffer_sptr b) const
    double usecs = 0.0;
    buffer_info_sptr info(b->info());
    vector<uint32_t> rates(info->rates());
+   encoding_sptr enc(info->channel_encoding());
    uint8_t txc = rates.size();
    for(uint8_t i = 0; i < txc; ++i) {
-      usecs += avg_contention_time(i) + frame_fail_time(b, rates[i]);
+      usecs += avg_contention_time(enc, i) + frame_fail_time(b, rates[i]);
    }
    return usecs;
 }
 
 double
-elc_mrr_metric::avg_contention_time(uint8_t txc) const
+elc_mrr_metric::avg_contention_time(encoding_sptr enc, uint8_t txc) const
 {
-   return max_contention_time(txc) / 2.0;
+   return max_contention_time(enc, txc) / 2.0;
 }
 
-const uint32_t T_SIFS = 16;
-const uint32_t T_SLOT = 9;
-const uint32_t T_DIFS = T_SIFS + 2 * T_SLOT;
-
 double
-elc_mrr_metric::max_contention_time(uint8_t txc) const
+elc_mrr_metric::max_contention_time(encoding_sptr enc, uint8_t txc) const
 {
   /* ath5k hack: collapse contention window after 10 attempts */
   if(txc >= 10) {
     txc %= 10;
   }
   /* end hack */
-  const uint32_t CWMIN = 15;
-  const uint32_t CWMAX = 1023;
-  const uint32_t CW = pow(2, txc+4) - 1;
-  return min(max(CW, CWMIN), CWMAX) * T_SLOT;
+  const uint32_t CWMIN = enc->CWMIN();
+  const uint32_t CWMAX = enc->CWMAX();
+  const uint32_t CW = pow(2, txc+4) - 1; // ToDo: fix me so I work on any encoding!
+  return min(max(CW, CWMIN), CWMAX) * enc->slot_time();
 }
 
 double 
 elc_mrr_metric::frame_succ_time(buffer_sptr b, uint32_t rate_Kbs) const
 {
    buffer_info_sptr info(b->info());
+   encoding_sptr enc(info->channel_encoding());
 
    const uint32_t CRC_SZ = 4;
    const uint32_t FRAME_SZ = b->data_size() + CRC_SZ;
-   const uint32_t T_RTS_CTS = rts_cts_time(FRAME_SZ);
-   const uint32_t T_DATA = txtime_ofdm(rate_Kbs, FRAME_SZ);
+   const bool PREAMBLE =  info->has(CHANNEL_FLAGS) && (info->channel_flags() & CHANNEL_PREAMBLE_SHORT);
+   const uint32_t T_RTS_CTS = rts_cts_time(enc, FRAME_SZ, PREAMBLE);
+   const uint32_t T_DATA = enc->txtime(FRAME_SZ, rate_Kbs, PREAMBLE);
    const uint32_t ACK_SZ = 14;
-   const uint32_t T_ACK = txtime_ofdm(ack_rate(rate_Kbs), ACK_SZ);
+   const uint32_t ACK_RATE = enc->response_rate(rate_Kbs);
+   const uint32_t T_ACK = enc->txtime(ACK_SZ, ACK_RATE, PREAMBLE);
 
-   return T_RTS_CTS + T_DATA + T_SIFS + T_ACK + T_DIFS;
+   return T_RTS_CTS + T_DATA + enc->SIFS() + T_ACK + enc->DIFS();
 }
 
 double
 elc_mrr_metric::frame_fail_time(buffer_sptr b, uint32_t rate_Kbs) const
 {
    buffer_info_sptr info(b->info());
+   encoding_sptr enc(info->channel_encoding());
 
    const uint32_t CRC_SZ = 4;
    const uint32_t FRAME_SZ = b->data_size() + CRC_SZ;
-   const uint32_t T_RTS_CTS = rts_cts_time(FRAME_SZ);
-   const uint32_t T_DATA = txtime_ofdm(rate_Kbs, FRAME_SZ);
-   const uint32_t T_ACKTIMEOUT = 50;
+   const bool PREAMBLE =  info->has(CHANNEL_FLAGS) && (info->channel_flags() & CHANNEL_PREAMBLE_SHORT);
+   const uint32_t T_RTS_CTS = rts_cts_time(enc, FRAME_SZ, PREAMBLE);
+   const uint32_t T_DATA = enc->txtime(FRAME_SZ, rate_Kbs, PREAMBLE);
+   const uint32_t T_ACKTIMEOUT = 50; // ToDo: get me from encoding!!!
 
-   return T_RTS_CTS + T_DATA + T_SIFS + T_ACKTIMEOUT + T_DIFS;
+   return T_RTS_CTS + T_DATA + enc->SIFS() + T_ACKTIMEOUT + enc->DIFS();
 }
 
 double
-elc_mrr_metric::rts_cts_time(uint32_t frame_sz) const
+elc_mrr_metric::rts_cts_time(encoding_sptr enc, uint32_t frame_sz, bool short_preamble) const
 {
    double usecs = 0.0;
    if(rts_cts_threshold_ <= frame_sz) {
       const uint32_t RTS_SZ = 20;
       const uint32_t CTS_SZ = 14;
-      usecs = txtime_ofdm(6000, RTS_SZ) + T_SIFS + txtime_ofdm(6000, CTS_SZ) + T_SIFS;
+      const uint32_t T_SIFS = enc->SIFS();
+      const uint32_t RATE = enc->default_rate();
+      usecs = enc->txtime(RTS_SZ, RATE, short_preamble) + T_SIFS + enc->txtime(CTS_SZ, RATE, short_preamble) + T_SIFS;
    }
    return usecs;
-}
-
-uint32_t
-elc_mrr_metric::ack_rate(uint32_t rate_Kbs) const
-{
-   static const uint32_t RATES[][2] = {
-      {  6000,  6000 },
-      {  9000,  6000 },
-      { 12000, 12000 },
-      { 18000, 12000 },
-      { 24000, 24000 },
-      { 36000, 24000 },
-      { 48000, 24000 },
-      { 54000, 24000 }
-   };
-   static const size_t NOF_RATES = sizeof(RATES) / sizeof(RATES[0]);
-   for(size_t i = 0; i < NOF_RATES; ++i) {
-      if(RATES[i][0] == rate_Kbs) {
-         return RATES[i][1];
-      }
-   }
-   ostringstream msg;
-   msg << rate_Kbs << " is not a recognized OFDM data rate!" << endl;
-   raise<invalid_argument>(__PRETTY_FUNCTION__, __FILE__, __LINE__, msg.str());
 }

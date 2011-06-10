@@ -11,9 +11,8 @@
 #include <metric_group.hpp>
 #include <metric.hpp>
 #include <net/wnic.hpp>
+#include <net/wnic_encoding_fix.hpp>
 #include <dot11/frame.hpp>
-#include <net/wnic_timestamp_fix.hpp>
-#include <net/wnic_wallclock_fix.hpp>
 
 #include <cstdlib>
 #include <iomanip>
@@ -34,7 +33,7 @@ main(int ac, char **av)
    uint16_t metric = 0;
    const char *what = NULL;
    uint16_t rts_cts_threshold = UINT16_MAX;
-   while((opt = getopt(ac, av, "i:r:m")) != -1) {
+   while((opt = getopt(ac, av, "i:r:")) != -1) {
       switch(opt) {
       case 'i':
          what = strdupa(optarg);
@@ -59,15 +58,21 @@ main(int ac, char **av)
 
    try {
       wnic_sptr w(wnic::open(what));
-      w = wnic_sptr(new wnic_wallclock_fix(w));
-      w = wnic_sptr(new wnic_timestamp_fix(w));
-      w->filter("wlan type data"); // ToDo: add BPF test for outbound-only frames
+      w = wnic_sptr(new wnic_encoding_fix(w, 0));
+
       buffer_sptr b(w->read());
       buffer_info_sptr info(b->info());
       uint64_t tick = info->timestamp_wallclock();
+
+      uint32_t n = 0; // ***
+
       for(b; b = w->read();){
          frame f(b);
          info = b->info();
+         /*
+         cout << "frame: " << ++n << ", ";
+         cout << *info << endl;
+         */
          eui_48 ra(f.address1());
          frame_control fc(f.fc());
          if(info->has(TX_FLAGS) && fc.type() == DATA_FRAME && !ra.is_special()) {

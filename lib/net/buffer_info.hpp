@@ -37,38 +37,41 @@ namespace net {
 
    /* Property labels.
     */
-   const property_t DATA_RETRIES          = 0x001;
-   const property_t FREQ_MHz              = 0x002;
-   const property_t RATE_Kbs              = 0x004;
-   const property_t RATES_Kbs             = 0x008;
-   const property_t RTS_RETRIES           = 0x010;
-   const property_t RX_FLAGS              = 0x020;
-   const property_t SIGNAL_dBm            = 0x040;
-   const property_t TIMESTAMP1            = 0x080;
-   const property_t TIMESTAMP2            = 0x100;
-   const property_t TIMESTAMP_WALLCLOCK   = 0x200;
-   const property_t TX_FLAGS              = 0x400;
+   const property_t CHANNEL_FLAGS         = 0x0001;
+   const property_t DATA_RETRIES          = 0x0002;
+   const property_t FREQ_MHz              = 0x0004;
+   const property_t RATE_Kbs              = 0x0008;
+   const property_t RATES_Kbs             = 0x0010;
+   const property_t RTS_RETRIES           = 0x0020;
+   const property_t RX_FLAGS              = 0x0040;
+   const property_t SIGNAL_dBm            = 0x0080;
+   const property_t TIMESTAMP1            = 0x0100;
+   const property_t TIMESTAMP2            = 0x0200;
+   const property_t TIMESTAMP_WALLCLOCK   = 0x0400;
+   const property_t TX_FLAGS              = 0x0800;
 
    /**
-    * Property label type.
+    * Property value type.
     */
    typedef uint32_t flags_t;
 
+   /* Channel encoding flags.
+    */
+   const flags_t CHANNEL_CODING_DSSS     = 0x0001;
+   const flags_t CHANNEL_CODING_DYNAMIC  = 0x0002;
+   const flags_t CHANNEL_CODING_FHSS     = 0x0004;
+   const flags_t CHANNEL_CODING_OFDM     = 0x0008;
+   const flags_t CHANNEL_PREAMBLE_LONG   = 0x0010;
+   const flags_t CHANNEL_PREAMBLE_SHORT  = 0x0020;
+   const flags_t CHANNEL_RATE_FULL       = 0x0040;
+   const flags_t CHANNEL_RATE_HALF       = 0x0080;
+   const flags_t CHANNEL_RATE_QUARTER    = 0x0100;
+   
    /* RX flags.
     */
    const flags_t RX_FLAGS_BAD_FCS        = 0x0001;
-   const flags_t RX_FLAGS_CODING_DSSS    = 0x0002;
-   const flags_t RX_FLAGS_CODING_DYNAMIC = 0x0004;
-   const flags_t RX_FLAGS_CODING_FHSS    = 0x0008;
-   const flags_t RX_FLAGS_CODING_OFDM    = 0x0010;
-   const flags_t RX_FLAGS_PREAMBLE_LONG  = 0x0020;
-   const flags_t RX_FLAGS_PREAMBLE_SHORT = 0x0040;
-   const flags_t RX_FLAGS_RATE_FULL      = 0x0080;
-   const flags_t RX_FLAGS_RATE_HALF      = 0x0100;
-   const flags_t RX_FLAGS_RATE_QUARTER   = 0x0200;
 
-   /**
-    * TX flags.
+   /* TX flags.
     */
    const flags_t TX_FLAGS_FAIL           = 0x0001;
 
@@ -109,6 +112,30 @@ namespace net {
       bool has(property_t props) const;
 
       /**
+       * Returns the channel encoding used by this frame. This is a
+       * convenience function that uses the rx_flags to construct the
+       * correct kind of encoding. The rx_flags must be present or a
+       * logic_error exception will be raised.
+       *
+       * \returns A (possibly null) encoding_sptr.
+       */
+      encoding_sptr channel_encoding() const;
+
+      /**
+       * Return the channel encoding flags.
+       *|
+       * \return A flags_t containing the channel encoding flags.
+       */
+      flags_t channel_flags() const;
+
+      /**
+       * Sets the channel encoding flags.
+       *|
+       * \param f A flags_t containing the new channel encoding flags.
+       */
+      void channel_flags(flags_t f);
+
+      /**
        * Returns the number of times the data frame is re-transmitted.
        *
        * \return A uint8_t specifying the re-transmission count.
@@ -122,16 +149,6 @@ namespace net {
        * \param r A uint8_t specifying the re-transmission count.
        */
       void data_retries(uint8_t r);
-
-      /**
-       * Returns the frame encoding used by this frame. This is a
-       * convenience function that uses the rx_flags to construct the
-       * correct kind of encoding. The rx_flags must be present or a
-       * logic_error exception will be raised.
-       *
-       * \returns A (possibly null) encoding_sptr.
-       */
-      encoding_sptr frame_encoding() const;
 
       /**
        * Returns the frequency in MHz at which this frame is transmitted.
@@ -306,6 +323,11 @@ namespace net {
        * Which properties are actually present?
        */
       property_t present_;
+
+      /**
+       * The channel coding flags.
+       */
+      flags_t channel_flags_;
 
       /**
        * The number of times the data frame is retried.

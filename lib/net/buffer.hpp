@@ -72,7 +72,7 @@ namespace net {
        * the const accessor which does not allow callers to modify the
        * returned buffer_info.
        *
-       * \return A (possibly null) const_buffer_info_sptr.
+       * \return A const_buffer_info_sptr.
        */
       virtual const_buffer_info_sptr info() const = 0;
 
