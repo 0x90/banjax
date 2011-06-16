@@ -7,11 +7,13 @@
 #define __STDC_LIMIT_MACROS
 #include <elc_metric.hpp>
 #include <elc_mrr_metric.hpp>
+#include <ett_metric.hpp>
 #include <metric_demux.hpp>
 #include <metric_group.hpp>
 #include <metric.hpp>
 #include <net/wnic.hpp>
 #include <net/wnic_encoding_fix.hpp>
+#include <net/wnic_wallclock_fix.hpp>
 #include <dot11/frame.hpp>
 
 #include <cstdlib>
@@ -54,25 +56,23 @@ main(int ac, char **av)
    metric_group_sptr proto(new metric_group);
    proto->add(metric_sptr(new elc_metric(rts_cts_threshold)));
    proto->add(metric_sptr(new elc_mrr_metric(rts_cts_threshold)));
+   proto->add(metric_sptr(new ett_metric));
    metric_sptr m(metric_sptr(new metric_demux(proto)));
 
    try {
       wnic_sptr w(wnic::open(what));
+      w = wnic_sptr(new wnic_wallclock_fix(w));
       w = wnic_sptr(new wnic_encoding_fix(w, 0));
-
+#if 0
+      w->filter("wlan type data"); // ToDo: add BPF test for outbound-only frames
+#endif
       buffer_sptr b(w->read());
       buffer_info_sptr info(b->info());
       uint64_t tick = info->timestamp_wallclock();
-
-      uint32_t n = 0; // ***
-
       for(b; b = w->read();){
+         // update metrics with frame
          frame f(b);
          info = b->info();
-         /*
-         cout << "frame: " << ++n << ", ";
-         cout << *info << endl;
-         */
          eui_48 ra(f.address1());
          frame_control fc(f.fc());
          if(info->has(TX_FLAGS) && fc.type() == DATA_FRAME && !ra.is_special()) {
@@ -95,5 +95,4 @@ main(int ac, char **av)
       cerr << "unhandled exception!" << endl;
    }
    exit(EXIT_FAILURE);
-
 }

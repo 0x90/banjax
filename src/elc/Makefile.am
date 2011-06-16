@@ -6,6 +6,7 @@ bin_PROGRAMS = elc
 elc_SOURCES = \
 	elc_metric.cpp \
 	elc_mrr_metric.cpp \
+	ett_metric.cpp \
 	metric_demux.cpp \
 	metric_group.cpp \
 	metric.cpp \

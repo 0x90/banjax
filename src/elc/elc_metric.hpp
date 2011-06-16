@@ -24,11 +24,8 @@ namespace metrics {
    public:
 
       /**
-       * elc_metric constructor. Creates a new uni-directional elc_metric between
-       * "from" and "to".
+       * elc_metric constructor.
        *
-       * \param to The address of the receiving side of this elc_metric.
-       * \param from The address of the sending side of this elc_metric.
        * \param rts_cts_threshold Use RTS/CTS when rts_cts_threshold <= frame size
        */
       explicit elc_metric(uint16_t rts_cts_threshold);
