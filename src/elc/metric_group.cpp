@@ -38,7 +38,7 @@ metric_group::~metric_group()
 }
 
 void
-metric_group::add(metric_sptr m)
+metric_group::push_back(metric_sptr m)
 {
    metrics_.push_back(m);
 }

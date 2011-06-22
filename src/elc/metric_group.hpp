@@ -53,7 +53,7 @@ namespace metrics {
        *
        * \param m A metric_sptr pointing to the link_metric.
        */
-      virtual void add(metric_sptr m);
+      virtual void push_back(metric_sptr m);
 
       /**
        * Add a frame to the metric_group and update the metric_group statistics.

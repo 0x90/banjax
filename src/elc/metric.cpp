@@ -46,7 +46,3 @@ metric::operator=(const metric& other)
 {
    return *this;
 }
-
-
-
-
