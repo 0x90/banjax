@@ -1,0 +1,11 @@
+# Copyright 2011 NICTA
+# 
+
+bin_PROGRAMS = probe
+
+probe_SOURCES = \
+	main.cpp
+
+probe_CPPFLAGS = -I@top_srcdir@/lib
+
+probe_LDADD = @top_srcdir@/lib/libbanjax.la -lpcap -lboost_program_options -lrt
