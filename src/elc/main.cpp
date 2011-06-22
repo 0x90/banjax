@@ -24,6 +24,7 @@
 #include <string.h>
 #include <unistd.h>
 
+using namespace boost;
 using namespace boost::program_options;
 using namespace dot11;
 using namespace net;
@@ -35,49 +36,24 @@ main(int ac, char **av)
 {
    try {
 
-#if 0
-   const char *what = NULL;
-   uint16_t rts_cts_threshold = UINT16_MAX;
+      string what;
+      uint16_t rts_cts_threshold = UINT16_MAX;
 
-   options_description options("program options");
-   desc.add_options()
-      ("help,h", "produce this help message")
-      ("input,i", value<string>()->default_value("mon0"), "input file/device name")
-      ("rts-threshold,r", value<uint16_t>()->default_value(UINT16_MAX), "RTS threshold level")
-      ;
+      options_description options("program options");
+      options.add_options()
+         ("help,h", "produce this help message")
+         ("input,i", value<string>(&what)->default_value("mon0"), "input file/device name")
+         ("rts-threshold,r", value<uint16_t>(&rts_cts_threshold)->default_value(UINT16_MAX), "RTS threshold level")
+         ;
 
-   variables_map vars;       
-   store(parse_command_line(ac, av, options), vars);
-   notify(vars);   
+      variables_map vars;       
+      store(parse_command_line(ac, av, options), vars);
+      notify(vars);   
 
-   if(vars.count("help")) {
-      cout << options << "\n";
-      return EXIT_SUCCESS;
-   }
-#else
-   opterr = 0;
-   int opt, errs = 0;
-   uint16_t metric = 0;
-   const char *what = NULL;
-   uint16_t rts_cts_threshold = UINT16_MAX;
-   while((opt = getopt(ac, av, "i:r:")) != -1) {
-      switch(opt) {
-      case 'i':
-         what = strdupa(optarg);
-         break;
-      case 'r':
-         rts_cts_threshold = atoi(optarg);
-         break;
-      default:
-         ++errs;
-         break;
+      if(vars.count("help")) {
+         cout << options << "\n";
+         exit(EXIT_SUCCESS);
       }
-   }
-   if(errs || NULL == what) {
-      cerr << "usage: elc [-r rts_cts_threshold] -i input" << endl;
-      exit(EXIT_FAILURE);
-   }
-#endif
 
    	metric_group_sptr proto(new metric_group);
       proto->push_back(metric_sptr(new elc_metric(rts_cts_threshold)));
@@ -118,7 +94,7 @@ main(int ac, char **av)
    } catch(const error& x) {
       // ToDo: generate a usage message?
       cerr << x.what() << endl;
-   } catch(const exception& x) {
+   } catch(const std::exception& x) {
       cerr << x.what() << endl;
    } catch(...) {
       cerr << "unhandled exception!" << endl;

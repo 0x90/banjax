@@ -14,5 +14,5 @@ elc_SOURCES = \
 
 elc_CPPFLAGS = -I@top_srcdir@/lib
 
-elc_LDADD = @top_srcdir@/lib/libbanjax.la -lpcap
+elc_LDADD = @top_srcdir@/lib/libbanjax.la -lpcap -lboost_program_options
 
