@@ -13,11 +13,10 @@
 #include <iostream>
 #include <iomanip>
 
+using namespace dot11;
+using namespace net;
 using namespace std;
 using metrics::metric_demux;
-using dot11::frame;
-using net::buffer_sptr;
-using net::eui_48;
 
 metric_demux::metric_demux(metric_sptr proto) :
    proto_(proto)
@@ -47,20 +46,24 @@ metric_demux::~metric_demux()
 void
 metric_demux::add(buffer_sptr b)
 {
-   // ToDo: add a test for special/broadcast addresses!?
-
-   metric_sptr m;
    frame f(b);
    eui_48 ra(f.address1());
-   linkmap::iterator i(links_.find(ra));
-   if(links_.end() != i) {
-      m = i->second;
-   } else {
-      eui_48 ta(f.address2());
-      m = metric_sptr(proto_->clone());
-      links_[ra] = m;
+   frame_control fc(f.fc());
+   buffer_info_sptr info(b->info());
+   if(info->has(TX_FLAGS) && fc.type() == DATA_FRAME && !ra.is_special()) {
+      metric_sptr m;
+      frame f(b);
+      eui_48 ra(f.address1());
+      linkmap::iterator i(links_.find(ra));
+      if(links_.end() != i) {
+         m = i->second;
+      } else {
+         eui_48 ta(f.address2());
+         m = metric_sptr(proto_->clone());
+         links_[ra] = m;
+      }
+      m->add(b);
    }
-   m->add(b);
 }
 
 metric_demux*

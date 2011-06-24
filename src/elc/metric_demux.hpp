@@ -18,7 +18,8 @@
 namespace metrics {
 
    /**
-    * metric_demux gathers metrics on a per-link basis.
+    * metric_demux gathers provide metrics on a per-link basis for
+    * outgoing frames.
     */
    class metric_demux : public metric {
    public:
@@ -97,7 +98,6 @@ namespace metrics {
        * Metrics on a per-link basis.
        */
       linkmap links_;
-
 
    };
 

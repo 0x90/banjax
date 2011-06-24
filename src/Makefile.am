@@ -3,4 +3,5 @@
 
 SUBDIRS = \
 	elc \
+	probe \
 	tscal

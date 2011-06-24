@@ -1,4 +1,5 @@
 #define _POSIX_C_SOURCE 199309
+#define __STDC_LIMIT_MACROS ENABLED
 
 #include <arpa/inet.h>
 #include <boost/program_options.hpp>
@@ -8,47 +9,62 @@
 #include <iostream>
 #include <netinet/in.h>
 #include <sys/socket.h>
-// #include <sys/time.h>
 #include <sys/types.h>
 #include <time.h>
+#include <util/exceptions.hpp>
+#include <util/syscall_error.hpp>
 
 using namespace boost::program_options;
 using namespace std;
+using util::raise;
+using util::syscall_error;
 
 
 /**
- * Report a fatal error and exit.
+ * Add two timespecs and return the result.
  *
- * \param msg A pointer to a string giving an error message.
+ * \param lhs A timespec.
+ * \param rhs A timespec.
+ * \return The result of adding lhs + rhs.
  */
-void
-fatal_error(const char *msg)
+timespec
+operator+(const timespec& lhs, const timespec& rhs)
 {
-   cerr << msg << endl;
-   exit(EXIT_FAILURE);
+   timespec r;
+   const int64_t NS_PER_S = INT64_C(1000000000);
+   int64_t t = static_cast<int64_t>(lhs.tv_nsec) + static_cast<int64_t>(rhs.tv_nsec); 
+   r.tv_sec = lhs.tv_sec + rhs.tv_sec + (t / NS_PER_S);
+   r.tv_nsec = t % NS_PER_S;
+   return r;
 }
 
 
 /**
- * Report a fatal syscall error and exit.
+ * Multiply a timespec by the rhs value and return the result.
  *
- * \param msg A pointer to a string giving an error message.
+ * \param lhs A timespec.
+ * \param rhs A double that specifies the multiplication factor.
+ * \return The result of multiplying lhs * rhs.
  */
-void
-fatal_syscall_error(const char *msg)
+timespec
+operator*(const timespec& lhs, double rhs)
 {
-   cerr << msg << ": " << strerror(errno) << endl;
-   exit(EXIT_FAILURE);
+   timespec r;
+   const int64_t NS_PER_S = INT64_C(1000000000);
+   int64_t t = lhs.tv_nsec * rhs;
+   r.tv_sec = (lhs.tv_sec * rhs) + (t / NS_PER_S);
+   r.tv_nsec = t % NS_PER_S;
+   return r;
 }
 
 
 /**
- * Send ETX probes. This function sends packet_sz packets at intervals
- * of delay_ms. If a specific interface address is given in bind_str
- * then we bind to that and restrict probes to just that interface;
- * otherwise probes are sent on all available interfaces.
+ * Send ETX probes. This function sends packet_sz probe packets at
+ * intervals of delay_ms. If a specific interface address is given in
+ * bind_str then we bind to that and restrict probes to just that
+ * interface; otherwise probes are sent on all available interfaces.
  *
- * \param bind_str The address of the interface to bind to.
+ * \param bind_str The dotted decimal address of the interface to bind to.
  * \param port_no The port number to bind.
  * \param packet_sz The size of the packet to send.
  * \param delay_ms The delay between subsequent frames.
@@ -57,30 +73,45 @@ void
 send_probes(const string& bind_str, uint16_t port_no, uint16_t packet_sz, uint16_t delay_ms)
 {
    int s = socket(AF_INET, SOCK_DGRAM, 0);
-   if(-1 == s)
-      fatal_syscall_error("socket(AF_INET, SOCK_DGRAM, 0)");
+   if(-1 == s) {
+      ostringstream msg;
+      msg << "socket(AF_INET, SOCK_DGRAM, 0): ";
+      msg << strerror(errno) << endl;
+      raise<syscall_error>(__PRETTY_FUNCTION__, __FILE__, __LINE__, msg.str());
+   }
 
    const int ON = 1;
    if(-1 == setsockopt(s, SOL_SOCKET, SO_BROADCAST, &ON, sizeof(ON))) {
-      fatal_syscall_error("setsockopt(s, SOL_SOCKET, SO_BROADCAST, NULL, 0)");
+      ostringstream msg;
+      msg << "setsockopt(s, SOL_SOCKET, SO_BROADCAST, NULL, 0): ";
+      msg << strerror(errno) << endl;
+      raise<syscall_error>(__PRETTY_FUNCTION__, __FILE__, __LINE__, msg.str());
    }
 
-   int options;
+   int options = 0;
    struct sockaddr_in src;
    memset(&src, sizeof(src), 0);
    src.sin_family = AF_INET;
    src.sin_port   = htons(port_no);
    if("" == bind_str) {
       src.sin_addr.s_addr = INADDR_ANY;
-      options = 0;
    } else {
-      if(! inet_aton(bind_str.c_str(), &src.sin_addr))
-         fatal_error("inet_aton(bind_str.c_str(), &src.sin_addr)");
       options = MSG_DONTROUTE;
+      int err = inet_aton(bind_str.c_str(), &src.sin_addr); 
+      if(0 != err) {
+         ostringstream msg;
+         msg << "inet_aton(bind_str.c_str(), &src.sin_addr): ";
+         msg << "failed (err=" << err << ")" << endl;
+         raise<syscall_error>(__PRETTY_FUNCTION__, __FILE__, __LINE__, msg.str());
+      }
    }
 
-   if(-1 == bind(s, reinterpret_cast<const sockaddr*>(&src), sizeof(src)))
-      fatal_syscall_error("bind(s, &dst, sizeof(dst))");
+   if(-1 == bind(s, reinterpret_cast<const sockaddr*>(&src), sizeof(src))) {
+      ostringstream msg;
+      msg << "bind(s, &dst, sizeof(dst)): ";
+      msg << strerror(errno) << endl;
+      raise<syscall_error>(__PRETTY_FUNCTION__, __FILE__, __LINE__, msg.str());
+   }
 
    struct sockaddr_in dst;
    memset(&dst, sizeof(dst), 0);
@@ -94,24 +125,33 @@ send_probes(const string& bind_str, uint16_t port_no, uint16_t packet_sz, uint16
       buf[i] = 'A' + (i % 26);
    }
 
-   timespec delay, junk;
-   delay.tv_sec = delay_ms / 1000;
-   delay.tv_nsec = (delay_ms % 1000) * 1000000;
+   timespec start;
+   if(-1 == clock_gettime(CLOCK_REALTIME_COARSE, &start)) {
+      ostringstream msg;
+      msg << "clock_gettime(CLOCK_REALTIME_COARSE, &start): ";
+      msg << strerror(errno) << endl;
+      raise<syscall_error>(__PRETTY_FUNCTION__, __FILE__, __LINE__, msg.str());
+   }
 
-   while(true) {
+   timespec tick, delta, jitter, junk;
+   delta.tv_sec = delay_ms / 1000;
+   delta.tv_nsec = (delay_ms % 1000) * 1000000;
 
-      // ToDo: decide if we want to apply jitter to sleep
-      // ToDo: decide if we need to account for clock creep?
-
-      // timespec tp;
-      // if(-1 == clock_gettime(CLOCK_REALTIME_COARSE, &tp))
-      //    fatal_error("clock_gettime(CLOCK_REALTIME_COARSE, &tp)");
-
-      if(-1 == sendto(s, buf, buf_sz, options, reinterpret_cast<const sockaddr*>(&dst), sizeof(dst)))
-         fatal_syscall_error("sendto(s, buf, buf_sz, MSG_DONTROUTE, &dst, sizeof(dst))");
-
-      if(0 != nanosleep(&delay, &junk))
-         fatal_syscall_error("nanosleep(&delay, &junk)");
+   for(uint32_t i = 0; i < UINT32_MAX; ++i) {
+      if(-1 == sendto(s, buf, buf_sz, options, reinterpret_cast<const sockaddr*>(&dst), sizeof(dst))) {
+         ostringstream msg;
+         msg << "sendto(s, buf, buf_sz, MSG_DONTROUTE, &dst, sizeof(dst)): ";
+         msg << strerror(errno) << endl;
+         raise<syscall_error>(__PRETTY_FUNCTION__, __FILE__, __LINE__, msg.str());
+      }
+      tick = start + (delta * i) /* + jitter */;
+      int err = clock_nanosleep(CLOCK_REALTIME_COARSE, TIMER_ABSTIME, &tick, &junk);
+      if(0 != err) {
+         ostringstream msg;
+         msg << "clock_nanosleep(CLOCK_REALTIME_COARSE, TIMER_ABSTIME, &delay, &junk): ";
+         msg << strerror(err) << endl;
+         raise<syscall_error>(__PRETTY_FUNCTION__, __FILE__, __LINE__, msg.str());
+      }
    }
    close(s);
 }

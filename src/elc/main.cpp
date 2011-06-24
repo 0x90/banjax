@@ -15,7 +15,6 @@
 #include <net/wnic.hpp>
 #include <net/wnic_encoding_fix.hpp>
 #include <net/wnic_wallclock_fix.hpp>
-#include <dot11/frame.hpp>
 
 #include <boost/program_options.hpp>
 #include <cstdlib>
@@ -26,7 +25,6 @@
 
 using namespace boost;
 using namespace boost::program_options;
-using namespace dot11;
 using namespace net;
 using namespace metrics;
 using namespace std;
@@ -41,7 +39,7 @@ main(int ac, char **av)
 
       options_description options("program options");
       options.add_options()
-         ("help,h", "produce this help message")
+         ("help,?", "produce this help message")
          ("input,i", value<string>(&what)->default_value("mon0"), "input file/device name")
          ("rts-threshold,r", value<uint16_t>(&rts_cts_threshold)->default_value(UINT16_MAX), "RTS threshold level")
          ;
@@ -51,7 +49,7 @@ main(int ac, char **av)
       notify(vars);   
 
       if(vars.count("help")) {
-         cout << options << "\n";
+         cout << options << endl;
          exit(EXIT_SUCCESS);
       }
 
@@ -73,14 +71,9 @@ main(int ac, char **av)
       uint64_t tick = info->timestamp_wallclock();
       for(b; b = w->read();){
          // update metrics with frame
-         frame f(b);
-         info = b->info();
-         eui_48 ra(f.address1());
-         frame_control fc(f.fc());
-         if(info->has(TX_FLAGS) && fc.type() == DATA_FRAME && !ra.is_special()) {
-            m->add(b);
-         }
+         m->add(b);
          // is it time to print results yet?
+         info = b->info();
          uint64_t timestamp = info->timestamp_wallclock();
          uint64_t delta = timestamp - tick;
          if(1000000 <= delta) {
@@ -92,7 +85,6 @@ main(int ac, char **av)
          }
       }
    } catch(const error& x) {
-      // ToDo: generate a usage message?
       cerr << x.what() << endl;
    } catch(const std::exception& x) {
       cerr << x.what() << endl;

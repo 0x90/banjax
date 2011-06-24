@@ -1,7 +1,13 @@
 * ELC
 ** Metric implementation
-*** TODO Implement RTS retries
+*** TODO Implement RTS retries in MRR metric
 *** TODO Implement nl80211 comparison
-*** TODO Complete group_metric
+*** DONE Complete group_metric
+*** DONE Use boost for cmd line parsing
+*** TODO ETX
+**** TODO ETX Probe
+Launch probe every second. Introduce pseudo-random jitter. Measure losses due to collision.
+*** TODO ETT
 ** Banjax update
+*** TODO Add support for packet injection
 *** TODO Sync banjax and ELC banjax lib
