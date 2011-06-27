@@ -47,21 +47,12 @@ void
 metric_demux::add(buffer_sptr b)
 {
    frame f(b);
-   eui_48 ra(f.address1());
-   frame_control fc(f.fc());
    buffer_info_sptr info(b->info());
-   if(info->has(TX_FLAGS) && fc.type() == DATA_FRAME && !ra.is_special()) {
-      metric_sptr m;
-      frame f(b);
-      eui_48 ra(f.address1());
-      linkmap::iterator i(links_.find(ra));
-      if(links_.end() != i) {
-         m = i->second;
-      } else {
-         eui_48 ta(f.address2());
-         m = metric_sptr(proto_->clone());
-         links_[ra] = m;
-      }
+   if(info->has(TX_FLAGS)) {
+      metric_sptr m(find(f.address1()));
+      m->add(b);
+   } else if(info->has(RX_FLAGS) && f.has_address2()) {
+      metric_sptr m(find(f.address2()));
       m->add(b);
    }
 }
@@ -86,4 +77,18 @@ metric_demux::write(ostream& os) const
    for(linkmap::const_iterator i(links_.begin()); i != links_.end(); ++i) {
       cout << i->first << ", " << *(i->second) << endl;
    }
+}
+
+metric_sptr
+metric_demux::find(const eui_48& addr)
+{
+   metric_sptr m;
+   linkmap::iterator i(links_.find(addr));
+   if(links_.end() != i) {
+      m = i->second;
+   } else {
+      m = metric_sptr(proto_->clone());
+      links_[addr] = m;
+   }
+   return m;
 }

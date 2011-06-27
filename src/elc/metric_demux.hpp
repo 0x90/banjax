@@ -18,8 +18,7 @@
 namespace metrics {
 
    /**
-    * metric_demux gathers provide metrics on a per-link basis for
-    * outgoing frames.
+    * metric_demux gathers metrics on a per-link basis.
     */
    class metric_demux : public metric {
    public:
@@ -81,6 +80,18 @@ namespace metrics {
        * \param os A reference to the stream to write to.
        */
       virtual void write(std::ostream& os) const;
+
+   private:
+
+      /**
+       * Return the link metric for the given address. If no metric is
+       * present then a new instance is cloned from the prototype that
+       * is passed to the metric_demux constructor.
+       *
+       * \param addr The address of the other end of this link.
+       * \return A non-null pointer to a metric instance.
+       */
+      metric_sptr find(const net::eui_48& addr);
 
    private:
 

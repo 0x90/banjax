@@ -7,7 +7,7 @@
 
 #define __STDC_CONSTANT_MACROS
 #include <elc_mrr_metric.hpp>
-#include <net/txtime.hpp>
+#include <dot11/frame.hpp>
 #include <util/exceptions.hpp>
 
 #include <algorithm>
@@ -61,22 +61,27 @@ elc_mrr_metric::~elc_mrr_metric()
 void
 elc_mrr_metric::add(buffer_sptr b)
 {
-   // update totals for packet size and count
-   const uint32_t LLC_HDR_SZ = 8;
-   const uint32_t IEEE80211_HDR_SZ = 24;
-   const uint32_t IP_HDR_SZ = 20;
-   const uint32_t UDP_HDR_SZ = 8;
-   packet_octets_ += b->data_size() - IEEE80211_HDR_SZ - LLC_HDR_SZ - IP_HDR_SZ - UDP_HDR_SZ;
-   ++packet_count_;
-
-   // compute the time taken to send this packet - whether good or bad
+   frame f(b);
+   frame_control fc(f.fc());
    buffer_info_sptr info(b->info());
-   uint32_t tx_flags = info->tx_flags();
-   if(tx_flags & TX_FLAGS_FAIL) {
-      t_pkt_fail_ += packet_fail_time(b);
-   } else {
-      ++n_pkt_succ_;
-      t_pkt_succ_ += packet_succ_time(b);
+   if(info->has(TX_FLAGS) && fc.type() == DATA_FRAME) {
+      // update totals for packet size and count
+      const uint32_t LLC_HDR_SZ = 8;
+      const uint32_t IEEE80211_HDR_SZ = 24;
+      const uint32_t IP_HDR_SZ = 20;
+      const uint32_t UDP_HDR_SZ = 8;
+      packet_octets_ += b->data_size() - IEEE80211_HDR_SZ - LLC_HDR_SZ - IP_HDR_SZ - UDP_HDR_SZ;
+      ++packet_count_;
+
+      // compute the time taken to send this packet - whether good or bad
+      buffer_info_sptr info(b->info());
+      uint32_t tx_flags = info->tx_flags();
+      if(tx_flags & TX_FLAGS_FAIL) {
+         t_pkt_fail_ += packet_fail_time(b);
+      } else {
+         ++n_pkt_succ_;
+         t_pkt_succ_ += packet_succ_time(b);
+      }
    }
 }
 
