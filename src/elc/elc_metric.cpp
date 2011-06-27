@@ -15,6 +15,7 @@
 #include <iomanip>
 #include <math.h>
 
+using namespace dot11;
 using namespace net;
 using namespace std;
 using metrics::elc_metric;

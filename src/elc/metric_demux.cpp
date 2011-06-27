@@ -17,6 +17,7 @@ using namespace dot11;
 using namespace net;
 using namespace std;
 using metrics::metric_demux;
+using metrics::metric_sptr;
 
 metric_demux::metric_demux(metric_sptr proto) :
    proto_(proto)

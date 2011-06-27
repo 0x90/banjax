@@ -91,7 +91,7 @@ namespace metrics {
        * \param addr The address of the other end of this link.
        * \return A non-null pointer to a metric instance.
        */
-      metric_sptr find(const net::eui_48& addr);
+      metrics::metric_sptr find(const net::eui_48& addr);
 
    private:
 
