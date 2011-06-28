@@ -8,6 +8,7 @@
 #include <elc_metric.hpp>
 #include <elc_mrr_metric.hpp>
 #include <ett_metric.hpp>
+#include <etx_metric.hpp>
 #include <metric_demux.hpp>
 #include <metric_group.hpp>
 #include <metric.hpp>
@@ -56,7 +57,9 @@ main(int ac, char **av)
    	metric_group_sptr proto(new metric_group);
       proto->push_back(metric_sptr(new elc_metric(rts_cts_threshold)));
       proto->push_back(metric_sptr(new elc_mrr_metric(rts_cts_threshold)));
-      proto->push_back(metric_sptr(new ett_metric));
+//    ToDo: additional metrics
+//      proto->push_back(metric_sptr(new etx_metric));
+//      proto->push_back(metric_sptr(new ett_metric));
       metric_sptr m(metric_sptr(new metric_demux(proto)));
 
       wnic_sptr w(wnic::open(what));
@@ -68,21 +71,20 @@ main(int ac, char **av)
 #endif
       buffer_sptr b(w->read());
       buffer_info_sptr info(b->info());
-      uint64_t tick = info->timestamp_wallclock();
+      const uint64_t uS_PER_TICK = UINT64_C(1000000);
+      uint64_t tick = info->timestamp_wallclock() + uS_PER_TICK;
       for(b; b = w->read();){
-         // update metrics with frame
-         m->add(b);
          // is it time to print results yet?
          info = b->info();
          uint64_t timestamp = info->timestamp_wallclock();
-         uint64_t delta = timestamp - tick;
-         if(1000000 <= delta) {
-            cout << "TIME: " << fixed << setprecision(0) << timestamp /1000000.0 << ", ";
-            cout << "DELTA: " << setprecision(3) << delta / 1000000.0 << endl;
+         if(tick <= timestamp) {
+            cout << "TIME: " << tick / uS_PER_TICK << endl;
             cout << *m << endl;
             m->reset();
-            tick = timestamp;
+            tick += (((timestamp - tick) / uS_PER_TICK) + 1) * uS_PER_TICK;
          }
+         // update metrics with frame
+         m->add(b);
       }
    } catch(const error& x) {
       cerr << x.what() << endl;

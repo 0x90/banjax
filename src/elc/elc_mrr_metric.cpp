@@ -112,7 +112,11 @@ elc_mrr_metric::reset()
 void
 elc_mrr_metric::write(ostream& os) const
 {
-   os << "ELC-MRR: " << metric();
+   os << "ELC-MRR: ";
+   if(0 < packet_count_)
+      os << metric();
+   else
+      os << "N/A";
 }
 
 double

@@ -111,7 +111,11 @@ elc_metric::reset()
 void
 elc_metric::write(ostream& os) const
 {
-   os << "ELC: " << metric();
+   os << "ELC: ";
+   if(0 < packet_count_)
+      os << metric();
+   else
+      os << "N/A";
 }
 
 double
