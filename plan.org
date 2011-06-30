@@ -1,13 +1,42 @@
-* ELC
+* ELC Paper
+
 ** Metric implementation
-*** TODO Implement RTS retries in MRR metric
-*** TODO Implement nl80211 comparison
-*** DONE Complete group_metric
-*** DONE Use boost for cmd line parsing
+*** DONE ELC
+**** DONE Verify contention model
+**** TODO Implement RTS retries in MRR metric
+**** TODO IP layer throughput measurement (for comparison of saturated link)
+*** DONE ELC_MRR
+**** TODO Implement RTS retries in MRR metric
+*** TODO elc_nl80211
+*** TODO "Old" ELC
 *** TODO ETX
-**** TODO ETX Probe
-Launch probe every second. Introduce pseudo-random jitter. Measure losses due to collision.
+**** DONE Probe
+***** DONE Switch to use of absolute clock
+***** TODO Introduce pseudo-random jitter
+***** TODO Use probes to compute forward delivery ratio
+***** TODO Measure losses due to collisions
 *** TODO ETT
+*** DONE metric_group
+*** DONE metric_demux
+
+*** DONE Change metric gathering main to use absolute clock
+*** DONE Use boost for cmd line parsing
+
 ** Banjax update
-*** TODO Add support for packet injection
-*** TODO Sync banjax and ELC banjax lib
+*** TODO Fix for packet injection
+*** TODO Merge changes into  banjax
+
+** Draft paper
+*** Skeleton
+Old ELC
+Comparison with new ELC
+Discussion of mechamnism cost: NL80211 vs monitor-mode interfaces
+*** Experimental Design
+**** ELC 
+Two nodes, variable attentuator, separate monitor.
+Conduct iperf for 5 minutes varying: link quality, saturation level
+**** RELC
+Two nodes, variable attentuator, "hidden" terminal, separate monitor.
+Conduct iperf between all three stations for 5 minutes varying: link
+quality, saturation level on measured link, saturation level on
+"hidden" terminal link.

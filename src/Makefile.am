@@ -2,6 +2,7 @@
 #
 
 SUBDIRS = \
+	contention \
 	elc \
 	probe \
 	tscal
