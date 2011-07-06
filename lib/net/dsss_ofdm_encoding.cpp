@@ -40,6 +40,13 @@ dsss_ofdm_encoding::~dsss_ofdm_encoding()
 }
 
 uint16_t
+dsss_ofdm_encoding::ACKTimeout() const
+{
+   const uint16_t DSSS_OFDM_PHY_RXSTART_DELAY = 192; // NB: 96us is possible when short_preambles are in use!
+   return SIFS() + slot_time() + DSSS_OFDM_PHY_RXSTART_DELAY;
+}
+
+uint16_t
 dsss_ofdm_encoding::CWMIN() const
 {
    return 31;
@@ -60,7 +67,7 @@ dsss_ofdm_encoding::SIFS() const
 uint16_t
 dsss_ofdm_encoding::slot_time() const
 {
-   return 20;
+   return 9;
 }
 
 uint16_t

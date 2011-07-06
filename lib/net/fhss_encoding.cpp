@@ -38,6 +38,13 @@ fhss_encoding::~fhss_encoding()
 }
 
 uint16_t
+fhss_encoding::ACKTimeout() const
+{
+   const uint16_t FHSS_PHY_RX_START_DELAY = 128;
+   return SIFS() + slot_time() + FHSS_PHY_RX_START_DELAY;
+}
+
+uint16_t
 fhss_encoding::CWMIN() const
 {
    return 15;

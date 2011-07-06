@@ -48,6 +48,15 @@ namespace net {
       virtual ~encoding();
 
       /**
+       * Return the value of the ACKTimeout for this encoding. The
+       * ACKTimeout is defined (IEEE 802.11 (2007) section 9.2.8) to
+       * be a SIFS + SlotTime + aPHY-RX-START-Delay.
+       *
+       * \return A uint16_t specifying the CWMAX value.
+       */
+      virtual uint16_t ACKTimeout() const = 0;
+
+      /**
        * Return the value of CWMIN for this encoding.
        *
        * \return A uint16_t specifying the CWMIN value.

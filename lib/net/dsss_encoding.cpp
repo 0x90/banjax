@@ -37,6 +37,13 @@ dsss_encoding::~dsss_encoding()
 }
 
 uint16_t
+dsss_encoding::ACKTimeout() const
+{
+   const uint16_t DSSS_PHY_RX_START_DELAY = 192;
+   return SIFS() + slot_time() + DSSS_PHY_RX_START_DELAY;
+}
+
+uint16_t
 dsss_encoding::CWMIN() const
 {
    return 31;

@@ -40,6 +40,13 @@ ofdm_encoding::~ofdm_encoding()
 }
 
 uint16_t
+ofdm_encoding::ACKTimeout() const
+{
+   const uint16_t OFDM_PHY_RX_START_DELAY = 25;
+   return SIFS() + slot_time() + OFDM_PHY_RX_START_DELAY;
+}
+
+uint16_t
 ofdm_encoding::CWMIN() const
 {
    return 15;
@@ -68,7 +75,7 @@ ofdm_encoding::txtime(uint16_t frame_sz, uint32_t rate_Kbs, bool ignored) const
 {
    CHECK(is_legal_rate(rate_Kbs));
 
-   const float NDBPS = (rate_Kbs * 4) / 1000; // cf IEEE 802.11-2007 table 17.3.
+   const float NDBPS = (rate_Kbs * 4) / 1000; // cf IEEE 802.11-2007 table 17.3
    const uint16_t PREAMBLE = 16;
    const uint16_t SIGNAL = 4;
    const uint16_t SYM = 4;
