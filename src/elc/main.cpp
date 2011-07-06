@@ -7,7 +7,7 @@
 #define __STDC_LIMIT_MACROS
 #include <elc_metric.hpp>
 #include <elc_mrr_metric.hpp>
-#include <ett_metric.hpp>
+// #include <ett_metric.hpp>
 #include <etx_metric.hpp>
 #include <metric_demux.hpp>
 #include <metric_group.hpp>
@@ -16,6 +16,7 @@
 #include <net/wnic.hpp>
 #include <net/wnic_encoding_fix.hpp>
 #include <net/wnic_wallclock_fix.hpp>
+#include <utilization_metric.hpp>
 
 #include <boost/program_options.hpp>
 #include <cstdlib>
@@ -55,18 +56,18 @@ main(int ac, char **av)
       }
 
    	metric_group_sptr proto(new metric_group);
+      proto->push_back(metric_sptr(new utilization_metric));
       proto->push_back(metric_sptr(new elc_metric(rts_cts_threshold)));
-      proto->push_back(metric_sptr(new elc_mrr_metric(rts_cts_threshold)));
-//    ToDo: additional metrics
+//      proto->push_back(metric_sptr(new elc_mrr_metric(rts_cts_threshold)));
 //      proto->push_back(metric_sptr(new etx_metric));
-//      proto->push_back(metric_sptr(new ett_metric));
+
       metric_sptr m(metric_sptr(new metric_demux(proto)));
 
       wnic_sptr w(wnic::open(what));
       w = wnic_sptr(new wnic_wallclock_fix(w));
-      w = wnic_sptr(new wnic_encoding_fix(w, CHANNEL_CODING_OFDM | CHANNEL_PREAMBLE_LONG));
+      w = wnic_sptr(new wnic_encoding_fix(w, CHANNEL_CODING_OFDM | CHANNEL_PREAMBLE_LONG)); // ToDo: add cmd line opt to choose default coding!
 #if 0
-      // ToDo: find out why this is garbaging inbound data!
+      // ToDo: why this is garbaging inbound data!
       w->filter("wlan type data"); // ToDo: add BPF test for outbound-only frames
 #endif
       buffer_sptr b(w->read());
@@ -77,11 +78,10 @@ main(int ac, char **av)
          // is it time to print results yet?
          info = b->info();
          uint64_t timestamp = info->timestamp_wallclock();
-         if(tick <= timestamp) {
+         for(; tick <= timestamp; tick += uS_PER_TICK) {
             cout << "TIME: " << tick / uS_PER_TICK << endl;
             cout << *m << endl;
             m->reset();
-            tick += (((timestamp - tick) / uS_PER_TICK) + 1) * uS_PER_TICK;
          }
          // update metrics with frame
          m->add(b);
