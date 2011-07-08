@@ -9,6 +9,7 @@
 #include <elc_mrr_metric.hpp>
 // #include <ett_metric.hpp>
 #include <etx_metric.hpp>
+#include <legacy_elc_metric.hpp>
 #include <metric_demux.hpp>
 #include <metric_group.hpp>
 #include <metric.hpp>
@@ -59,6 +60,7 @@ main(int ac, char **av)
       proto->push_back(metric_sptr(new utilization_metric));
       proto->push_back(metric_sptr(new elc_metric(rts_cts_threshold)));
 //      proto->push_back(metric_sptr(new elc_mrr_metric(rts_cts_threshold)));
+      proto->push_back(metric_sptr(new legacy_elc_metric));
 //      proto->push_back(metric_sptr(new etx_metric));
 
       metric_sptr m(metric_sptr(new metric_demux(proto)));

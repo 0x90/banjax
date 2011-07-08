@@ -1,6 +1,8 @@
 #define _POSIX_C_SOURCE 199309
 #define __STDC_LIMIT_MACROS ENABLED
 
+#include <timespec.hpp>
+
 #include <arpa/inet.h>
 #include <boost/program_options.hpp>
 #include <cstdlib>
@@ -18,44 +20,6 @@ using namespace boost::program_options;
 using namespace std;
 using util::raise;
 using util::syscall_error;
-
-
-/**
- * Add two timespecs and return the result.
- *
- * \param lhs A timespec.
- * \param rhs A timespec.
- * \return The result of adding lhs + rhs.
- */
-timespec
-operator+(const timespec& lhs, const timespec& rhs)
-{
-   timespec r;
-   const int64_t NS_PER_S = INT64_C(1000000000);
-   int64_t t = static_cast<int64_t>(lhs.tv_nsec) + static_cast<int64_t>(rhs.tv_nsec); 
-   r.tv_sec = lhs.tv_sec + rhs.tv_sec + (t / NS_PER_S);
-   r.tv_nsec = t % NS_PER_S;
-   return r;
-}
-
-
-/**
- * Multiply a timespec by the rhs value and return the result.
- *
- * \param lhs A timespec.
- * \param rhs A double that specifies the multiplication factor.
- * \return The result of multiplying lhs * rhs.
- */
-timespec
-operator*(const timespec& lhs, double rhs)
-{
-   timespec r;
-   const int64_t NS_PER_S = INT64_C(1000000000);
-   int64_t t = lhs.tv_nsec * rhs;
-   r.tv_sec = (lhs.tv_sec * rhs) + (t / NS_PER_S);
-   r.tv_nsec = t % NS_PER_S;
-   return r;
-}
 
 
 /**
@@ -105,7 +69,6 @@ send_probes(const string& bind_str, uint16_t port_no, uint16_t packet_sz, uint16
          raise<syscall_error>(__PRETTY_FUNCTION__, __FILE__, __LINE__, msg.str());
       }
    }
-
    if(-1 == bind(s, reinterpret_cast<const sockaddr*>(&src), sizeof(src))) {
       ostringstream msg;
       msg << "bind(s, &dst, sizeof(dst)): ";
@@ -144,7 +107,7 @@ send_probes(const string& bind_str, uint16_t port_no, uint16_t packet_sz, uint16
          msg << strerror(errno) << endl;
          raise<syscall_error>(__PRETTY_FUNCTION__, __FILE__, __LINE__, msg.str());
       }
-      tick = start + (delta * i) /* + jitter */;
+      tick = start + (delta * static_cast<double>(i)) /* + jitter */;
       int err = clock_nanosleep(CLOCK_REALTIME_COARSE, TIMER_ABSTIME, &tick, &junk);
       if(0 != err) {
          ostringstream msg;
@@ -162,7 +125,7 @@ send_probes(const string& bind_str, uint16_t port_no, uint16_t packet_sz, uint16
  *
  * \param ac The argument count.
  * \param av The argument vector.
- * \return EXIT_FAILURE.
+ * \return EXIT_FAILURE - the program runs forever.
  */
 int
 main(int ac, char **av)
@@ -173,16 +136,18 @@ main(int ac, char **av)
       uint16_t port_no;
       uint16_t packet_sz;
       string bind_str;
+      bool verbose;
 
       options_description options("program options");
       options.add_options()
          ("help,?", "produce this help message")
-         ("bind,b",  value<string>(&bind_str), "address of interface to bind to")
+         ("bind,b", value<string>(&bind_str), "address of interface to bind to")
          ("delay,d", value<uint16_t>(&delay_ms)->default_value(1000), "delay between probes (in milliseconds)")
-         ("port,p",  value<uint16_t>(&port_no)->default_value(5000), "port number")
-         ("size,s",  value<uint16_t>(&packet_sz)->default_value(32), "size of probe packets")
+         ("port,p", value<uint16_t>(&port_no)->default_value(5000), "port number")
+         ("size,s", value<uint16_t>(&packet_sz)->default_value(134), "size of probe packets")
+         ("verbose,v", value<bool>(&verbose)->default_value(false), "enable verbose output")
          ;
-      
+
       variables_map vars;       
       store(parse_command_line(ac, av, options), vars);
       notify(vars);   

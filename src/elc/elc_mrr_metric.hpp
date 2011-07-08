@@ -8,18 +8,14 @@
 #ifndef METRICS_ELC_MRR_METRIC_HPP
 #define METRICS_ELC_MRR_METRIC_HPP
 
-#include <metric.hpp>
-#include <net/eui_48.hpp>
-#include <net/buffer.hpp>
-
-#include <boost/shared_ptr.hpp>
+#include <abstract_metric.hpp>
 
 namespace metrics {
 
    /**
-    * elc_mrr_metric represents an ELC link metric between two stations.
+    * elc_mrr_metric is the ELC metric augmented with multi-rate retry information..
     */
-   class elc_mrr_metric : public metric {
+   class elc_mrr_metric : public abstract_metric {
    public:
 
       /**
@@ -62,7 +58,7 @@ namespace metrics {
        * using new and the caller is responsible for ensuring it is
        * deleted.
        *
-       * \return A poiner to a new elc_mrr_metric instance.
+       * \return A pointer to a new elc_mrr_metric instance.
        */
       virtual elc_mrr_metric *clone() const;
 
@@ -104,26 +100,6 @@ namespace metrics {
       double packet_fail_time(net::buffer_sptr b) const;
 
       /**
-       * Return the average contention window time for transmission
-       * attempt txc.
-       *
-       * \param enc The encoding used by the PHY layer.
-       * \param txc The number of the transmission attempt.
-       * \return The time, in microseconds, that will be waited on average.
-       */
-      double avg_contention_time(net::encoding_sptr enc, uint8_t txc) const;
-
-      /**
-       * Return the contention window time for transmission attempt
-       * txc.
-       *
-       * \param enc The encoding used by the PHY layer.
-       * \param txc The number of the transmission attempt.
-       * \return The time, in microseconds, used for the contention window.
-       */
-      double max_contention_time(net::encoding_sptr enc, uint8_t txc) const;
-
-      /**
        * Compute the time taken to successfully send frame b. This
        * includes inter-frame spacing, acknowledgment and
        * the RTS/CTS if necessary.
@@ -144,16 +120,6 @@ namespace metrics {
        * \return The time, in microseconds, used by the failed exchange.
        */
       double frame_fail_time(net::buffer_sptr b, uint32_t rate_Kbs) const;
-
-      /**
-       * Return the amount of time taken by the RTS/CTS exchange.
-       *
-       * \param enc A pointer to the frame encoding.
-       * \param frame_sz The size of the data frame.
-       * \param has_short_preamble true if short preambles are in use; otherwise false.
-       * \return The time, in microseconds, used  by the RTS/CTS exchange.
-       */
-      double rts_cts_time(net::encoding_sptr enc, uint32_t frame_sz, bool short_preamble) const;
 
    private:
 

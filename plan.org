@@ -8,13 +8,25 @@
 *** DONE ELC_MRR
 **** TODO Implement RTS retries in MRR metric
 *** TODO elc_nl80211
-*** TODO "Old" ELC
+*** TODO "Old" or legacy ELC
+	 Isn't it a lot smarter to rename ELC now it has a different
+implementation?  For now we'll use the name legacy_elc_metric in the
+code and can rename later.
+*** DONE utilization_metric
+Simple measurement of the goodput
+If a frame is IP then we add the payload to a count for this period
+Needs improvement to check frame headers
 *** TODO ETX
 **** DONE Probe
 ***** DONE Switch to use of absolute clock
 ***** TODO Introduce pseudo-random jitter
 ***** TODO Use probes to compute forward delivery ratio
+		Use Jono's probeclient
+		Incorporate into current code
+		Use NHDP packet format augmented with forward/reverse rations
 ***** TODO Measure losses due to collisions
+*** TODO abstract_metric
+Used to share common methods amongst metrics
 *** TODO ETT
 *** DONE metric_group
 *** DONE metric_demux
@@ -25,12 +37,13 @@
 ** Banjax update
 *** TODO Fix for packet injection
 *** TODO Merge changes into  banjax
+*** TODO Add ACKTIMEOUT to encoding
 
 ** Draft paper
 *** Skeleton
 Old ELC
 Comparison with new ELC
-Discussion of mechamnism cost: NL80211 vs monitor-mode interfaces
+Discussion of mechanism cost: NL80211 vs monitor-mode interfaces
 *** Experimental Design
 **** ELC 
 Two nodes, variable attentuator, separate monitor.

@@ -10,8 +10,8 @@
 
 #include <net/buffer.hpp>
 
-#include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
+#include <iosfwd>
 
 namespace metrics {
 
@@ -66,7 +66,7 @@ namespace metrics {
       /**
        * metric default constructor.
        */
-      explicit metric();
+      metric();
 
       /**
        * metric copy constructor.

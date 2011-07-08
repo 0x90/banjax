@@ -4,13 +4,16 @@
 bin_PROGRAMS = elc
 
 elc_SOURCES = \
+	abstract_metric.cpp \
 	elc_metric.cpp \
 	elc_mrr_metric.cpp \
-	ett_metric.cpp \
+	etx_metric.cpp \
+	legacy_elc_metric.cpp \
 	metric_demux.cpp \
 	metric_group.cpp \
 	metric.cpp \
-	main.cpp
+	main.cpp \
+	utilization_metric.cpp
 
 elc_CPPFLAGS = -I@top_srcdir@/lib
 

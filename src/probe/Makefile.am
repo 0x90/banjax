@@ -4,7 +4,8 @@
 bin_PROGRAMS = probe
 
 probe_SOURCES = \
-	main.cpp
+	main.cpp \
+	timespec.cpp
 
 probe_CPPFLAGS = -I@top_srcdir@/lib
 

@@ -46,6 +46,16 @@ dsss_ofdm_encoding::ACKTimeout() const
    return SIFS() + slot_time() + DSSS_OFDM_PHY_RXSTART_DELAY;
 }
 
+rateset
+dsss_ofdm_encoding::basic_rates() const
+{
+   static const uint32_t RATES[] = {
+      1000, 2000, 5500, 11000
+   };
+   static const size_t RATES_SZ = sizeof(RATES) / sizeof(RATES[0]);
+   return rateset(&RATES[0], &RATES[RATES_SZ]);
+}
+
 uint16_t
 dsss_ofdm_encoding::CWMIN() const
 {
@@ -68,6 +78,16 @@ uint16_t
 dsss_ofdm_encoding::slot_time() const
 {
    return 9;
+}
+
+rateset
+dsss_ofdm_encoding::supported_rates() const
+{
+   static const uint32_t RATES[] = {
+      1000, 2000, 5500, 11000, 6000, 9000, 12000, 18000, 24000, 36000, 48000, 54000
+   };
+   static const size_t RATES_SZ = sizeof(RATES) / sizeof(RATES[0]);
+   return rateset(&RATES[0], &RATES[RATES_SZ]);
 }
 
 uint16_t
@@ -96,27 +116,6 @@ dsss_ofdm_encoding::txtime(uint16_t frame_sz, uint32_t rate_Kbs, bool has_short_
    return usecs;
 }
 
-rateset
-dsss_ofdm_encoding::basic_rates() const
-{
-   static const uint32_t RATES[] = {
-      1000, 2000, 5500, 11000
-   };
-   static const size_t RATES_SZ = sizeof(RATES) / sizeof(RATES[0]);
-   return rateset(&RATES[0], &RATES[RATES_SZ]);
-}
-
-rateset
-dsss_ofdm_encoding::supported_rates() const
-{
-   static const uint32_t RATES[] = {
-      1000, 2000, 5500, 11000, 6000, 9000, 12000, 18000, 24000, 36000, 48000, 54000
-   };
-   static const size_t RATES_SZ = sizeof(RATES) / sizeof(RATES[0]);
-   return rateset(&RATES[0], &RATES[RATES_SZ]);
-}
-
 dsss_ofdm_encoding::dsss_ofdm_encoding()
 {
 }
-

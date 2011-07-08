@@ -5,59 +5,59 @@
  *
  */
 
-#ifndef METRICS_ETT_METRIC_HPP
-#define METRICS_ETT_METRIC_HPP
+#ifndef METRICS_ETX_METRIC_HPP
+#define METRICS_ETX_METRIC_HPP
 
 #include <metric.hpp>
 
 namespace metrics {
 
    /**
-    * ett_metric is the new ELC metric.
+    * etx_metric is the new ELC metric.
     */
-   class ett_metric : public metric {
+   class etx_metric : public metric {
    public:
 
       /**
-       * ett_metric constructor.
+       * etx_metric constructor.
        */
-      explicit ett_metric();
+      etx_metric();
 
       /**
-       * ett_metric copy constuctor.
+       * etx_metric copy constuctor.
        *
-       * \param other The other ett_metric to initialize from.
+       * \param other The other etx_metric to initialize from.
        */
-      ett_metric(const ett_metric& other);
+      etx_metric(const etx_metric& other);
 
       /**
-       * ett_metric assignment operator.
+       * etx_metric assignment operator.
        *
-       * \param other The other ett_metric to assign from.
-       * \return A reference to this ett_metric.
+       * \param other The other etx_metric to assign from.
+       * \return A reference to this etx_metric.
        */
-      ett_metric& operator=(const ett_metric& other);
+      etx_metric& operator=(const etx_metric& other);
 
       /**
-       * ett_metric destructor.
+       * etx_metric destructor.
        */
-     virtual ~ett_metric();
+     virtual ~etx_metric();
 
       /**
-       * Add a frame to the ett_metric and update the ett_metric statistics.
+       * Add a frame to the etx_metric and update the etx_metric statistics.
        *
        * \param b A shared_pointer to the buffer containing the frame.
        */
       virtual void add(net::buffer_sptr b);
 
       /**
-       * Return a pointer to a clone (deep copy) of this ett_metric
+       * Return a pointer to a clone (deep copy) of this etx_metric
        * instance. The clone is allocated on the heap using new and
        * the caller is responsible for ensuring it is deleted.
        *
-       * \return A poiner to a new ett_metric instance.
+       * \return A poiner to a new etx_metric instance.
        */
-      virtual ett_metric *clone() const;
+      virtual etx_metric *clone() const;
 
       /**
        * Compute and return the ELC metric.
@@ -80,8 +80,18 @@ namespace metrics {
 
    private:
 
+      /**
+       * The number of frames transmitted in total.
+       */
+      uint32_t tx_frames_;
+
+      /**
+       * The number of frames successfully transmitted.
+       */
+      uint32_t tx_success_;
+
    };
 
 }
 
-#endif // METRICS_ETT_METRIC_HPP
+#endif // METRICS_ETX_METRIC_HPP

@@ -59,6 +59,15 @@ namespace net {
       virtual uint16_t ACKTimeout() const;
 
       /**
+       * Return the set of basic rates for this encoding. These are
+       * the mandatory rates that must be supported by all stations
+       * using this encoding.
+       *
+       * \return A set of the basic rates in units of 1Kb/s.
+       */
+      virtual rateset basic_rates() const;
+
+      /**
        * Return the value of CWMIN for this encoding.
        *
        * \return A uint16_t specifying the CWMIN value.
@@ -86,6 +95,15 @@ namespace net {
       virtual uint16_t slot_time() const;
 
       /**
+       * Return the set of supported rates for this encoding. These
+       * are all of the rates that may be supported by stations using
+       * this encoding.
+       *
+       * \return A set of supported rates in units of 1Kb/s.
+       */
+      virtual rateset supported_rates() const;
+
+      /**
        * Return the airtime (in microseconds) that it would take to
        * send a frame of the given size using the DSSS/OFDM
        * encoding. Note the frame size must include the FCS which is
@@ -97,26 +115,6 @@ namespace net {
        * \throws invalid_argument_exception When rate_Kbs is not supported using this encoding.
        */
       virtual uint16_t txtime(uint16_t frame_sz, uint32_t rate_Kbs, bool has_short_preamble) const;
-
-   protected:
-
-      /**
-       * Return the set of basic rates for this encoding. These are
-       * the mandatory rates that must be supported by all stations
-       * using this encoding.
-       *
-       * \return A set of the basic rates in units of 1Kb/s.
-       */
-      virtual rateset basic_rates() const;
-
-      /**
-       * Return the set of supported rates for this encoding. These
-       * are all of the rates that may be supported by stations using
-       * this encoding.
-       *
-       * \return A set of supported rates in units of 1Kb/s.
-       */
-      virtual rateset supported_rates() const;
 
    private:
 

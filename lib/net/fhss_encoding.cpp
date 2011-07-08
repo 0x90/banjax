@@ -44,6 +44,16 @@ fhss_encoding::ACKTimeout() const
    return SIFS() + slot_time() + FHSS_PHY_RX_START_DELAY;
 }
 
+rateset
+fhss_encoding::basic_rates() const
+{
+   static const uint32_t RATES[] = {
+      1000, 2000
+   };
+   static const size_t RATES_SZ = sizeof(RATES) / sizeof(RATES[0]);
+   return rateset(&RATES[0], &RATES[RATES_SZ]);
+}
+
 uint16_t
 fhss_encoding::CWMIN() const
 {
@@ -68,6 +78,16 @@ fhss_encoding::slot_time() const
    return 50;
 }
 
+rateset
+fhss_encoding::supported_rates() const
+{
+   static const uint32_t RATES[] = {
+      1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500
+   };
+   static const size_t RATES_SZ = sizeof(RATES) / sizeof(RATES[0]);
+   return rateset(&RATES[0], &RATES[RATES_SZ]);
+}
+
 uint16_t
 fhss_encoding::txtime(uint16_t frame_sz, uint32_t rate_Kbs, bool has_short_preamble) const
 {
@@ -77,26 +97,6 @@ fhss_encoding::txtime(uint16_t frame_sz, uint32_t rate_Kbs, bool has_short_pream
    const uint16_t PREAMBLE = 96;
    const uint16_t PLCP = 32;
    return PREAMBLE + PLCP + ceill((frame_sz * 8) / RATE_Mbs);
-}
-
-rateset
-fhss_encoding::basic_rates() const
-{
-   static const uint32_t RATES[] = {
-      1000, 2000
-   };
-   static const size_t RATES_SZ = sizeof(RATES) / sizeof(RATES[0]);
-   return rateset(&RATES[0], &RATES[RATES_SZ]);
-}
-
-rateset
-fhss_encoding::supported_rates() const
-{
-   static const uint32_t RATES[] = {
-      1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500
-   };
-   static const size_t RATES_SZ = sizeof(RATES) / sizeof(RATES[0]);
-   return rateset(&RATES[0], &RATES[RATES_SZ]);
 }
 
 fhss_encoding::fhss_encoding()

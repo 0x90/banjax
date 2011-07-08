@@ -43,6 +43,16 @@ dsss_encoding::ACKTimeout() const
    return SIFS() + slot_time() + DSSS_PHY_RX_START_DELAY;
 }
 
+rateset
+dsss_encoding::basic_rates() const
+{
+   static const uint32_t RATES[] = {
+      1000, 2000
+   };
+   static const size_t RATES_SZ = sizeof(RATES) / sizeof(RATES[0]);
+   return rateset(&RATES[0], &RATES[RATES_SZ]);
+}
+
 uint16_t
 dsss_encoding::CWMIN() const
 {
@@ -67,25 +77,6 @@ dsss_encoding::slot_time() const
    return 20;
 }
 
-uint16_t
-dsss_encoding::txtime(uint16_t frame_sz, uint32_t rate_Kbs, bool has_short_preamble) const
-{
-   float RATE_Mbs = rate_Kbs / 1000;
-   const uint16_t PREAMBLE = has_short_preamble ? 72 : 144;
-   const uint16_t PLCP = has_short_preamble ? 24 : 48;
-   return PREAMBLE + PLCP + ceill((frame_sz * 8) / RATE_Mbs);
-}
-
-rateset
-dsss_encoding::basic_rates() const
-{
-   static const uint32_t RATES[] = {
-      1000, 2000
-   };
-   static const size_t RATES_SZ = sizeof(RATES) / sizeof(RATES[0]);
-   return rateset(&RATES[0], &RATES[RATES_SZ]);
-}
-
 rateset
 dsss_encoding::supported_rates() const
 {
@@ -94,6 +85,15 @@ dsss_encoding::supported_rates() const
    };
    static const size_t RATES_SZ = sizeof(RATES) / sizeof(RATES[0]);
    return rateset(&RATES[0], &RATES[RATES_SZ]);
+}
+
+uint16_t
+dsss_encoding::txtime(uint16_t frame_sz, uint32_t rate_Kbs, bool has_short_preamble) const
+{
+   float RATE_Mbs = rate_Kbs / 1000;
+   const uint16_t PREAMBLE = has_short_preamble ? 72 : 144;
+   const uint16_t PLCP = has_short_preamble ? 24 : 48;
+   return PREAMBLE + PLCP + ceill((frame_sz * 8) / RATE_Mbs);
 }
 
 dsss_encoding::dsss_encoding()

@@ -57,6 +57,16 @@ namespace net {
       virtual uint16_t ACKTimeout() const = 0;
 
       /**
+       * Return the set of basic rates for this encoding. These are
+       * the mandatory rates that must be supported by all stations
+       * using this encoding.
+       *
+       * \return A reference to a set of basic rates in units of
+       *         1Kb/s.
+       */
+      virtual rateset basic_rates() const = 0;
+
+      /**
        * Return the value of CWMIN for this encoding.
        *
        * \return A uint16_t specifying the CWMIN value.
@@ -126,6 +136,16 @@ namespace net {
       virtual uint16_t slot_time() const = 0;
 
       /**
+       * Return the set of supported rates for this encoding. These
+       * are all of the rates that may be supported by stations using
+       * this encoding.
+       *
+       * \return A reference to a set of supported rates in units of
+       *         1Kb/s.
+       */
+      virtual rateset supported_rates() const = 0;
+
+      /**
        * Return the airtime (in microseconds) that it would take to
        * send a frame of the given size using this encoding. Note the
        * frame size must include the FCS which is normally removed by
@@ -152,26 +172,6 @@ namespace net {
        * Default constructor for encoding.
        */
       encoding();
-
-      /**
-       * Return the set of basic rates for this encoding. These are
-       * the mandatory rates that must be supported by all stations
-       * using this encoding.
-       *
-       * \return A reference to a set of basic rates in units of
-       *         1Kb/s.
-       */
-      virtual rateset basic_rates() const = 0;
-
-      /**
-       * Return the set of supported rates for this encoding. These
-       * are all of the rates that may be supported by stations using
-       * this encoding.
-       *
-       * \return A reference to a set of supported rates in units of
-       *         1Kb/s.
-       */
-      virtual rateset supported_rates() const = 0;
 
    };
 
