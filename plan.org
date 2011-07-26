@@ -3,15 +3,14 @@
 ** Metric implementation
 *** DONE ELC
 **** DONE Verify contention model
-**** TODO Implement RTS retries in MRR metric
-**** TODO IP layer throughput measurement (for comparison of saturated link)
+**** DONE IP layer throughput measurement (for comparison of saturated link)
 *** DONE ELC_MRR
 **** TODO Implement RTS retries in MRR metric
 *** TODO elc_nl80211
-*** TODO "Old" or legacy ELC
-	 Isn't it a lot smarter to rename ELC now it has a different
-implementation?  For now we'll use the name legacy_elc_metric in the
-code and can rename later.
+*** DONE "Old" or legacy ELC
+**** TODO Fixing rate buckets (currently not mapping avg rate to closest 802.11 rate)
+**** TODO Using TMT instead of measured rate
+**** TODO Comparison of above
 *** DONE utilization_metric
 Simple measurement of the goodput
 If a frame is IP then we add the payload to a count for this period
@@ -20,29 +19,25 @@ Needs improvement to check frame headers
 **** DONE Probe
 ***** DONE Switch to use of absolute clock
 ***** TODO Introduce pseudo-random jitter
-***** TODO Use probes to compute forward delivery ratio
-		Use Jono's probeclient
-		Incorporate into current code
-		Use NHDP packet format augmented with forward/reverse rations
+***** DONE Use probes to compute forward delivery ratio
 ***** TODO Measure losses due to collisions
-*** TODO abstract_metric
+**** TODO Banjax offline metric calcultion from probe packets
+*** DONE abstract_metric
 Used to share common methods amongst metrics
 *** TODO ETT
+*** TODO RELC
 *** DONE metric_group
 *** DONE metric_demux
 
-*** DONE Change metric gathering main to use absolute clock
-*** DONE Use boost for cmd line parsing
-
 ** Banjax update
+*** DONE Add ACKTIMEOUT to encoding
 *** TODO Fix for packet injection
-*** TODO Merge changes into  banjax
-*** TODO Add ACKTIMEOUT to encoding
+*** TODO Merge changes into banjax
 
 ** Draft paper
 *** Skeleton
 Old ELC
-Comparison with new ELC
+Comparison with new ELC, ETX
 Discussion of mechanism cost: NL80211 vs monitor-mode interfaces
 *** Experimental Design
 **** ELC 
