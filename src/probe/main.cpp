@@ -46,6 +46,7 @@ main(int ac, char **av)
          ("size,s", value<uint16_t>(&probe_sz)->default_value(134), "size of probe packets (in octets)")
          ("time,t", value<uint32_t>(&duration_s)->default_value(UINT32_MAX), "duration to run for (in seconds)")
          ("window,w", value<uint16_t>(&window_sz)->default_value(10), "size of the probe window (in seconds)")
+         ("verbose,v", value<bool>(&verbose)->zero_tokens(), "turn on verbose output")
          ;
 
       variables_map vars;
@@ -56,7 +57,7 @@ main(int ac, char **av)
          exit(EXIT_SUCCESS);
       }
 
-      link_monitor m(bind_str, port_no, probe_sz, window_sz, delay_s);
+      link_monitor m(bind_str, port_no, probe_sz, window_sz, delay_s, verbose);
       m.run(duration_s);
       exit(EXIT_SUCCESS);
 

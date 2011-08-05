@@ -34,8 +34,9 @@ namespace ETX {
        * \param probe_sz The size of the probe packets.
        * \param window_sz The number of elements in the probe window.
        * \param delay_s The delay between subsequent probes (in seconds).
+       * \param verbose true for verbose output; otherwise false.
        */
-      link_monitor(const std::string& bind_str, uint16_t port_no, uint16_t probe_sz, uint16_t window_sz, uint16_t delay_s);
+      link_monitor(const std::string& bind_str, uint16_t port_no, uint16_t probe_sz, uint16_t window_sz, uint16_t delay_s, bool verbose);
 
       /**
        * link_monitor destructor.
@@ -125,6 +126,15 @@ namespace ETX {
    private:
 
       /**
+       * Write a message to cout when verbose messaging enabled.
+       *
+       * \param msg The text to write.
+       */
+      void verbose_msg(const std::string& msg);
+
+   private:
+
+      /**
        * The interface to bind to (for outgoing packets).
        */
       std::string bind_str_;
@@ -148,6 +158,11 @@ namespace ETX {
        * The interval between successive probes.
        */
       uint16_t delay_s_;
+
+      /**
+       * Flag to control verbose output.
+       */
+      bool verbose_;
 
       /**
        * Lock for shared structures.

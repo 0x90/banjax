@@ -37,12 +37,13 @@ using boost::mutex;
 using boost::thread_group;
 
 
-link_monitor::link_monitor(const string& bind_str, uint16_t port_no, uint16_t probe_sz, uint16_t window_sz, uint16_t delay_s) :
+link_monitor::link_monitor(const string& bind_str, uint16_t port_no, uint16_t probe_sz, uint16_t window_sz, uint16_t delay_s, bool verbose) :
    bind_str_(bind_str),
    port_no_(port_no),
    probe_sz_(probe_sz),
    window_sz_(window_sz),
    delay_s_(delay_s),
+   verbose_(verbose),
    addr_(INADDR_BROADCAST),
    quit_(false),
    seq_no_(0)
@@ -56,6 +57,8 @@ link_monitor::~link_monitor()
 void
 link_monitor::run(uint32_t dur_s)
 {
+   verbose_msg("starting run...");
+
    quit(false);
 
    // start the reader+writer
@@ -72,6 +75,8 @@ link_monitor::run(uint32_t dur_s)
    // exit
    quit(true);
    threads.join_all();
+
+   verbose_msg("exiting run");
 }
 
 uint32_t
@@ -148,6 +153,8 @@ link_monitor::read_probe(uint32_t neighbour_addr, const uint8_t *buf, size_t buf
 void
 link_monitor::reader()
 {
+   verbose_msg("starting reader...");
+
    try {
 
       // create socket
@@ -192,6 +199,8 @@ link_monitor::reader()
       cerr << "unhandled exception" << endl;
       quit(true);
    }
+
+   verbose_msg("exiting reader");
 }
 
 size_t
@@ -223,6 +232,8 @@ link_monitor::write_probe(uint8_t *buf, size_t buf_sz)
 void
 link_monitor::writer()
 {
+   verbose_msg("starting writer...");
+
    try {
 
       // create socket
@@ -294,4 +305,13 @@ link_monitor::writer()
       cerr << "unhandled exception" << endl;
       quit(true);
    }
+
+   verbose_msg("exiting writer");
+}
+
+void
+link_monitor::verbose_msg(const string& msg)
+{
+   if(verbose_)
+      cout << msg << endl;
 }
