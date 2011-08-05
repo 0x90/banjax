@@ -4,7 +4,7 @@
  * Copyright NICTA, 2011
  */
 
-#define __STDC_CONTANT_MACROS
+#define __STDC_CONSTANT_MACROS
 #define __STDC_LIMIT_MACROS
 #include <elc_metric.hpp>
 #include <elc_mrr_metric.hpp>
