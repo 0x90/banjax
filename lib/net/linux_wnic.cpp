@@ -93,7 +93,7 @@ linux_wnic::filter(string filter_expr)
    pcap_t *pcap = pcap_open_dead(datalink_type(), SNAPLEN);
 
    struct bpf_program bpf;
-   if(-1 == pcap_compile(pcap, &bpf, filter_expr.c_str(), 1, PCAP_NETMASK_UNKNOWN)) {
+   if(-1 == pcap_compile(pcap, &bpf, filter_expr.c_str(), 1, 0 /* PCAP_NETMASK_UNKNOWN */)) {
       ostringstream msg;
       msg << "pcap_compile(pcap_, &bpf, \"";
       msg << filter_expr;

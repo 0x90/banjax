@@ -24,8 +24,6 @@
 #include <util/dump.hpp>
 #include <util/exceptions.hpp>
 
-// #include <cstring>
-
 using namespace dot11;
 using namespace std;
 using net::buffer_sptr;
@@ -57,35 +55,16 @@ frame::fc() const
    return frame_control(buf_->read_u16_le(0));
 }
 
-void
-frame::fc(frame_control fc)
-{
-   buf_->write_u16_le(0, fc);
-}
-
 uint16_t
 frame::duration() const
 {
    return buf_->read_u16_le(2);
 }
 
-void
-frame::duration(uint16_t d)
-{
-   buf_->write_u16_le(2, d);
-}
-
-
 eui_48
 frame::address1() const 
 {
    return buf_->read_mac(4);
-}
-
-void
-frame::address1(eui_48 mac)
-{
-   buf_->write_mac(4, mac);
 }
 
 bool
@@ -100,12 +79,6 @@ frame::address2() const
    return buf_->read_mac(10);
 }
 
-void
-frame::address2(eui_48 mac)
-{
-   buf_->write_mac(10, mac);
-}
-
 bool
 frame::has_address3() const
 {
@@ -118,22 +91,10 @@ frame::address3() const
    return buf_->read_mac(16);
 }
 
-void
-frame::address3(eui_48 mac)
-{
-   buf_->write_mac(16, mac);
-}
-
 sequence_control
 frame::sc() const
 {
    return sequence_control(buf_->read_u16_le(22));
-}
-
-void
-frame::sc(sequence_control s)
-{
-   buf_->write_u16(22, s);
 }
 
 bool
@@ -147,13 +108,6 @@ frame::address4() const
 {
    PRECONDITION(has_address4())
    return buf_->read_mac(24);
-}
-
-void
-frame::address4(eui_48 mac)
-{
-   PRECONDITION(has_address4());
-   buf_->write_mac(24, mac);
 }
 
 control_frame_sptr

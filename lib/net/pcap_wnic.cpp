@@ -59,7 +59,7 @@ void
 pcap_wnic::filter(string filter_expr)
 {
    struct bpf_program bpf;
-   if(-1 == pcap_compile(pcap_, &bpf, filter_expr.c_str(), 1, PCAP_NETMASK_UNKNOWN)) {
+   if(-1 == pcap_compile(pcap_, &bpf, filter_expr.c_str(), 1, 0 /* PCAP_NETMASK_UNKNOWN */)) {
       ostringstream msg;
       msg << "pcap_compile(pcap_, &bpf, \"";
       msg << filter_expr;

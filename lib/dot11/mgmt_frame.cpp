@@ -29,6 +29,7 @@ using std::string;
 using util::dump;
 using util::raise;
 
+
 mgmt_frame::mgmt_frame(buffer_sptr buf) :
    frame(buf)
 {
@@ -41,6 +42,10 @@ mgmt_frame::mgmt_frame(buffer_sptr buf) :
    }
 }
 
+mgmt_frame::~mgmt_frame()
+{
+}
+
 uint8_t
 mgmt_frame::IE(uint8_t tag) const
 {
@@ -51,26 +56,6 @@ mgmt_frame::IE(uint8_t tag) const
       const uint8_t l = buf_->read_u8(i+1);
       if(t == tag && l == 1) {
          return buf_->read_u8(i+2);
-      }
-      tag_size = l + 2;
-   }
-   ostringstream msg;
-   msg << "unknown IE  (tag=" << hex << setw(2) << setfill('0') << tag << ")";
-   msg << hex << setw(2) << setfill('0') << dump(buf_->data_size(), buf_->data()) << endl;
-   raise<invalid_argument>(__PRETTY_FUNCTION__, __FILE__, __LINE__, msg.str());
-}
-
-void 
-mgmt_frame::IE(uint8_t tag, uint8_t value)
-{
-   uint8_t tag_size;
-   size_t frame_sz = buf_->data_size();
-   for(size_t i = 0x24; i < frame_sz; i += tag_size) {
-      const uint8_t t = buf_->read_u8(i);
-      const uint8_t l = buf_->read_u8(i+1);
-      if(t == tag && l == 1) {
-         buf_->write_u8(i+2, value);
-         return;
       }
       tag_size = l + 2;
    }

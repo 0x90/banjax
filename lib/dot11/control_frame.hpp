@@ -31,12 +31,24 @@ namespace dot11 {
     */
    class control_frame : public frame {
    public:
+
+      /**
+       * frame constructor.
+       *
+       * \param buf The buffer containing the frame contents.
+       */
       control_frame(net::buffer_sptr buf);
+
       // compiler-generated:
       // control_frame(const control_frame& other);
       // control_frame& operator=(const control_frame& other);
       // bool operator==(const control_frame& other) const;
+
+      /**
+       * control_frame (virtual) destructor.
+       */
       virtual ~control_frame();
+
    };
 
    /**

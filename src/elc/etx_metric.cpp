@@ -6,7 +6,11 @@
  */
 
 #include <etx_metric.hpp>
+#include <dot11/data_frame.hpp>
 #include <dot11/frame.hpp>
+#include <dot11/ip_hdr.hpp>
+#include <dot11/llc_hdr.hpp>
+#include <dot11/udp_hdr.hpp>
 
 #include <iostream>
 #include <iomanip>
@@ -18,12 +22,16 @@ using namespace std;
 using metrics::etx_metric;
 
 etx_metric::etx_metric() :
+   probe_addr_(0),
+   probe_port_(50000),
    tx_frames_(0),
    tx_success_(0)
 {
 }
 
 etx_metric::etx_metric(const etx_metric& other) :
+   probe_addr_(other.probe_addr_),
+   probe_port_(other.probe_port_),
    tx_frames_(other.tx_frames_),
    tx_success_(other.tx_success_)
 {
@@ -33,6 +41,8 @@ etx_metric&
 etx_metric::operator=(const etx_metric& other)
 {
    if(&other != this) {
+      probe_addr_ = other.probe_addr_;
+      probe_port_ = other.probe_port_;
       tx_frames_ = other.tx_frames_;
       tx_success_ = other.tx_success_;
    }
@@ -47,19 +57,42 @@ void
 etx_metric::add(buffer_sptr b)
 {
    frame f(b);
-   frame_control fc(f.fc());
-   if(fc.type() == DATA_FRAME) {
+   data_frame_sptr df(f.as_data_frame());
+   if(df) {
+
+      // ignore non-probe traffic
+      llc_hdr_sptr llc(df->get_llc_hdr());
+      if(!llc)
+         return;
+      ip_hdr_sptr ip(llc->get_ip_hdr());
+      if(!ip)
+         return;
+      udp_hdr_sptr udp(ip->get_udp_hdr());
+      if(!udp)
+         return;
+
+
       buffer_info_sptr info(b->info());
       if(info->has(TX_FLAGS)) {
-         // gather data for forward delivery ratio
-         uint8_t txc = 1 + info->data_retries();
-         tx_frames_ += txc;
-         uint32_t tx_flags = info->tx_flags();
-         if(tx_flags & TX_FLAGS_FAIL) {
-            ++tx_success_;
+
+         if(udp->src_port() == 50000) {
+#if 0
+            // ToDo: remember IP address of outgoing frames
+            // gather data for forward delivery ratio
+            uint8_t txc = 1 + info->data_retries();
+            tx_frames_ += txc;
+            uint32_t tx_flags = info->tx_flags();
+            if(tx_flags & TX_FLAGS_FAIL) {
+               ++tx_success_;
+            }
+#endif
          }
+      
       } else {
-         // gather data for reverse delivery ratio
+
+         // ToDo:
+         // gather data for reverse delivery ratio - we should know our IP address by now
+
       }
    }
 }
@@ -73,7 +106,7 @@ etx_metric::clone() const
 double
 etx_metric::metric() const
 {
-   double d_f = static_cast<double>(tx_frames_) / static_cast<double>(tx_success_);
+   double d_f = 1.0; // ToDo: fix me!
    double d_r = 1.0; // ToDo: fix me!
    return /* 1.0 / */ d_f * d_r;
 }
@@ -81,10 +114,11 @@ etx_metric::metric() const
 void
 etx_metric::reset()
 {
+   // advance the probe window
 }
 
 void
 etx_metric::write(ostream& os) const
 {
-   os << "ETX: " << metric();
+   // os << "ETX: " << metric();
 }

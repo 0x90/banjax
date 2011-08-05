@@ -48,11 +48,14 @@ utilization_metric::add(buffer_sptr b)
    frame f(b);
    frame_control fc(f.fc());
    buffer_info_sptr info(b->info());
-   if(DATA_FRAME == fc.type() && info->has(TX_FLAGS) && 0 == (info->tx_flags() & TX_FLAGS_FAIL)) {
-      const uint16_t HDR_SZ = 62;
-      const uint16_t FRAME_SZ = b->data_size();
-      if(HDR_SZ < FRAME_SZ) {
-         packet_octets_ += FRAME_SZ - HDR_SZ;
+   if(info->has(TX_FLAGS) && DATA_FRAME == fc.type()) {
+      bool failed = (info->tx_flags() & TX_FLAGS_FAIL);
+      if(!failed) {
+         const uint16_t HDR_SZ = 62; // ToDo: compute me!
+         const uint16_t FRAME_SZ = b->data_size();
+         if(HDR_SZ < FRAME_SZ) {
+            packet_octets_ += FRAME_SZ - HDR_SZ;
+         }
       }
    }
 }

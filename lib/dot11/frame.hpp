@@ -51,7 +51,7 @@ namespace dot11 {
       // bool operator==(const frame& other) const;
 
       /**
-       * frame destructor.
+       * frame (virtual) destructor.
        */
       virtual ~frame();
 
@@ -64,14 +64,6 @@ namespace dot11 {
       frame_control fc() const;
 
       /**
-       * frame_control accessor that sets the frame_control field in
-       * the 802.11 frame header.
-       *
-       * \param fc The new value for the frame_control field.
-       */
-      void fc(frame_control fc);
-
-      /**
        * Duration accessor that returns a uint16_t containing the
        * value of the duration field. Refer to the spec to see how the
        * high-order two bits determine how this value should be
@@ -82,28 +74,11 @@ namespace dot11 {
       uint16_t duration() const;
 
       /**
-       * Duration accessor that returns a uint16_t containing the
-       * value of the duration field. Refer to the spec to see how the
-       * high-order two bits determine how this value should be
-       * interpreted.
-       *
-       * \returns A uint16_t containing the 802.11 frame duration.
-       */
-      void duration(uint16_t d);
-
-      /**
        * Accessor that returns the frame's address1 value.
        *
        * \return An eui_48 object containing the address1 value.
        */
       net::eui_48 address1() const;
-
-      /**
-       * Accessor that sets the frame's address1 value.
-       *
-       * \param addr An eui_48 object containing the new address1 value
-       */
-      void address1(net::eui_48 addr);
 
       /**
        * Tests whether this frame contains an address2 field.
@@ -120,13 +95,6 @@ namespace dot11 {
       net::eui_48 address2() const;
 
       /**
-       * Accessor that sets the frame's address2 value.
-       *
-       * \param addr An eui_48 object containing the new address2 value
-       */
-      void address2(net::eui_48 addr);
-
-      /**
        * Tests whether this frame contains an address3 field.
        *
        * \return true when address3 is present; otherwise false.
@@ -141,25 +109,11 @@ namespace dot11 {
       net::eui_48 address3() const;
 
       /**
-       * Accessor that sets the frame's address3 value.
-       *
-       * \param addr An eui_48 object containing the new address3 value
-       */
-      void address3(net::eui_48 addr);
-
-      /**
        * Accessor that return the frame's sequence control field.
        *
        * \return A sequence_control object containing the sc field.
        */
       sequence_control sc() const;
-
-      /**
-       * Accessor that sets the frame's sequence control (sc) field.
-       *
-       * \param sc A sequence_control object containing the new sc field.
-       */
-      void sc(sequence_control sc);
 
       /**
        * Tests whether this frame contains an address4 field.
@@ -175,14 +129,6 @@ namespace dot11 {
        * \throws logic_error If has_address4() is false.
        */
       net::eui_48 address4() const;
-
-      /**
-       * Accessor that sets the frame's address4 value.
-       *
-       * \param addr An eui_48 address for the specified field
-       * \throws logic_error If has_address4() is false.
-       */
-      void address4(net::eui_48 addr);
 
       /**
        * If this object represents a control frame then return a

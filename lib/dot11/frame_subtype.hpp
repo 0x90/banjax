@@ -22,6 +22,7 @@
 
 namespace dot11 {
    enum frame_subtype {
+
       MGMT_ASSOC_REQ           = 0x00,
       MGMT_ASSOC_RESP          = 0x10,
       MGMT_REASSOC_REQ         = 0x20,
@@ -47,7 +48,16 @@ namespace dot11 {
       DATA_NULL                = 0x48,
       DATA_NULL_CF_ACK         = 0x58,
       DATA_NULL_CF_POLL        = 0x68,
-      DATA_NULL_CF_POLL_CF_ACK = 0x78,
+      DATA_CF_POLL_CF_ACK      = 0x78,
+      DATA_QOS                 = 0x88,
+      DATA_QOS_CF_ACK          = 0x98,
+      DATA_QOS_CF_POLL         = 0xa8,
+      DATA_QOS_CF_ACK_CF_POLL  = 0xb8,
+      DATA_QOS_NULL            = 0xc8,
+      DATA_QOS_NULL_CF_ACK     = 0xe8,
+      DATA_QOS_NULL_CF_POLL    = 0xf8,
+      DATA_QOS_CF_POLL_CF_ACK  = 0x78,
+
    };
 }
 

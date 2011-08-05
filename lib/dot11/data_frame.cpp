@@ -18,12 +18,15 @@
  */
 
 #include <dot11/data_frame.hpp>
+#include <dot11/frame_control.hpp>
+#include <dot11/llc_hdr.hpp>
+#include <net/buffer_fragment.hpp>
 #include <util/dump.hpp>
 #include <util/exceptions.hpp>
 
 using namespace dot11;
 using namespace std;
-using net::buffer_sptr;
+using namespace net;
 using util::dump;
 using util::raise;
 
@@ -43,68 +46,30 @@ data_frame::~data_frame()
 {
 }
 
-#if 0
-
-ccmp_mpdu_sptr
-data_frame::ccmp_data()
+bool
+data_frame::has_qos_control() const
 {
-   ccmp_mpdu_sptr data;
-   if(fc().protected_frame()) {
-      ccmp_mpdu_sptr mpdu(new ccmp_mpdu(*this, mpdu_offset(), size()));
-      if(mpdu->ext_iv()) {
-         // ToDo: TKIP/CCMP disambiguation
-         // mpdu_hdr[2] == 0?
-         data = mpdu;
-      }
-   }
-   return data;
+   frame_control fc(frame::fc());
+   const uint8_t QoS_BIT = 0x80;
+   return(fc.subtype() & QoS_BIT);
 }
 
-llc_pdu_sptr
-data_frame::llc_data()
-{
-   llc_pdu_sptr data;
-   if(!fc().protected_frame()) {
-      llc_pdu_sptr mpdu(new llc_pdu(*this, mpdu_offset(), size()));
-      data = mpdu;
-   }
-   return data;
-}
+// ToDo: QoS control accessor
 
-tkip_mpdu_sptr
-data_frame::tkip_data()
+llc_hdr_sptr
+data_frame::get_llc_hdr() const
 {
-   tkip_mpdu_sptr data;
-   if(fc().protected_frame()) {
-      tkip_mpdu_sptr mpdu(new tkip_mpdu(*this, mpdu_offset(), size()));
-      if(mpdu->ext_iv() && mpdu->seed() == ((mpdu->tsc_octet(1) | 0x20) & 0x7f)) {
-         data = mpdu;
-      }
-   }
-   return data;
+   buffer_sptr b(new buffer_fragment(buf_, mpdu_offset(), buf_->data_size()));
+   return llc_hdr_sptr(new llc_hdr(b));
 }
-
-wep_mpdu_sptr
-data_frame::wep_data()
-{
-   wep_mpdu_sptr data;
-   if(fc().protected_frame()) {
-      wep_mpdu_sptr mpdu(new wep_mpdu(*this, mpdu_offset(), size()));
-      if(!mpdu->ext_iv()) {
-         data = mpdu;
-      }
-   }
-   return data;
-}
-
-#endif
 
 size_t
 data_frame::mpdu_offset() const
 {
-   // ToDo: account for 802.11e QoS field, if present
    size_t data_ofs = 24;
    if(has_address4())
       data_ofs += 6;
+   if(has_qos_control())
+      data_ofs += 2;
    return data_ofs;
 }

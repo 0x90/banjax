@@ -21,12 +21,7 @@
 #define DOT11_DATA_FRAME_HPP
 
 #include <dot11/frame.hpp>
-/*
-#include <dot11/ccmp_mpdu.hpp>
-#include <dot11/llc_pdu.hpp>
-#include <dot11/tkip_mpdu.hpp>
-#include <dot11/wep_mpdu.hpp>
-*/
+#include <dot11/llc_hdr.hpp>
 
 namespace dot11 {
 
@@ -54,20 +49,27 @@ namespace dot11 {
        */
       virtual ~data_frame();
 
-      // ToDo: 802.11e QoS control field
+      /**
+       * Tests whether this frame contains a QoS control field.
+       *
+       * \return true when QoS control is present; otherwise false.
+       */
+      bool has_qos_control() const;
 
-      /* ToDo:
-      ccmp_mpdu_sptr ccmp_data();
-      llc_pdu_sptr llc_data();
-      tkip_mpdu_sptr tkip_data();
-      wep_mpdu_sptr wep_data();
-      */
+      // ToDo: add qos_control accessors!
+
+      /**
+       * Return a pointer to the LLC header of the payload.
+       *
+       * \return An llc_hdr_sptr pointing to the frame payload.
+       */
+      llc_hdr_sptr get_llc_hdr() const;
 
    protected:
 
       /**
-       * Return the offset of the MPDU. The 802.11 header maybe
-       * differently-sized depending on whether or not QoS and
+       * Return the offset of the MPDU. The payload may begin at
+       * different addresses depending on whether or not QoS and
        * address4 fields are present.
        *
        * \return The offset of the MPDU within the frame.

@@ -7,8 +7,11 @@ libbanjax_la_SOURCES= \
 	dot11/data_frame.cpp \
 	dot11/frame_control.cpp \
 	dot11/frame.cpp \
+	dot11/ip_hdr.cpp \
+	dot11/llc_hdr.cpp \
 	dot11/mgmt_frame.cpp \
 	dot11/sequence_control.cpp \
+	dot11/udp_hdr.cpp \
 	net/abstract_buffer.cpp \
 	net/abstract_wnic.cpp \
 	net/buffer_body.cpp \
@@ -56,8 +59,11 @@ nobase_libbanjax_la_HEADERS= \
 	dot11/frame.hpp \
 	dot11/frame_subtype.hpp \
 	dot11/frame_type.hpp \
+	dot11/ip_hdr.hpp \
+	dot11/llc_hdr.hpp \
 	dot11/mgmt_frame.hpp \
 	dot11/sequence_control.hpp \
+	dot11/udp_hdr.hpp \
 	net/abstract_buffer.hpp \
 	net/abstract_wnic.hpp \
 	net/buffer_body.hpp \

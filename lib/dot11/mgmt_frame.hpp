@@ -33,14 +33,6 @@ namespace dot11 {
    public:
 
       /**
-       * mgmt_frame constructor. Creates a new mgmt_frame of the
-       * specified size.
-       *
-       * \param buf_sz The size of the management frame.
-       */
-      explicit mgmt_frame(size_t buf_sz);
-
-      /**
        * mgmt_frame constructor. Creates a new mgmt_frame using the
        * specified buffer.
        *
@@ -48,12 +40,15 @@ namespace dot11 {
        */
       explicit mgmt_frame(const net::buffer_sptr buf);
 
+      // compiler-generated:
       // mgmt_frame(const mgmt_frame& other);
       // mgmt_frame& operator=(const mgmt_frame& other);
       // bool operator==(const mgmt_frame& other) const;
-      // ~mgmt_frame();
 
-      // ToDo access IEs thru appropriate methods (hide the IE tags/make IE methods private) !!!
+      /**
+       * mgmt_frame (virtual) destructor.
+       */
+      virtual ~mgmt_frame();
 
       /**
        * Accessor that returns the value of an 8-bit Information element.
@@ -63,17 +58,6 @@ namespace dot11 {
        * \throws invalid_argument_exception If the value is not present.
        */
       uint8_t IE(uint8_t tag) const;
-
-      /**
-       * Accessor that sets the value of an 8-bit Information element
-       * to the specified value. The tag must already be present in
-       * the header or an invalid_argument_exception will be raised.
-       *
-       * \param tag The tag identifying the IE to return.
-       * \return The value of the tag.
-       * \throws invalid_argument_exception If the value is not present.
-       */
-      void IE(uint8_t tag, uint8_t value);
 
    };
 

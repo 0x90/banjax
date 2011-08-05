@@ -59,7 +59,7 @@ main(int ac, char **av)
    	metric_group_sptr proto(new metric_group);
       proto->push_back(metric_sptr(new utilization_metric));
       proto->push_back(metric_sptr(new elc_metric(rts_cts_threshold)));
-//      proto->push_back(metric_sptr(new elc_mrr_metric(rts_cts_threshold)));
+      proto->push_back(metric_sptr(new elc_mrr_metric(rts_cts_threshold)));
       proto->push_back(metric_sptr(new legacy_elc_metric));
 //      proto->push_back(metric_sptr(new etx_metric));
 
@@ -69,7 +69,7 @@ main(int ac, char **av)
       w = wnic_sptr(new wnic_wallclock_fix(w));
       w = wnic_sptr(new wnic_encoding_fix(w, CHANNEL_CODING_OFDM | CHANNEL_PREAMBLE_LONG)); // ToDo: add cmd line opt to choose default coding!
 #if 0
-      // ToDo: why this is garbaging inbound data!
+      // ToDo: figure out why this is garbaging inbound data!
       w->filter("wlan type data"); // ToDo: add BPF test for outbound-only frames
 #endif
       buffer_sptr b(w->read());

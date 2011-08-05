@@ -81,6 +81,16 @@ namespace metrics {
    private:
 
       /**
+       * The address from which we're sending probe packets.
+       */
+      uint32_t probe_addr_;
+
+      /**
+       * The port on which we're sending probe packets.
+       */
+      uint32_t probe_port_;
+
+      /**
        * The number of frames transmitted in total.
        */
       uint32_t tx_frames_;
