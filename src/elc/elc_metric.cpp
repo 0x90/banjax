@@ -64,8 +64,8 @@ elc_metric::add(buffer_sptr b)
    buffer_info_sptr info(b->info());
    if(info->has(TX_FLAGS) && fc.type() == DATA_FRAME) {
       // update totals for packet size and count
+      const uint32_t IEEE80211_HDR_SZ = 26;
       const uint32_t LLC_HDR_SZ = 8;
-      const uint32_t IEEE80211_HDR_SZ = 24;
       const uint32_t IP_HDR_SZ = 20;
       const uint32_t UDP_HDR_SZ = 8;
       // ToDo: consider ignoring frames which have a non-TCP/UDP payload?
