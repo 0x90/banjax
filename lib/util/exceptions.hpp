@@ -83,21 +83,21 @@ namespace util
 #define CHECK_MIN_SIZE(ACTUAL, MIN) \
    if(ACTUAL < MIN) { \
       std::ostringstream text; \
-      text << "value " << ACTUAL << " is less than the expected minimum value " << MIN << std::endl; \
+      text << ACTUAL << " is less than the expected minimum " << MIN << std::endl; \
       util::raise<std::length_error>(__PRETTY_FUNCTION__, __FILE__, __LINE__, text.str()); \
    }
 
 #define CHECK_MAX_SIZE(ACTUAL, MAX) \
    if(ACTUAL > MAX) { \
       std::ostringstream text; \
-      text << "value " << ACTUAL << " exceeds the expected maximum value " << MAX << std::endl; \
+      text << ACTUAL << " exceeds the expected maximum " << MAX << std::endl; \
       util::raise<std::length_error>(__PRETTY_FUNCTION__, __FILE__, __LINE__, text.str()); \
    }
 
-#define CHECK_RANGE(MIN,VALUE,MAX) \
+#define CHECK_RANGE(MIN, VALUE, MAX) \
    if(!((MIN <= VALUE) && (VALUE < MAX))) { \
       std::ostringstream text; \
-      text << "value " << VALUE << " is outside valid range " << MIN << " <= x < " << MAX << std::endl; \
+      text << "value " << VALUE << " is outside valid range " << MIN << " <= X < " << MAX << std::endl; \
       util::raise<std::out_of_range>(__PRETTY_FUNCTION__, __FILE__, __LINE__, text.str()); \
    }
 

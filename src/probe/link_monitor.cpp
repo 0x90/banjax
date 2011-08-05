@@ -187,8 +187,11 @@ link_monitor::reader()
          ssize_t probe_sz = recvfrom(s, probe, probe_sz, 0, reinterpret_cast<struct sockaddr*>(&src), &src_sz);
          if(-1 == probe_sz) {
             raise_error(__PRETTY_FUNCTION__, __FILE__, __LINE__, errno, "recvfrom(s, probe, probe_sz, 0, &src, sizeof(src))");
+         } else if(0 == probe_sz) {
+            verbose_msg("received a zero-length packet!");
+         } else {
+            read_probe(src.sin_addr.s_addr, probe, probe_sz);
          }
-         read_probe(src.sin_addr.s_addr, probe, probe_sz);
       }
       close(s);
 
