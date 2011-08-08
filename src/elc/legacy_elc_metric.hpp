@@ -86,6 +86,11 @@ namespace metrics {
    private:
 
       /**
+       * The encoding used to compute the metric.
+       */
+      encoding_sptr enc_;
+
+      /**
        * The total number of frame transmission attempts.
        */
       uint32_t frames_;
@@ -103,7 +108,7 @@ namespace metrics {
       /**
        * Sum of the data rates used to send packets (used to compute average).
        */
-      uint32_t rates_Kbs_;
+      uint_least32_t rates_Kbs_;
 
    };
 
