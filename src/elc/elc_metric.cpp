@@ -29,6 +29,7 @@ elc_metric::elc_metric(uint16_t rts_cts_threshold) :
 }
 
 elc_metric::elc_metric(const elc_metric& other) :
+   abstract_metric(other),
    rts_cts_threshold_(other.rts_cts_threshold_),
    n_pkt_succ_(other.n_pkt_succ_),
    t_pkt_succ_(other.t_pkt_succ_),
@@ -42,6 +43,7 @@ elc_metric&
 elc_metric::operator=(const elc_metric& other)
 {
    if(&other != this) {
+      abstract_metric::operator=(other);
       rts_cts_threshold_ = other.rts_cts_threshold_;
       n_pkt_succ_ = other.n_pkt_succ_;
       t_pkt_succ_ = other.t_pkt_succ_;

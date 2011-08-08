@@ -8,7 +8,7 @@
 #ifndef METRICS_LEGACY_ELC_METRIC_HPP
 #define METRICS_LEGACY_ELC_METRIC_HPP
 
-#include <metric.hpp>
+#include <abstract_metric.hpp>
 #include <net/encoding.hpp>
 #include <net/eui_48.hpp>
 #include <net/buffer.hpp>
@@ -20,13 +20,15 @@ namespace metrics {
    /**
     * legacy_elc_metric is the ELC metric from Jono's original paper.
     */
-   class legacy_elc_metric : public metric {
+   class legacy_elc_metric : public abstract_metric {
    public:
 
       /**
        * legacy_elc_metric constructor.
+       *
+       * \param enc The encoding used.
        */
-      legacy_elc_metric();
+      explicit legacy_elc_metric(net::encoding_sptr enc);
 
       /**
        * legacy_elc_metric copy constuctor.
@@ -86,9 +88,32 @@ namespace metrics {
    private:
 
       /**
+       * Scan the standard rateset of the default encoding and return
+       * the value which has the smallest difference to r.
+       *
+       * \param r The rate to find.
+       * \return The value in rates which is closest to r.
+       */
+      uint32_t closest_rate(uint32_t r) const;
+
+      /**
+       * Compute the time it would take to successfully send a frame
+       * of the given size at the specified rate. The time includes
+       * the contention, RTS/CTS, interframe spacing and
+       * acknowledgment.
+       *
+       * \param rate_Kbs The rate in units of Kbs.
+       * \param frame_sz The size of the frame in octets.
+       * \return The time taken (in microseconds).
+       */
+      uint32_t successful_tx_time(uint32_t rate_Kbs, uint16_t packet_sz) const;
+
+   private:
+
+      /**
        * The encoding used to compute the metric.
        */
-      encoding_sptr enc_;
+      net::encoding_sptr enc_;
 
       /**
        * The total number of frame transmission attempts.
@@ -108,7 +133,7 @@ namespace metrics {
       /**
        * Sum of the data rates used to send packets (used to compute average).
        */
-      uint_least32_t rates_Kbs_;
+      uint_least32_t rates_Kbs_sum_;
 
    };
 

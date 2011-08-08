@@ -21,9 +21,9 @@ using namespace net;
 using namespace std;
 using metrics::etx_metric;
 
-etx_metric::etx_metric() :
+etx_metric::etx_metric(uint16_t probe_port) :
    probe_addr_(0),
-   probe_port_(50000),
+   probe_port_(probe_port),
    tx_frames_(0),
    tx_success_(0)
 {
@@ -75,7 +75,7 @@ etx_metric::add(buffer_sptr b)
       buffer_info_sptr info(b->info());
       if(info->has(TX_FLAGS)) {
 
-         if(udp->src_port() == 50000) {
+         if(udp->src_port() == probe_port_) {
 #if 0
             // ToDo: remember IP address of outgoing frames
             // gather data for forward delivery ratio
@@ -90,8 +90,10 @@ etx_metric::add(buffer_sptr b)
       
       } else {
 
-         // ToDo:
-         // gather data for reverse delivery ratio - we should know our IP address by now
+         if(udp->dst_port() == probe_port_) {
+            // ToDo:
+            // gather data for reverse delivery ratio - we should know our IP address by now
+         }
 
       }
    }

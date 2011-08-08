@@ -20,8 +20,10 @@ namespace metrics {
 
       /**
        * etx_metric constructor.
+       * 
+       * \param probe_port The port number used for ETX probes. 
        */
-      etx_metric();
+      explicit etx_metric(uint16_t probe_port);
 
       /**
        * etx_metric copy constuctor.

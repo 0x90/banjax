@@ -157,7 +157,7 @@ namespace net {
        * \throws invalid_argument_exception When rate_Kbs is not
        *         supported using this encoding.
        */
-      virtual uint16_t txtime(uint16_t frame_sz, uint32_t rate_Kbs, bool has_short_preamble) const = 0;
+      virtual uint16_t txtime(uint16_t frame_sz, uint32_t rate_Kbs, bool has_short_preamble = false) const = 0;
 
       /**
        * Write this object in human-readable form to ostream os.

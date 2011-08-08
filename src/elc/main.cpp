@@ -15,6 +15,7 @@
 #include <metric_group.hpp>
 #include <metric.hpp>
 #include <net/buffer_info.hpp>
+#include <net/ofdm_encoding.hpp>
 #include <net/wnic.hpp>
 #include <net/wnic_encoding_fix.hpp>
 #include <net/wnic_wallclock_fix.hpp>
@@ -39,12 +40,15 @@ main(int ac, char **av)
    try {
 
       string what;
-      uint16_t rts_cts_threshold = UINT16_MAX;
+      uint16_t port_no;
+      uint16_t rts_cts_threshold;
+      encoding_sptr enc;
 
       options_description options("program options");
       options.add_options()
          ("help,?", "produce this help message")
          ("input,i", value<string>(&what)->default_value("mon0"), "input file/device name")
+         ("port,p", value<uint16_t>(&port_no)->default_value(50000), "port number used for ETX probes")
          ("rts-threshold,r", value<uint16_t>(&rts_cts_threshold)->default_value(UINT16_MAX), "RTS threshold level")
          ;
 
@@ -61,8 +65,8 @@ main(int ac, char **av)
       proto->push_back(metric_sptr(new utilization_metric));
       proto->push_back(metric_sptr(new elc_metric(rts_cts_threshold)));
       proto->push_back(metric_sptr(new elc_mrr_metric(rts_cts_threshold)));
-      proto->push_back(metric_sptr(new legacy_elc_metric));
-//      proto->push_back(metric_sptr(new etx_metric));
+      proto->push_back(metric_sptr(new legacy_elc_metric(ofdm_encoding::get()))); // ToDo: use cmdline opt to specify encoding
+      proto->push_back(metric_sptr(new etx_metric(port_no)));
 
       metric_sptr m(metric_sptr(new metric_demux(proto)));
 

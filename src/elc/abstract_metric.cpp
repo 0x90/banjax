@@ -27,13 +27,17 @@ abstract_metric::abstract_metric()
 {
 }
 
-abstract_metric::abstract_metric(const abstract_metric& other)
+abstract_metric::abstract_metric(const abstract_metric& other) :
+   metric(other)
 {
 }
 
 abstract_metric&
 abstract_metric::operator=(const abstract_metric& other)
 {
+   if(this != &other) {
+      metric::operator=(other);
+   }
    return *this;
 }
 
@@ -41,8 +45,6 @@ double
 abstract_metric::avg_contention_time(encoding_sptr enc, uint8_t txnum) const
 {
    CHECK_NOT_NULL(enc.get());
-
-   return 72;
 
    return max_contention_time(enc, txnum) / 2.0;
 }
@@ -55,12 +57,16 @@ abstract_metric::max_contention_time(encoding_sptr enc, uint8_t txnum) const
    /* ath5k hack: collapse contention window after 10 attempts */
    if(txnum >= 10) {
       txnum %= 10;
+      ++txnum;
    }
    /* end hack */
    
    const uint32_t CWMIN = enc->CWMIN();
    const uint32_t CWMAX = enc->CWMAX();
    const uint32_t CW = ((CWMIN + 1) << txnum) - 1;
+
+   return 144; // ToDo: FIX ME URGENTLY!
+
    return min(max(CW, CWMIN), CWMAX) * enc->slot_time();
 }
 
