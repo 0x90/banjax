@@ -26,6 +26,7 @@ libbanjax_la_SOURCES= \
 	net/dsss_ofdm_encoding.cpp \
 	net/dummy_wnic.cpp \
 	net/encoding.cpp \
+	net/encoding_factory.cpp \
 	net/eui_48.cpp \
 	net/eui_48_range.cpp \
 	net/fhss_encoding.cpp \

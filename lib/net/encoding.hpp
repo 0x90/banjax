@@ -34,6 +34,11 @@ namespace net {
    typedef std::set<uint32_t> rateset;
 
    /**
+    * Alias for shared_ptr<encoding>.
+    */
+   typedef boost::shared_ptr<class encoding> encoding_sptr;
+
+   /**
     * encoding is an interface that specifies the timing
     * characteristics of the IEEE 802.11 channel encoding. Concrete
     * subclasses implement this class for 802.11a/g (OFDM), 802.11b/g
@@ -41,6 +46,15 @@ namespace net {
     */
    class encoding : public boost::noncopyable {
    public:
+
+      /**
+       * Return the specified encoding.
+       *
+       * \param what The name of the encoding to return.
+       * \return A non-null pointer to the encoding.
+       * \throws invalid_argument_exception When the named encoding isn't recognized.
+       */
+      static encoding_sptr get(std::string what);
 
       /**
        * (Virtual) encoding destructor.
@@ -188,11 +202,6 @@ namespace net {
       os << e;
       return os;
    }
-
-   /**
-    * Alias for shared_ptr<encoding>.
-    */
-   typedef boost::shared_ptr<encoding> encoding_sptr;
 
 }
 

@@ -19,6 +19,7 @@ using namespace std;
 using metrics::elc_metric;
 
 elc_metric::elc_metric(uint16_t rts_cts_threshold) :
+   abstract_metric(),
    rts_cts_threshold_(rts_cts_threshold),
    n_pkt_succ_(0),
    t_pkt_succ_(0.0),
