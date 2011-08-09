@@ -19,7 +19,7 @@
 #include <net/wnic.hpp>
 #include <net/wnic_encoding_fix.hpp>
 #include <net/wnic_wallclock_fix.hpp>
-#include <utilization_metric.hpp>
+#include <goodput_metric.hpp>
 
 #include <boost/program_options.hpp>
 #include <cstdlib>
@@ -47,7 +47,7 @@ main(int ac, char **av)
       options_description options("program options");
       options.add_options()
          ("help,?", value(&help)->default_value(false)->zero_tokens(), "produce this help message")
-         ("encoding,e", value<string>(&enc_str)->default_value("ofdm"), "channel encoding")
+         ("encoding,e", value<string>(&enc_str)->default_value("OFDM"), "channel encoding")
          ("input,i", value<string>(&what)->default_value("mon0"), "input file/device name")
          ("port,p", value<uint16_t>(&port_no)->default_value(50000), "port number used for ETX probes")
          ("rts-threshold,r", value<uint16_t>(&rts_cts_threshold)->default_value(UINT16_MAX), "RTS threshold level")
@@ -64,7 +64,7 @@ main(int ac, char **av)
 
       encoding_sptr enc(encoding::get(enc_str));
    	metric_group_sptr proto(new metric_group);
-      proto->push_back(metric_sptr(new utilization_metric));
+      proto->push_back(metric_sptr(new goodput_metric));
       proto->push_back(metric_sptr(new elc_metric(rts_cts_threshold)));
       proto->push_back(metric_sptr(new elc_mrr_metric(rts_cts_threshold)));
       proto->push_back(metric_sptr(new legacy_elc_metric(enc)));

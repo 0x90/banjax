@@ -8,12 +8,12 @@ elc_SOURCES = \
 	elc_metric.cpp \
 	elc_mrr_metric.cpp \
 	etx_metric.cpp \
+	goodput_metric.cpp \
 	legacy_elc_metric.cpp \
 	metric_demux.cpp \
 	metric_group.cpp \
 	metric.cpp \
-	main.cpp \
-	utilization_metric.cpp
+	main.cpp 
 
 elc_CPPFLAGS = -I@top_srcdir@/lib
 

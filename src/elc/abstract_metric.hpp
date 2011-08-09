@@ -46,7 +46,8 @@ namespace metrics {
       /**
        * Return the average contention window time for transmission
        * attempt txnum. We assume that the slot chosen is picked using
-       * a random uniform distribution.
+       * a random uniform distribution and so, on average, we wait for
+       * half the contention window.
        *
        * \param enc The encoding used by the PHY layer.
        * \param txc The number of the (re)transmission attempt.

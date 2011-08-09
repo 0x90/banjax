@@ -5,8 +5,8 @@
  *
  */
 
-#ifndef METRICS_UTILIZATION_METRIC_HPP
-#define METRICS_UTILIZATION_METRIC_HPP
+#ifndef METRICS_GOODPUT_METRIC_HPP
+#define METRICS_GOODPUT_METRIC_HPP
 
 #include <metric.hpp>
 #include <net/encoding.hpp>
@@ -18,51 +18,51 @@
 namespace metrics {
 
    /**
-    * utilization_metric measures IP payload throughput.
+    * goodput_metric measures IP payload throughput.
     */
-   class utilization_metric : public metric {
+   class goodput_metric : public metric {
    public:
 
       /**
-       * utilization_metric constructor.
+       * goodput_metric constructor.
        */
-      utilization_metric();
+      goodput_metric();
 
       /**
-       * utilization_metric copy constuctor.
+       * goodput_metric copy constuctor.
        *
-       * \param other The other utilization_metric to initialize from.
+       * \param other The other goodput_metric to initialize from.
        */
-      utilization_metric(const utilization_metric& other);
+      goodput_metric(const goodput_metric& other);
 
       /**
-       * utilization_metric assignment operator.
+       * goodput_metric assignment operator.
        *
-       * \param other The other utilization_metric to assign from.
-       * \return A reference to this utilization_metric.
+       * \param other The other goodput_metric to assign from.
+       * \return A reference to this goodput_metric.
        */
-      utilization_metric& operator=(const utilization_metric& other);
+      goodput_metric& operator=(const goodput_metric& other);
 
       /**
-       * utilization_metric destructor.
+       * goodput_metric destructor.
        */
-     virtual ~utilization_metric();
+     virtual ~goodput_metric();
 
       /**
-       * Add a frame to the utilization_metric and update the utilization_metric statistics.
+       * Add a frame to the goodput_metric and update the goodput_metric statistics.
        *
        * \param b A shared_pointer to the buffer containing the frame.
        */
       virtual void add(net::buffer_sptr b);
 
       /**
-       * Return a pointer to a clone (deep copy) of this utilization_metric
+       * Return a pointer to a clone (deep copy) of this goodput_metric
        * instance. The clone is allocated on the heap using new and
        * the caller is responsible for ensuring it is deleted.
        *
-       * \return A poiner to a new utilization_metric instance.
+       * \return A poiner to a new goodput_metric instance.
        */
-      virtual utilization_metric *clone() const;
+      virtual goodput_metric *clone() const;
 
       /**
        * Compute and return the ELC metric.
@@ -94,4 +94,4 @@ namespace metrics {
 
 }
 
-#endif // METRICS_UTILIZATION_METRIC_HPP
+#endif // METRICS_GOODPUT_METRIC_HPP

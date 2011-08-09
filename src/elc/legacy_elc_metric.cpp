@@ -67,13 +67,8 @@ legacy_elc_metric::add(buffer_sptr b)
    if(DATA_FRAME == fc.type() && info->has(TX_FLAGS)) {
       bool tx_success = (0 == (info->tx_flags() & TX_FLAGS_FAIL));
       if(tx_success && info->channel_encoding() == enc_) {
-         const uint32_t IEEE80211_HDR_SZ = 26;
-         const uint32_t LLC_HDR_SZ = 8;
-         const uint32_t IP_HDR_SZ = 20;
-         const uint32_t UDP_HDR_SZ = 8;
-         const uint16_t HDR_SZ = IEEE80211_HDR_SZ + LLC_HDR_SZ + IP_HDR_SZ + UDP_HDR_SZ;
          ++packets_;
-         packet_octets_ += b->data_size() - HDR_SZ;
+         packet_octets_ += b->data_size();
          rates_Kbs_sum_ += info->rate_Kbs();
       }
       frames_ += info->has(DATA_RETRIES) ? 1 + info->data_retries() : 1;
@@ -94,8 +89,8 @@ legacy_elc_metric::metric() const
    const double AVG_PKT_SZ = packet_octets_ / PKTS;
    const double AVG_PKT_RATE_Kbs = rates_Kbs_sum_ / PKTS;
 
-   const double BEST_TX_TIME = successful_tx_time(closest_rate(AVG_PKT_RATE_Kbs), AVG_PKT_SZ) / 1e6;
-   const double EMT = (AVG_PKT_SZ * 8.0) / BEST_TX_TIME;
+   const double BEST_TX_TIME = successful_tx_time(closest_rate(AVG_PKT_RATE_Kbs), AVG_PKT_SZ);
+   const double EMT = AVG_PKT_SZ / BEST_TX_TIME;
    const double FDR = PKTS / FRMS;
    return FDR * EMT;
 }
