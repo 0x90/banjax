@@ -39,14 +39,15 @@ main(int ac, char **av)
 {
    try {
 
-      string what;
+      bool help;
+      string enc_str, what;
       uint16_t port_no;
       uint16_t rts_cts_threshold;
-      encoding_sptr enc;
 
       options_description options("program options");
       options.add_options()
-         ("help,?", "produce this help message")
+         ("help,?", value(&help)->default_value(false)->zero_tokens(), "produce this help message")
+         ("encoding,e", value<string>(&enc_str)->default_value("ofdm"), "channel encoding")
          ("input,i", value<string>(&what)->default_value("mon0"), "input file/device name")
          ("port,p", value<uint16_t>(&port_no)->default_value(50000), "port number used for ETX probes")
          ("rts-threshold,r", value<uint16_t>(&rts_cts_threshold)->default_value(UINT16_MAX), "RTS threshold level")
@@ -56,18 +57,18 @@ main(int ac, char **av)
       store(parse_command_line(ac, av, options), vars);
       notify(vars);   
 
-      if(vars.count("help")) {
+      if(help) {
          cout << options << endl;
          exit(EXIT_SUCCESS);
       }
 
+      encoding_sptr enc(encoding::get(enc_str));
    	metric_group_sptr proto(new metric_group);
       proto->push_back(metric_sptr(new utilization_metric));
       proto->push_back(metric_sptr(new elc_metric(rts_cts_threshold)));
       proto->push_back(metric_sptr(new elc_mrr_metric(rts_cts_threshold)));
-      proto->push_back(metric_sptr(new legacy_elc_metric(ofdm_encoding::get()))); // ToDo: use cmdline opt to specify encoding
-      proto->push_back(metric_sptr(new etx_metric(port_no)));
-
+      proto->push_back(metric_sptr(new legacy_elc_metric(enc)));
+//      proto->push_back(metric_sptr(new etx_metric(port_no)));
       metric_sptr m(metric_sptr(new metric_demux(proto)));
 
       wnic_sptr w(wnic::open(what));

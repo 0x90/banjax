@@ -23,7 +23,8 @@ abstract_metric::~abstract_metric()
 {
 }
 
-abstract_metric::abstract_metric()
+abstract_metric::abstract_metric() :
+   metric()
 {
 }
 
@@ -42,39 +43,40 @@ abstract_metric::operator=(const abstract_metric& other)
 }
 
 double
-abstract_metric::avg_contention_time(encoding_sptr enc, uint8_t txnum) const
+abstract_metric::avg_contention_time(encoding_sptr enc, uint8_t txc) const
 {
    CHECK_NOT_NULL(enc.get());
 
-   return max_contention_time(enc, txnum) / 2.0;
+   return (max_contention_slots(enc, txc) / 2.0) * enc->slot_time();
 }
 
-double
-abstract_metric::max_contention_time(encoding_sptr enc, uint8_t txnum) const
+uint16_t
+abstract_metric::max_contention_slots(net::encoding_sptr enc, uint8_t txc) const
 {
    CHECK_NOT_NULL(enc.get());
 
-   /* ath5k hack: collapse contention window after 10 attempts */
-   if(txnum >= 10) {
-      txnum %= 10;
-      ++txnum;
-   }
+   /* ath5k hack: collapse contention window every 10 attempts */
+   txc %= 10;
    /* end hack */
    
    const uint32_t CWMIN = enc->CWMIN();
    const uint32_t CWMAX = enc->CWMAX();
-   const uint32_t CW = ((CWMIN + 1) << txnum) - 1;
+   const uint32_t CW = ((CWMIN + 1) << txc) - 1;
 
-   return 144; // ToDo: FIX ME URGENTLY!
+   return min(max(CW, CWMIN), CWMAX);
+}
 
-   return min(max(CW, CWMIN), CWMAX) * enc->slot_time();
+double
+abstract_metric::max_contention_time(encoding_sptr enc, uint8_t txc) const
+{
+   return max_contention_slots(enc, txc) * enc->slot_time();
 }
 
 double
 abstract_metric::rts_cts_time(encoding_sptr enc, uint32_t frame_sz, bool short_preamble) const
 {
-   CHECK_NOT_EQUAL(frame_sz, 0);
    CHECK_NOT_NULL(enc.get());
+   CHECK_NOT_EQUAL(frame_sz, 0);
 
    const uint32_t RTS_SZ = 20;
    const uint32_t CTS_SZ = 14;

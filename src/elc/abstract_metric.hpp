@@ -49,10 +49,20 @@ namespace metrics {
        * a random uniform distribution.
        *
        * \param enc The encoding used by the PHY layer.
-       * \param txnum The number of the transmission attempt.
+       * \param txc The number of the (re)transmission attempt.
        * \return The time, in microseconds, that will be waited on average.
        */
-      double avg_contention_time(net::encoding_sptr enc, uint8_t txnum) const;
+      double avg_contention_time(net::encoding_sptr enc, uint8_t txc) const;
+
+      /**
+       * Return the contention window size for transmission attempt
+       * txc.
+       *
+       * \param enc The encoding used by the PHY layer.
+       * \param txc The number of the (re)transmission attempt.
+       * \return The maximum size, in slot times, of the contention window.
+       */
+      uint16_t max_contention_slots(net::encoding_sptr enc, uint8_t txc) const;
 
       /**
        * Return the contention window time for transmission attempt
@@ -60,10 +70,10 @@ namespace metrics {
        * range allowed by the encoding.
        *
        * \param enc The encoding used by the PHY layer.
-       * \param txnum The number of the transmission attempt.
+       * \param txc The number of the (re)transmission attempt.
        * \return The maximum time, in microseconds, used for the contention window.
        */
-      double max_contention_time(net::encoding_sptr enc, uint8_t txnum) const;
+      double max_contention_time(net::encoding_sptr enc, uint8_t txc) const;
 
       /**
        * Return the amount of time taken by the RTS/CTS exchange.

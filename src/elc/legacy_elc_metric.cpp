@@ -124,7 +124,7 @@ legacy_elc_metric::closest_rate(uint32_t r) const
    for(rateset::const_iterator i(rates.begin()); i != rates.end(); ++i) {
       uint32_t t = llabs(static_cast<int64_t>(*i) - static_cast<int64_t>(r));
       if(t < d) {
-         t = d;
+         d = t;
          rate = *i;
       }      
    }
