@@ -188,7 +188,7 @@ link_monitor::reader()
          if(-1 == probe_sz) {
             raise_error(__PRETTY_FUNCTION__, __FILE__, __LINE__, errno, "recvfrom(s, probe, probe_sz, 0, &src, sizeof(src))");
          } else if(0 == probe_sz) {
-            verbose_msg("received a zero-length packet!");
+            // zero-sized packet caused by writer thread
          } else {
             read_probe(src.sin_addr.s_addr, probe, probe_sz);
          }
