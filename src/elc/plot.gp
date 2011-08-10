@@ -4,7 +4,7 @@ set term postscript color enhanced eps
 set out "plot.eps"
 
 set xlabel "Time (s)"
-set ylabel "Data (MiB)"
+set ylabel "Data (Mib/S)"
 
 plot "plot.data" using 1:2 with linespoints title "Goodput", \
 	  "plot.data" using 1:3 with linespoints title "ELC", \

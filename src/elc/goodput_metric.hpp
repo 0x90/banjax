@@ -18,7 +18,12 @@
 namespace metrics {
 
    /**
-    * goodput_metric measures IP payload throughput.
+    * goodput_metric measures IP payload goodput from the iper
+    * program. This is the "gold standard" in that it tells us exactly
+    * what the upper layer achieved in goodput. A quirk is that we
+    * report the goodput using the MAC layer figure (in octets/s) so
+    * that other wireless metrics do not have to account of LLC/IP/UDP
+    * headers when they estimate link capacity.
     */
    class goodput_metric : public metric {
    public:
@@ -86,9 +91,18 @@ namespace metrics {
    private:
 
       /**
-       * Number of payload octets transmitted in last second.
+       * Number of MAC layer octets successfully sent in last second.
+       */
+      uint32_t frame_octets_;
+      /**
+       * Number of iperf octets transmitted successfully in last second.
        */
       uint32_t packet_octets_;
+
+      /**
+       * Total number of iperf octets transmitted successfully.
+       */
+      uint32_t packet_octets_total_;
 
    };
 

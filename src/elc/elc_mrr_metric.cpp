@@ -66,7 +66,8 @@ elc_mrr_metric::add(buffer_sptr b)
    buffer_info_sptr info(b->info());
    if(info->has(TX_FLAGS) && fc.type() == DATA_FRAME) {
       // update totals for packet size and count
-      packet_octets_ += b->data_size();
+      const uint32_t CRC_SZ = 4;
+      packet_octets_ += b->data_size() + CRC_SZ;
       ++packet_count_;
 
       // compute the time taken to send this packet - whether good or bad
