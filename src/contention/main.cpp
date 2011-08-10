@@ -7,6 +7,7 @@
 #define __STDC_LIMIT_MACROS
 #include <net/buffer_info.hpp>
 #include <net/wnic.hpp>
+#include <net/wnic_encoding_fix.hpp>
 #include <net/wnic_timestamp_fix.hpp>
 #include <net/wnic_timestamp_swizzle.hpp>
 #include <dot11/frame.hpp>
@@ -46,6 +47,7 @@ main(int ac, char **av)
       }
 
       wnic_sptr w(wnic::open(what));
+      w = wnic_sptr(new wnic_encoding_fix(w, CHANNEL_CODING_OFDM | CHANNEL_PREAMBLE_LONG));
       w = wnic_sptr(new wnic_timestamp_swizzle(w));
       w = wnic_sptr(new wnic_timestamp_fix(w));
 

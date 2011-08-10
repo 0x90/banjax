@@ -121,8 +121,8 @@ elc_metric::packet_succ_time(buffer_sptr b) const
    double usecs = 0.0;
    buffer_info_sptr info(b->info());
    encoding_sptr enc(info->channel_encoding());
-   uint8_t txc = 1 + info->data_retries();
-   for(uint8_t i = 0; i < txc - 1; ++i) {
+   uint8_t txc = info->data_retries();
+   for(uint8_t i = 0; i < txc; ++i) {
       usecs += avg_contention_time(enc, i) + frame_fail_time(b);
    }
    return usecs + avg_contention_time(enc, txc) + frame_succ_time(b);
@@ -134,8 +134,8 @@ elc_metric::packet_fail_time(buffer_sptr b) const
    double usecs = 0.0;
    buffer_info_sptr info(b->info());
    encoding_sptr enc(info->channel_encoding());
-   uint8_t txc = 1 + info->data_retries();
-   for(uint8_t i = 0; i < txc; ++i) {
+   uint8_t txc = info->data_retries();
+   for(uint8_t i = 0; i < txc + 1; ++i) {
       usecs += avg_contention_time(enc, i) + frame_fail_time(b);
    }
    return usecs;
