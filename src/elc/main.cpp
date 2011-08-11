@@ -10,16 +10,19 @@
 #include <elc_mrr_metric.hpp>
 // #include <ett_metric.hpp>
 #include <etx_metric.hpp>
+#include <goodput_metric.hpp>
 #include <legacy_elc_metric.hpp>
 #include <metric_demux.hpp>
 #include <metric_group.hpp>
 #include <metric.hpp>
+#include <pdr_metric.hpp>
+#include <txc_metric.hpp>
+
 #include <net/buffer_info.hpp>
 #include <net/ofdm_encoding.hpp>
 #include <net/wnic.hpp>
 #include <net/wnic_encoding_fix.hpp>
 #include <net/wnic_wallclock_fix.hpp>
-#include <goodput_metric.hpp>
 
 #include <boost/program_options.hpp>
 #include <cstdlib>
@@ -69,6 +72,8 @@ main(int ac, char **av)
       proto->push_back(metric_sptr(new elc_mrr_metric(rts_cts_threshold)));
       proto->push_back(metric_sptr(new legacy_elc_metric(enc)));
 //      proto->push_back(metric_sptr(new etx_metric(port_no)));
+      proto->push_back(metric_sptr(new txc_metric));
+//      proto->push_back(metric_sptr(new pdr_metric));
       metric_sptr m(metric_sptr(new metric_demux(proto)));
 
       wnic_sptr w(wnic::open(what));

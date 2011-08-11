@@ -13,7 +13,9 @@ elc_SOURCES = \
 	metric_demux.cpp \
 	metric_group.cpp \
 	metric.cpp \
-	main.cpp 
+	main.cpp \
+	pdr_metric.cpp \
+	txc_metric.cpp 
 
 elc_CPPFLAGS = -I@top_srcdir@/lib
 

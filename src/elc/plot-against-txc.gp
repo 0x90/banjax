@@ -1,0 +1,17 @@
+#!/usr/bin/gnuplot
+
+set term postscript color enhanced eps
+set out "plot.eps"
+
+set ytics nomirror
+set y2tics
+set xlabel "Time (s)"
+set ylabel "Data (Mib/S)"
+set y2label "Transmissions/Packet"
+
+plot "plot.data" using 1:2 with lines title "Goodput", \
+	  "plot.data" using 1:3 with lines title "iperf", \
+	  "plot.data" using 1:4 with lines title "ELC", \
+	  "plot.data" using 1:5 with lines title "ELC-MRR", \
+	  "plot.data" using 1:6 with lines title "ELC (Legacy)", \
+	  "plot.data" using 1:9 with lines title "TXC" axes x1y2
