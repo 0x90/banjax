@@ -8,6 +8,7 @@
 #define __STDC_CONSTANT_MACROS
 #include <elc_mrr_metric.hpp>
 #include <dot11/frame.hpp>
+#include <dot11/data_frame.hpp>
 
 #include <iostream>
 #include <iomanip>
@@ -19,6 +20,7 @@ using namespace std;
 using metrics::elc_mrr_metric;
 
 elc_mrr_metric::elc_mrr_metric(uint16_t rts_cts_threshold) :
+   abstract_metric(),
    rts_cts_threshold_(rts_cts_threshold),
    n_pkt_succ_(0),
    t_pkt_succ_(0.0),
@@ -62,14 +64,13 @@ void
 elc_mrr_metric::add(buffer_sptr b)
 {
    frame f(b);
-   frame_control fc(f.fc());
    buffer_info_sptr info(b->info());
-   if(info->has(TX_FLAGS) && fc.type() == DATA_FRAME) {
+   data_frame_sptr df(f.as_data_frame());
+   if(info->has(TX_FLAGS) && df) {
       // update totals for packet size and count
       const uint32_t CRC_SZ = 4;
       packet_octets_ += b->data_size() + CRC_SZ;
       ++packet_count_;
-
       // compute the time taken to send this packet - whether good or bad
       buffer_info_sptr info(b->info());
       uint32_t tx_flags = info->tx_flags();
