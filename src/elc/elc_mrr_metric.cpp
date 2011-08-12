@@ -124,7 +124,7 @@ elc_mrr_metric::packet_succ_time(buffer_sptr b) const
    vector<uint32_t> rates(info->rates());
    encoding_sptr enc(info->channel_encoding());
    uint8_t txc = rates.size();
-   for(uint8_t i = 0; i < txc - 1; ++i) {
+   for(uint8_t i = 0; i < txc - 2; ++i) {
       usecs += avg_contention_time(enc, i) + frame_fail_time(b, rates[i]);
    }
    return usecs + avg_contention_time(enc, txc) + frame_succ_time(b, rates[txc - 1]);
