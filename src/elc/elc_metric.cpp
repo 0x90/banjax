@@ -121,7 +121,7 @@ elc_metric::packet_succ_time(buffer_sptr b) const
    for(uint8_t i = 0; i < retries; ++i) {
       usecs += avg_contention_time(enc, i) + frame_fail_time(b);
    }
-   return usecs + avg_contention_time(enc, retries) + frame_succ_time(b);
+   return usecs + avg_contention_time(enc, retries+1) + frame_succ_time(b);
 }
 
 double
