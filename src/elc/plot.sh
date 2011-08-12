@@ -1,15 +1,14 @@
 #!/bin/bash
 
-D=`dirname $0`
-
+p=`dirname $0`
 i="$1"
 if [ -f $i ]; then
    o="${i/.pcap/.eps}"
-	d="${i/.pcap/.data}"
-   ./elc -i $1 | sed 's/,//g' | awk -f $D/plot.awk > plot.data
-   # gnuplot $D/plot.gp
-   gnuplot $D/plot-against-txc.gp
+   d="${i/.pcap/.data}"
+   $p/elc -i $1 | sed 's/,//g' | awk -f $p/plot.awk > plot.data
+   gnuplot $p/plot-against-txc.gp
    mv plot.eps "$o"
    mv plot.data "$d"
-	exit 0
+   exit 0
 fi
+exit 1
