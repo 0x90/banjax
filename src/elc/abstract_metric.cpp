@@ -63,7 +63,7 @@ abstract_metric::max_contention_slots(net::encoding_sptr enc, uint8_t txc) const
    const uint32_t CWMAX = enc->CWMAX();
    const uint32_t CW = ((CWMIN + 1) << txc) - 1;
 
-   return min(max(CW, CWMIN), CWMAX);
+   return min(max(CW, CWMIN), CWMAX) + 1;
 }
 
 double
