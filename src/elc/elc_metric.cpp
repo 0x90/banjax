@@ -91,12 +91,8 @@ elc_metric::clone() const
 double
 elc_metric::metric() const
 {
-   double m = 0.0;
-   if(0 < packet_count_) {
-      const double AVG_PKT_SZ = packet_octets_ / static_cast<double>(packet_count_);
-      m = (n_pkt_succ_ * AVG_PKT_SZ) / (t_pkt_succ_ + t_pkt_fail_);
-   }
-   return m;
+   const double AVG_PKT_SZ = packet_octets_ / static_cast<double>(packet_count_);
+   return (n_pkt_succ_ * AVG_PKT_SZ) / (t_pkt_succ_ + t_pkt_fail_);
 }
 
 void
@@ -150,7 +146,7 @@ elc_metric::frame_succ_time(buffer_sptr b) const
    const uint32_t CRC_SZ = 4;
    const uint32_t FRAME_SZ = b->data_size() + CRC_SZ;
    const bool PREAMBLE =  info->has(CHANNEL_FLAGS) && (info->channel_flags() & CHANNEL_PREAMBLE_SHORT);
-   const uint32_t T_RTS_CTS =  (rts_cts_threshold_ <= FRAME_SZ) ? rts_cts_time(enc, FRAME_SZ, PREAMBLE) : 0;
+   const uint32_t T_RTS_CTS = (rts_cts_threshold_ <= FRAME_SZ) ? rts_cts_time(enc, FRAME_SZ, PREAMBLE) : 0;
    const uint32_t DATA_RATE = info->rate_Kbs();
    const uint32_t T_DATA = enc->txtime(FRAME_SZ, DATA_RATE, PREAMBLE);
    const uint32_t ACK_SZ = 14;

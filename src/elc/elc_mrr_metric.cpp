@@ -72,7 +72,6 @@ elc_mrr_metric::add(buffer_sptr b)
       packet_octets_ += b->data_size() + CRC_SZ;
       ++packet_count_;
       // compute the time taken to send this packet - whether good or bad
-      buffer_info_sptr info(b->info());
       uint32_t tx_flags = info->tx_flags();
       if(tx_flags & TX_FLAGS_FAIL) {
          t_pkt_fail_ += packet_fail_time(b);
@@ -92,12 +91,8 @@ elc_mrr_metric::clone() const
 double
 elc_mrr_metric::metric() const
 {
-   double m = 0.0;
-   if(0 < packet_count_) {
-      const double AVG_PKT_SZ = packet_octets_ / static_cast<double>(packet_count_);
-      m = (n_pkt_succ_ * AVG_PKT_SZ) / (t_pkt_succ_ + t_pkt_fail_);
-   }
-   return m;
+   const double AVG_PKT_SZ = packet_octets_ / static_cast<double>(packet_count_);
+   return (n_pkt_succ_ * AVG_PKT_SZ) / (t_pkt_succ_ + t_pkt_fail_);
 }
 
 void
@@ -124,7 +119,7 @@ elc_mrr_metric::packet_succ_time(buffer_sptr b) const
    vector<uint32_t> rates(info->rates());
    encoding_sptr enc(info->channel_encoding());
    uint8_t txc = rates.size();
-   for(uint8_t i = 0; i < txc - 2; ++i) {
+   for(uint8_t i = 0; i < txc - 1; ++i) {
       usecs += avg_contention_time(enc, i) + frame_fail_time(b, rates[i]);
    }
    return usecs + avg_contention_time(enc, txc) + frame_succ_time(b, rates[txc - 1]);

@@ -23,7 +23,7 @@ if [ -f $d ]; then
 					 d=", "
 					 ;;
 				"old")
-					 p="$p$d\"$f\" using 1:6 with lines title \"ELC-MRR\""
+					 p="$p$d\"$f\" using 1:6 with lines title \"ELC (Legacy)\""
 					 d=", "
 					 ;;
 				"pkt")
