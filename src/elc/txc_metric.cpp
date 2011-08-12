@@ -57,10 +57,7 @@ txc_metric::add(buffer_sptr b)
    buffer_info_sptr info(b->info());
    data_frame_sptr df(f.as_data_frame());
    if(info->has(TX_FLAGS) && df) {
-      bool tx_success = (0 == (info->tx_flags() & TX_FLAGS_FAIL));
-      if(tx_success) {
-         ++packets_;
-      }
+      ++packets_;
       frames_ += info->has(DATA_RETRIES) ? 1 + info->data_retries() : 1;
    }
 }

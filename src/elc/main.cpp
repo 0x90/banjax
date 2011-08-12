@@ -16,6 +16,7 @@
 #include <metric_group.hpp>
 #include <metric.hpp>
 #include <pdr_metric.hpp>
+#include <pktsz_metric.hpp>
 #include <txc_metric.hpp>
 
 #include <net/buffer_info.hpp>
@@ -74,6 +75,7 @@ main(int ac, char **av)
 //      proto->push_back(metric_sptr(new etx_metric(port_no)));
       proto->push_back(metric_sptr(new txc_metric));
 //      proto->push_back(metric_sptr(new pdr_metric));
+//      proto->push_back(metric_sptr(new pktsz_metric));
       metric_sptr m(metric_sptr(new metric_demux(proto)));
 
       wnic_sptr w(wnic::open(what));

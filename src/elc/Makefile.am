@@ -15,6 +15,7 @@ elc_SOURCES = \
 	metric.cpp \
 	main.cpp \
 	pdr_metric.cpp \
+	pktsz_metric.cpp \
 	txc_metric.cpp 
 
 elc_CPPFLAGS = -I@top_srcdir@/lib

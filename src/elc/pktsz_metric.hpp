@@ -5,8 +5,8 @@
  *
  */
 
-#ifndef METRICS_TXC_METRIC_HPP
-#define METRICS_TXC_METRIC_HPP
+#ifndef METRICS_PKTSZ_METRIC_HPP
+#define METRICS_PKTSZ_METRIC_HPP
 
 #include <abstract_metric.hpp>
 #include <net/encoding.hpp>
@@ -18,53 +18,53 @@
 namespace metrics {
 
    /**
-    * txc_metric reports the packet delivery ratio.
+    * pktsz_metric reports the average iperf packet size.
     */
-   class txc_metric : public abstract_metric {
+   class pktsz_metric : public abstract_metric {
    public:
 
       /**
-       * txc_metric default constructor.
+       * pktsz_metric default constructor.
        *
        * \param enc The encoding used.
        */
-      txc_metric();
+      pktsz_metric();
 
       /**
-       * txc_metric copy constuctor.
+       * pktsz_metric copy constuctor.
        *
-       * \param other The other txc_metric to initialize from.
+       * \param other The other pktsz_metric to initialize from.
        */
-      txc_metric(const txc_metric& other);
+      pktsz_metric(const pktsz_metric& other);
 
       /**
-       * txc_metric assignment operator.
+       * pktsz_metric assignment operator.
        *
-       * \param other The other txc_metric to assign from.
-       * \return A reference to this txc_metric.
+       * \param other The other pktsz_metric to assign from.
+       * \return A reference to this pktsz_metric.
        */
-      txc_metric& operator=(const txc_metric& other);
+      pktsz_metric& operator=(const pktsz_metric& other);
 
       /**
-       * txc_metric destructor.
+       * pktsz_metric destructor.
        */
-     virtual ~txc_metric();
+     virtual ~pktsz_metric();
 
       /**
-       * Add a frame to the txc_metric and update the txc_metric statistics.
+       * Add a frame to the pktsz_metric and update the pktsz_metric statistics.
        *
        * \param b A shared_pointer to the buffer containing the frame.
        */
       virtual void add(net::buffer_sptr b);
 
       /**
-       * Return a pointer to a clone (deep copy) of this txc_metric
+       * Return a pointer to a clone (deep copy) of this pktsz_metric
        * instance. The clone is allocated on the heap using new and
        * the caller is responsible for ensuring it is deleted.
        *
-       * \return A poiner to a new txc_metric instance.
+       * \return A poiner to a new pktsz_metric instance.
        */
-      virtual txc_metric *clone() const;
+      virtual pktsz_metric *clone() const;
 
       /**
        * Compute and return the ELC metric.
@@ -88,17 +88,17 @@ namespace metrics {
    private:
 
       /**
-       * The total number of transmission attempts.
+       * The total number of successful packet deliveries.
        */
       uint_least32_t packets_;
 
       /**
-       * The total number of frame transmissions.
+       * The total size of all successful packet deliveries.
        */
-      uint_least32_t frames_;
+      uint_least32_t octets_;
 
    };
 
 }
 
-#endif // METRICS_TXC_METRIC_HPP
+#endif // METRICS_PKTSZ_METRIC_HPP
