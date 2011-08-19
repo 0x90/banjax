@@ -60,6 +60,7 @@ goodput_metric::add(buffer_sptr b)
    buffer_info_sptr info(b->info());
    data_frame_sptr df(f.as_data_frame());
    if(info->has(TX_FLAGS) && df) {
+
       // ignore non-iperf traffic
       llc_hdr_sptr llc(df->get_llc_hdr());
       if(!llc)
@@ -89,6 +90,7 @@ goodput_metric::add(buffer_sptr b)
          const uint32_t CRC_SZ = 4;
          frame_octets_ += FRAME_SZ + CRC_SZ;
       }
+
    }
 }
 
@@ -101,7 +103,7 @@ goodput_metric::clone() const
 double
 goodput_metric::metric() const
 {
-   return frame_octets_ / 1e6;
+   return packet_octets_ / 1e6;
 }
 
 void
@@ -114,5 +116,5 @@ goodput_metric::reset()
 void
 goodput_metric::write(ostream& os) const
 {
-   os << "goodput: " << metric() << ", iperf: " << (packet_octets_ / 1e6);
+   os << "goodput: " << (frame_octets_ / 1e6) << ", iperf: " << metric();
 }

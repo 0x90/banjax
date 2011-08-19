@@ -5,7 +5,7 @@ i="$1"
 if [ -f $i ]; then
    o="${i/.pcap/.eps}"
    d="${i/.pcap/.data}"
-   $p/elc -i $1 | sed 's/,//g' | awk -f $p/plot.awk > plot.data
+   $p/elc -i $1 | sed 's/,//g' | sed 's/nan/0/g' | awk -f $p/plot.awk > plot.data
    gnuplot $p/plot-against-txc.gp
    mv plot.eps "$o"
    mv plot.data "$d"

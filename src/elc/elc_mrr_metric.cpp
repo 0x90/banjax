@@ -67,18 +67,15 @@ elc_mrr_metric::add(buffer_sptr b)
    buffer_info_sptr info(b->info());
    data_frame_sptr df(f.as_data_frame());
    if(info->has(TX_FLAGS) && df) {
-      // update totals for packet size and count
-      const uint32_t CRC_SZ = 4;
-      packet_octets_ += b->data_size() + CRC_SZ;
-      ++packet_count_;
-      // compute the time taken to send this packet - whether good or bad
       uint32_t tx_flags = info->tx_flags();
       if(tx_flags & TX_FLAGS_FAIL) {
          t_pkt_fail_ += packet_fail_time(b);
       } else {
          ++n_pkt_succ_;
          t_pkt_succ_ += packet_succ_time(b);
-      }
+         const uint32_t CRC_SZ = 4;
+         packet_octets_ += b->data_size() + CRC_SZ;
+         ++packet_count_;      }
    }
 }
 
@@ -118,11 +115,11 @@ elc_mrr_metric::packet_succ_time(buffer_sptr b) const
    buffer_info_sptr info(b->info());
    vector<uint32_t> rates(info->rates());
    encoding_sptr enc(info->channel_encoding());
-   uint8_t txc = rates.size();
-   for(uint8_t i = 0; i < txc - 1; ++i) {
+   uint8_t retries = rates.size() - 1;
+   for(uint8_t i = 0; i < retries; ++i) {
       usecs += avg_contention_time(enc, i) + frame_fail_time(b, rates[i]);
    }
-   return usecs + avg_contention_time(enc, txc) + frame_succ_time(b, rates[txc - 1]);
+   return usecs + avg_contention_time(enc, retries) + frame_succ_time(b, rates[retries]);
 }
 
 double
@@ -132,8 +129,8 @@ elc_mrr_metric::packet_fail_time(buffer_sptr b) const
    buffer_info_sptr info(b->info());
    vector<uint32_t> rates(info->rates());
    encoding_sptr enc(info->channel_encoding());
-   uint8_t txc = rates.size();
-   for(uint8_t i = 0; i < txc; ++i) {
+   uint8_t retries = rates.size() - 1;
+   for(uint8_t i = 0; i < retries + 1; ++i) {
       usecs += avg_contention_time(enc, i) + frame_fail_time(b, rates[i]);
    }
    return usecs;
