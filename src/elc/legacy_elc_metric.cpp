@@ -129,11 +129,10 @@ legacy_elc_metric::closest_rate(uint32_t r) const
 uint32_t 
 legacy_elc_metric::successful_tx_time(uint32_t rate_Kbs, uint16_t frame_sz) const
 {
-   const uint32_t T_CW = avg_contention_time(enc_, 0);
    const uint32_t T_RTS_CTS = /* (rts_cts_threshold_ <= FRAME_SZ) ? rts_cts_time(enc, FRAME_SZ, PREAMBLE) : */ 0;
    const uint32_t T_DATA = enc_->txtime(frame_sz, rate_Kbs, false);
    const uint32_t ACK_SZ = 14;
    const uint32_t T_ACK = enc_->txtime(ACK_SZ, enc_->response_rate(rate_Kbs), false);
 
-   return T_CW + T_RTS_CTS + T_DATA + enc_->SIFS() + T_ACK + enc_->DIFS();
+   return T_RTS_CTS + T_DATA + enc_->SIFS() + T_ACK + enc_->DIFS();
 }
