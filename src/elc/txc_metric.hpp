@@ -67,16 +67,11 @@ namespace metrics {
       virtual txc_metric *clone() const;
 
       /**
-       * Compute and return the ELC metric.
+       * Compute the metric and reset the internal state.
        *
-       * \return A double specifying the metric value.
+       * \param delta_us The time (in microseconds) over which to compute the metric.
        */
-      virtual double metric() const;
-
-      /**
-       * Resets this metric to its initial state.
-       */
-      virtual void reset();
+      virtual void compute(uint32_t delta_us);
 
       /**
        * Write this object in human-readable form to ostream os.
@@ -96,6 +91,11 @@ namespace metrics {
        * The total number of frame transmissions.
        */
       uint_least32_t frames_;
+
+      /**
+       * The average TXC value.
+       */
+      double txc_;
 
    };
 

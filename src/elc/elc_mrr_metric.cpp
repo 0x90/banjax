@@ -19,14 +19,16 @@ using namespace net;
 using namespace std;
 using metrics::elc_mrr_metric;
 
-elc_mrr_metric::elc_mrr_metric(uint16_t rts_cts_threshold) :
+elc_mrr_metric::elc_mrr_metric(uint16_t rts_cts_threshold, uint16_t cw_time_us) :
    abstract_metric(),
    rts_cts_threshold_(rts_cts_threshold),
    n_pkt_succ_(0),
    t_pkt_succ_(0.0),
    t_pkt_fail_(0.0),
    packet_octets_(0),
-   packet_count_(0)
+   packet_count_(0),
+   cw_time_us_(cw_time_us),
+   mrr_(0.0)
 {
 }
 
@@ -37,7 +39,9 @@ elc_mrr_metric::elc_mrr_metric(const elc_mrr_metric& other) :
    t_pkt_succ_(other.t_pkt_succ_),
    t_pkt_fail_(other.t_pkt_fail_),
    packet_octets_(other.packet_octets_),
-   packet_count_(other.packet_count_)
+   packet_count_(other.packet_count_),
+   cw_time_us_(other.cw_time_us_),
+   mrr_(other.mrr_)
 {
 }
 
@@ -52,6 +56,8 @@ elc_mrr_metric::operator=(const elc_mrr_metric& other)
       t_pkt_fail_ = other.t_pkt_fail_;
       packet_octets_ = other.packet_octets_;
       packet_count_ = other.packet_count_;
+      cw_time_us_ = other.cw_time_us_;
+      mrr_ = other.mrr_;
    }
    return *this;
 }
@@ -85,27 +91,24 @@ elc_mrr_metric::clone() const
    return new elc_mrr_metric(*this);
 }
 
-double
-elc_mrr_metric::metric() const
+void
+elc_mrr_metric::compute(uint32_t junk)
 {
    const double AVG_PKT_SZ = packet_octets_ / static_cast<double>(packet_count_);
-   return (n_pkt_succ_ * AVG_PKT_SZ) / (t_pkt_succ_ + t_pkt_fail_);
-}
+   mrr_ = (n_pkt_succ_ * AVG_PKT_SZ) / (t_pkt_succ_ + t_pkt_fail_);
 
-void
-elc_mrr_metric::reset()
-{
    n_pkt_succ_ = 0;
    t_pkt_succ_ = 0;
    t_pkt_fail_ = 0;
    packet_octets_ = 0;
    packet_count_ = 0;
+   mrr_ = 0;
 }
 
 void
 elc_mrr_metric::write(ostream& os) const
 {
-   os << "ELC-MRR: " << metric();
+   os << "ELC-MRR: " << mrr_;
 }
 
 double
@@ -117,9 +120,9 @@ elc_mrr_metric::packet_succ_time(buffer_sptr b) const
    encoding_sptr enc(info->channel_encoding());
    uint8_t retries = rates.size() - 1;
    for(uint8_t i = 0; i < retries; ++i) {
-      usecs += avg_contention_time(enc, i) + frame_fail_time(b, rates[i]);
+      usecs += (cw_time_us_ ? cw_time_us_ : avg_contention_time(enc, i)) + frame_fail_time(b, rates[i]);
    }
-   return usecs + avg_contention_time(enc, retries) + frame_succ_time(b, rates[retries]);
+   return usecs + (cw_time_us_ ? cw_time_us_ : avg_contention_time(enc, retries)) + frame_succ_time(b, rates[retries]);
 }
 
 double
@@ -131,7 +134,7 @@ elc_mrr_metric::packet_fail_time(buffer_sptr b) const
    encoding_sptr enc(info->channel_encoding());
    uint8_t retries = rates.size() - 1;
    for(uint8_t i = 0; i < retries + 1; ++i) {
-      usecs += avg_contention_time(enc, i) + frame_fail_time(b, rates[i]);
+      usecs += (cw_time_us_ ? cw_time_us_ : avg_contention_time(enc, i)) + frame_fail_time(b, rates[i]);
    }
    return usecs;
 }

@@ -24,11 +24,6 @@ metric::add(buffer_sptr)
 }
 
 void
-metric::reset()
-{
-}
-
-void
 metric::write(ostream&) const
 {
 }

@@ -65,10 +65,10 @@ metric_demux::clone() const
 }
 
 void
-metric_demux::reset()
+metric_demux::compute(uint32_t delta_us)
 {
    for(linkmap::iterator i(links_.begin()); i != links_.end(); ++i) {
-      (i->second)->reset();
+      (i->second)->compute(delta_us);
    }
 }
 

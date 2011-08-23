@@ -19,14 +19,16 @@ using namespace net;
 using namespace std;
 using metrics::elc_metric;
 
-elc_metric::elc_metric(uint16_t rts_cts_threshold) :
+elc_metric::elc_metric(uint16_t rts_cts_threshold, uint16_t cw_time_us) :
    abstract_metric(),
    rts_cts_threshold_(rts_cts_threshold),
    n_pkt_succ_(0),
    t_pkt_succ_(0.0),
    t_pkt_fail_(0.0),
    packet_octets_(0),
-   packet_count_(0)
+   packet_count_(0),
+   cw_time_us_(cw_time_us),
+   elc_(0)
 {
 }
 
@@ -37,7 +39,9 @@ elc_metric::elc_metric(const elc_metric& other) :
    t_pkt_succ_(other.t_pkt_succ_),
    t_pkt_fail_(other.t_pkt_fail_),
    packet_octets_(other.packet_octets_),
-   packet_count_(other.packet_count_)
+   packet_count_(other.packet_count_),
+   cw_time_us_(other.cw_time_us_),
+   elc_(other.elc_)
 {
 }
 
@@ -52,6 +56,8 @@ elc_metric::operator=(const elc_metric& other)
       t_pkt_fail_ = other.t_pkt_fail_;
       packet_octets_ = other.packet_octets_;
       packet_count_ = other.packet_count_;
+      cw_time_us_ = other.cw_time_us_;
+      elc_ = other.elc_;
    }
    return *this;
 }
@@ -86,16 +92,12 @@ elc_metric::clone() const
    return new elc_metric(*this);
 }
 
-double
-elc_metric::metric() const
+void
+elc_metric::compute(uint32_t junk)
 {
    const double AVG_PKT_SZ = packet_octets_ / static_cast<double>(packet_count_);
-   return (n_pkt_succ_ * AVG_PKT_SZ) / (t_pkt_succ_ + t_pkt_fail_);
-}
+   elc_ = (n_pkt_succ_ * AVG_PKT_SZ) / (t_pkt_succ_ + t_pkt_fail_);
 
-void
-elc_metric::reset()
-{
    n_pkt_succ_ = 0;
    t_pkt_succ_ = 0;
    t_pkt_fail_ = 0;
@@ -106,7 +108,7 @@ elc_metric::reset()
 void
 elc_metric::write(ostream& os) const
 {
-   os << "ELC: " << metric();
+   os << "ELC: " << elc_;
 }
 
 double
@@ -117,9 +119,9 @@ elc_metric::packet_succ_time(buffer_sptr b) const
    encoding_sptr enc(info->channel_encoding());
    uint8_t retries = info->data_retries();
    for(uint8_t i = 0; i < retries; ++i) {
-      usecs += avg_contention_time(enc, i) + frame_fail_time(b);
+      usecs += (cw_time_us_ ? cw_time_us_ : avg_contention_time(enc, i)) + frame_fail_time(b);
    }
-   return usecs + avg_contention_time(enc, retries) + frame_succ_time(b);
+   return usecs + (cw_time_us_ ? cw_time_us_ : avg_contention_time(enc, retries)) + frame_succ_time(b);
 }
 
 double
@@ -130,7 +132,7 @@ elc_metric::packet_fail_time(buffer_sptr b) const
    encoding_sptr enc(info->channel_encoding());
    uint8_t retries = info->data_retries();
    for(uint8_t i = 0; i < retries + 1; ++i) {
-      usecs += avg_contention_time(enc, i) + frame_fail_time(b);
+      usecs += (cw_time_us_ ? cw_time_us_ : avg_contention_time(enc, i)) + frame_fail_time(b);
    }
    return usecs;
 }

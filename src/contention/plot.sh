@@ -1,7 +1,23 @@
 #!/bin/bash
 
-# arbitrary 387,d deletion is to fix range at a reasonable level
-# ./analyse -i $* | awk '{ print $2; }' | sort -n | uniq -c | awk '{ print $2, $1; }'  | sed '387,$d' > plot.data
+p="$1"
+d="${p/.pcap/.data}"
+e="${p/.pcap/.eps}"
+./analyse -i "$p" | awk '{ print $3; }' | sort -n | uniq -c | awk '{ print $2, $1; }' > "$d"
 
-./analyse -i $* | awk '{ print ($2 - 34) / 9; }' | sort -n | uniq -c | awk '{ print $2, $1; }' > plot.data
-gnuplot plot.gp
+gnuplot <<EOF
+#!/usr/bin/gnuplot
+
+set term postscript color enhanced eps
+set out "$e"
+
+set style fill solid
+set style histogram
+set style data histograms
+
+set xlabel "delay (us)"
+set ylabel "frequency"
+
+plot "$d" using 1:2 with boxes title "frequency"
+
+EOF

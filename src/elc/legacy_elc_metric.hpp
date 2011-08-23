@@ -48,7 +48,7 @@ namespace metrics {
       /**
        * legacy_elc_metric destructor.
        */
-     virtual ~legacy_elc_metric();
+      virtual ~legacy_elc_metric();
 
       /**
        * Add a frame to the legacy_elc_metric and update the legacy_elc_metric statistics.
@@ -67,16 +67,11 @@ namespace metrics {
       virtual legacy_elc_metric *clone() const;
 
       /**
-       * Compute and return the ELC metric.
+       * Compute the metric and reset the internal state.
        *
-       * \return A double specifying the metric value.
+       * \param delta_us The time (in microseconds) over which to compute the metric.
        */
-      virtual double metric() const;
-
-      /**
-       * Resets this metric to its initial state.
-       */
-      virtual void reset();
+      virtual void compute(uint32_t delta_us);
 
       /**
        * Write this object in human-readable form to ostream os.
@@ -134,6 +129,11 @@ namespace metrics {
        * Sum of the data rates used to send packets (used to compute average).
        */
       uint_least32_t rates_Kbs_sum_;
+
+      /**
+       * The current value of this ELC metric.
+       */
+      double elc_;
 
    };
 

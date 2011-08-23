@@ -25,20 +25,36 @@ using namespace std;
 using metrics::goodput_metric;
 
 goodput_metric::goodput_metric() :
-   metric(),
    frame_octets_(0),
    packet_octets_(0),
-   iperf_goodput_(0),
-   mac_goodput_(0.0)
+   packet_octets_total_(0),
+   ctrl_(0),
+   data_(0),
+   mgmt_(0),
+   iperf_(0),
+   other_(0),
+   t_contention_(0),
+   t_ctrl_(0),
+   t_data_(0),
+   t_mgmt_(0),
+   t_ifs_(0)
 {
 }
 
 goodput_metric::goodput_metric(const goodput_metric& other) :
-   metric(other),
    frame_octets_(other.frame_octets_),
    packet_octets_(other.packet_octets_),
-   iperf_goodput_(other.iperf_goodput_),
-   mac_goodput_(other.mac_goodput_)
+   packet_octets_total_(other.packet_octets_total_),
+   ctrl_(other.ctrl_),
+   data_(other.data_),
+   mgmt_(other.mgmt_),
+   iperf_(other.iperf_),
+   other_(other.other_)
+   t_contention_(other.t_contention_),
+   t_ctrl_(other.t_ctrl_),
+   t_data_(other.t_data_),
+   t_mgmt_(other.t_mgmt_),
+   t_ifs_(other.t_ifs_)
 {
 }
 
@@ -46,11 +62,20 @@ goodput_metric&
 goodput_metric::operator=(const goodput_metric& other)
 {
    if(this != &other) {
-      metric::operator=(other);
       frame_octets_ = other.frame_octets_;
       packet_octets_ = other.packet_octets_;
-      iperf_goodput_ = other.iperf_goodput_;
-      mac_goodput_ = other.mac_goodput_;
+      packet_octets_total_ = other.packet_octets_total_;
+      ctrl_ = other.ctrl_;
+      data_ = other.data_;
+      mgmt_ = other.mgmt_;
+      iperf_ = other.iperf_;
+      other_ = other.other_;
+
+      t_contention_(other.t_contention_);
+      t_ctrl_= other.t_ctrl_;
+      t_data_ = other.t_data_;
+      t_mgmt_ = other.t_mgmt_;
+      t_ifs_ = other.t_ifs_;
    }
    return *this;
 }
@@ -80,7 +105,7 @@ goodput_metric::add(buffer_sptr b)
       if(udp->dst_port() != 5001)
          return;
 
-      // update metric info
+      // compute metric
       bool failed = (info->tx_flags() & TX_FLAGS_FAIL);
       if(!failed) {
          const uint32_t IEEE80211_HDR_SZ = 26;
@@ -89,8 +114,10 @@ goodput_metric::add(buffer_sptr b)
          const uint32_t UDP_HDR_SZ = 8;
          const uint16_t HDR_SZ = IEEE80211_HDR_SZ + LLC_HDR_SZ + IP_HDR_SZ + UDP_HDR_SZ;
          const uint16_t FRAME_SZ = b->data_size();
-
-         packet_octets_ += FRAME_SZ - HDR_SZ;
+         if(HDR_SZ < FRAME_SZ) {
+            packet_octets_ += FRAME_SZ - HDR_SZ;
+            packet_octets_total_ += FRAME_SZ - HDR_SZ;
+         }
          const uint32_t CRC_SZ = 4;
          frame_octets_ += FRAME_SZ + CRC_SZ;
       }
@@ -104,12 +131,15 @@ goodput_metric::clone() const
    return new goodput_metric(*this);
 }
 
-void
-goodput_metric::compute(uint32_t delta_us)
+double
+goodput_metric::metric() const
 {
-   mac_goodput_ = frame_octets_ / static_cast<float>(delta_us);
-   iperf_goodput_ = packet_octets_ / static_cast<float>(delta_us);
+   return packet_octets_ / 1e6;
+}
 
+void
+goodput_metric::reset()
+{
    frame_octets_ = 0;
    packet_octets_ = 0;
 }
@@ -117,5 +147,5 @@ goodput_metric::compute(uint32_t delta_us)
 void
 goodput_metric::write(ostream& os) const
 {
-   os << "goodput: " << mac_goodput_ << ", iperf: " << iperf_goodput_;
+   os << "goodput: " << (frame_octets_ / 1e6) << ", iperf: " << metric();
 }

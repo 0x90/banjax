@@ -24,14 +24,16 @@ using metrics::pdr_metric;
 
 pdr_metric::pdr_metric() :
    attempts_(0),
-   good_(0)
+   good_(0),
+   pdr_(0.0)
 {
 }
 
 pdr_metric::pdr_metric(const pdr_metric& other) :
    abstract_metric(other),
    attempts_(other.attempts_),
-   good_(other.good_)
+   good_(other.good_),
+   pdr_(other.pdr_)
 {
 }
 
@@ -42,6 +44,7 @@ pdr_metric::operator=(const pdr_metric& other)
       abstract_metric::operator=(other);
       attempts_ = other.attempts_;
       good_ = other.good_;
+      pdr_ = other.pdr_;
    }
    return *this;
 }
@@ -71,17 +74,13 @@ pdr_metric::clone() const
    return new pdr_metric(*this);
 }
 
-double
-pdr_metric::metric() const
+void
+pdr_metric::compute(uint32_t delta_us)
 {
    const double ATTEMPTS = attempts_;
    const double GOOD = good_;
-   return GOOD / ATTEMPTS;
-}
+   pdr_ = GOOD / ATTEMPTS;
 
-void
-pdr_metric::reset()
-{
    attempts_ = 0;
    good_ = 0;
 }
@@ -89,5 +88,5 @@ pdr_metric::reset()
 void
 pdr_metric::write(ostream& os) const
 {
-   os << "PDR: " << metric();
+   os << "PDR: " << pdr_;
 }

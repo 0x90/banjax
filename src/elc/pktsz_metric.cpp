@@ -27,14 +27,16 @@ using metrics::pktsz_metric;
 
 pktsz_metric::pktsz_metric() :
    packets_(0),
-   octets_(0)
+   octets_(0),
+   pktsz_(0.0)
 {
 }
 
 pktsz_metric::pktsz_metric(const pktsz_metric& other) :
    abstract_metric(other),
    packets_(other.packets_),
-   octets_(other.octets_)
+   octets_(other.octets_),
+   pktsz_(other.pktsz_)
 {
 }
 
@@ -45,6 +47,7 @@ pktsz_metric::operator=(const pktsz_metric& other)
       abstract_metric::operator=(other);
       packets_ = other.packets_;
       octets_ = other.octets_;
+      pktsz_ = other.pktsz_;
    }
    return *this;
 }
@@ -88,15 +91,11 @@ pktsz_metric::clone() const
    return new pktsz_metric(*this);
 }
 
-double
-pktsz_metric::metric() const
-{
-   return octets_ / static_cast<double>(packets_);
-}
-
 void
-pktsz_metric::reset()
+pktsz_metric::compute(uint32_t junk)
 {
+   pktsz_ = octets_ / static_cast<double>(packets_);
+
    packets_ = 0;
    octets_ = 0;
 }
@@ -104,5 +103,5 @@ pktsz_metric::reset()
 void
 pktsz_metric::write(ostream& os) const
 {
-   os << "PKTSZ: " << metric();
+   os << "PKTSZ: " << pktsz_;
 }

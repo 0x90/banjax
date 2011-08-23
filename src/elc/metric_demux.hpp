@@ -70,9 +70,11 @@ namespace metrics {
       virtual metric_demux *clone() const;
 
       /**
-       * Resets this metric to its initial state.
+       * Compute the metric and reset the internal state.
+       *
+       * \param delta_us The time (in microseconds) over which to compute the metric.
        */
-      virtual void reset();
+      virtual void compute(uint32_t delta_us);
 
       /**
        * Write this object in human-readable form to ostream os.

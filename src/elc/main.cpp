@@ -44,6 +44,7 @@ main(int ac, char **av)
    try {
 
       bool help;
+      uint16_t cw;
       string enc_str, what;
       uint16_t port_no;
       uint16_t rts_cts_threshold;
@@ -51,6 +52,7 @@ main(int ac, char **av)
       options_description options("program options");
       options.add_options()
          ("help,?", value(&help)->default_value(false)->zero_tokens(), "produce this help message")
+         ("cw,c", value(&cw)->default_value(0), "size of contention window in microseconds (0 = compute average)")
          ("encoding,e", value<string>(&enc_str)->default_value("OFDM"), "channel encoding")
          ("input,i", value<string>(&what)->default_value("mon0"), "input file/device name")
          ("port,p", value<uint16_t>(&port_no)->default_value(50000), "port number used for ETX probes")
@@ -69,22 +71,15 @@ main(int ac, char **av)
       encoding_sptr enc(encoding::get(enc_str));
    	metric_group_sptr proto(new metric_group);
       proto->push_back(metric_sptr(new goodput_metric));
-      proto->push_back(metric_sptr(new elc_metric(rts_cts_threshold)));
+      proto->push_back(metric_sptr(new elc_metric(rts_cts_threshold, cw)));
       proto->push_back(metric_sptr(new elc_mrr_metric(rts_cts_threshold)));
       proto->push_back(metric_sptr(new legacy_elc_metric(enc)));
-//      proto->push_back(metric_sptr(new etx_metric(port_no)));
       proto->push_back(metric_sptr(new txc_metric));
-//      proto->push_back(metric_sptr(new pdr_metric));
-//      proto->push_back(metric_sptr(new pktsz_metric));
       metric_sptr m(metric_sptr(new metric_demux(proto)));
 
       wnic_sptr w(wnic::open(what));
       w = wnic_sptr(new wnic_wallclock_fix(w));
-      w = wnic_sptr(new wnic_encoding_fix(w, CHANNEL_CODING_OFDM | CHANNEL_PREAMBLE_LONG)); // ToDo: add cmd line opt to choose default coding!
-#if 0
-      // ToDo: figure out why this is garbaging inbound data!
-      w->filter("wlan type data"); // ToDo: add BPF test for outbound-only frames
-#endif
+      w = wnic_sptr(new wnic_encoding_fix(w, CHANNEL_CODING_OFDM | CHANNEL_PREAMBLE_LONG)); // ToDo: use cmd line opt to choose default coding!
       buffer_sptr b(w->read());
       buffer_info_sptr info(b->info());
       const uint64_t uS_PER_TICK = UINT64_C(1000000);
@@ -94,11 +89,11 @@ main(int ac, char **av)
          info = b->info();
          uint64_t timestamp = info->timestamp_wallclock();
          for(; tick <= timestamp; tick += uS_PER_TICK) {
+            m->compute(uS_PER_TICK);
             cout << "TIME: " << tick / uS_PER_TICK << endl;
             cout << *m << endl;
-            m->reset();
          }
-         // update metrics with frame
+         // update metric with frame
          m->add(b);
       }
    } catch(const error& x) {

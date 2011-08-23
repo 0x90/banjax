@@ -58,18 +58,16 @@ metric_group::clone() const
 }
 
 void
-metric_group::reset()
+metric_group::compute(uint32_t delta_us)
 {
    for(metric_list::iterator i(metrics_.begin()); i != metrics_.end(); ++i) {
-      (*i)->reset();
+      (*i)->compute(delta_us);
    }
 }
 
 void
 metric_group::write(ostream& os) const
 {
-#define CSL 1
-#ifdef CSL
    metric_list::const_iterator i(metrics_.begin());
    if(i != metrics_.end()) {
       os << **i;
@@ -77,9 +75,4 @@ metric_group::write(ostream& os) const
          os << ", " << **i;
       }
    }
-#else
-   for(metric_list::const_iterator i(metrics_.begin()); i != metrics_.end(); ++i) {
-      os << **i << " ";
-   }
-#endif
 }

@@ -22,8 +22,9 @@ namespace metrics {
        * elc_metric constructor.
        *
        * \param rts_cts_threshold Use RTS/CTS when rts_cts_threshold <= frame size
+       * \param cw_time_us The measured contention window size.
        */
-      explicit elc_metric(uint16_t rts_cts_threshold);
+      explicit elc_metric(uint16_t rts_cts_threshold, uint16_t cw_time_us = 0);
 
       /**
        * elc_metric copy constuctor.
@@ -62,16 +63,11 @@ namespace metrics {
       virtual elc_metric *clone() const;
 
       /**
-       * Compute and return the ELC metric.
+       * Compute the metric and reset the internal state.
        *
-       * \return A double specifying the metric value.
+       * \param delta_us The time (in microseconds) over which to compute the metric.
        */
-      virtual double metric() const;
-
-      /**
-       * Resets this metric to its initial state.
-       */
-      virtual void reset();
+      virtual void compute(uint32_t delta_us);
 
       /**
        * Write this object in human-readable form to ostream os.
@@ -149,6 +145,17 @@ namespace metrics {
        * The number of packets sent on this elc_metric.
        */
       uint32_t packet_count_;
+
+      /**
+       * The measured contention window time (in microseconds).
+       */
+      uint16_t cw_time_us_;
+
+      /**
+       * The current value of this ELC metric.
+       */
+      double elc_;
+
    };
 
 }

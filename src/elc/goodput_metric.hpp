@@ -70,16 +70,11 @@ namespace metrics {
       virtual goodput_metric *clone() const;
 
       /**
-       * Compute and return the ELC metric.
+       * Compute the metric and reset the internal state.
        *
-       * \return A double specifying the metric value.
+       * \param delta_us The time (in microseconds) over which to compute the metric.
        */
-      virtual double metric() const;
-
-      /**
-       * Resets this metric to its initial state.
-       */
-      virtual void reset();
+      virtual void compute(uint32_t delta_us);
 
       /**
        * Write this object in human-readable form to ostream os.
@@ -94,15 +89,21 @@ namespace metrics {
        * Number of MAC layer octets successfully sent in last second.
        */
       uint32_t frame_octets_;
+
       /**
        * Number of iperf octets transmitted successfully in last second.
        */
       uint32_t packet_octets_;
 
       /**
-       * Total number of iperf octets transmitted successfully.
+       * iperf goodput value.
        */
-      uint32_t packet_octets_total_;
+      double iperf_goodput_;
+
+      /**
+       * MAC layer goodput value.
+       */
+      double mac_goodput_;
 
    };
 

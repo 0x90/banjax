@@ -46,18 +46,13 @@ double
 abstract_metric::avg_contention_time(encoding_sptr enc, uint8_t txc) const
 {
    CHECK_NOT_NULL(enc.get());
-
-   return (max_contention_slots(enc, txc) / 2.0) * enc->slot_time();
+   return (max_contention_slots(enc, txc) / 2.0) * enc->slot_time() + enc->slot_time();
 }
 
 uint16_t
 abstract_metric::max_contention_slots(net::encoding_sptr enc, uint8_t txc) const
 {
    CHECK_NOT_NULL(enc.get());
-
-   /* ath5k hack: collapse contention window every 10 attempts */
-   txc %= 10;
-   /* end hack */
    
    const uint32_t CWMIN = enc->CWMIN();
    const uint32_t CWMAX = enc->CWMAX();

@@ -26,7 +26,8 @@ legacy_elc_metric::legacy_elc_metric(encoding_sptr enc) :
    frames_(0),
    packets_(0),
    packet_octets_(0),
-   rates_Kbs_sum_(0)
+   rates_Kbs_sum_(0),
+   elc_(0.0)
 {
 }
 
@@ -36,8 +37,10 @@ legacy_elc_metric::legacy_elc_metric(const legacy_elc_metric& other) :
    frames_(other.frames_),
    packets_(other.packets_),
    packet_octets_(other.packet_octets_),
-   rates_Kbs_sum_(other.rates_Kbs_sum_)
+   rates_Kbs_sum_(other.rates_Kbs_sum_),
+   elc_(other.elc_)
 {
+
 }
 
 legacy_elc_metric&
@@ -50,6 +53,7 @@ legacy_elc_metric::operator=(const legacy_elc_metric& other)
       packets_ = other.packets_;
       packet_octets_ = other.packet_octets_;
       rates_Kbs_sum_ = other.rates_Kbs_sum_;
+      elc_ = other.elc_;
    }
    return *this;
 }
@@ -81,8 +85,8 @@ legacy_elc_metric::clone() const
    return new legacy_elc_metric(*this);
 }
 
-double
-legacy_elc_metric::metric() const
+void
+legacy_elc_metric::compute(uint32_t delta_us)
 {
    const double FRMS = frames_;
    const double PKTS = packets_;
@@ -92,12 +96,8 @@ legacy_elc_metric::metric() const
    const double BEST_TX_TIME = successful_tx_time(closest_rate(AVG_PKT_RATE_Kbs), AVG_PKT_SZ);
    const double TMT = AVG_PKT_SZ / BEST_TX_TIME;
    const double FDR = PKTS / FRMS;
-   return FDR * TMT;
-}
+   elc_ = FDR * TMT;
 
-void
-legacy_elc_metric::reset()
-{
    frames_ = 0;
    packets_ = 0;
    packet_octets_ = 0;
@@ -107,7 +107,7 @@ legacy_elc_metric::reset()
 void
 legacy_elc_metric::write(ostream& os) const
 {
-   os << "LegacyELC: " << metric();
+   os << "LegacyELC: " << elc_;
 }
 
 uint32_t

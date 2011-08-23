@@ -53,7 +53,7 @@ namespace metrics {
        * \param txc The number of the (re)transmission attempt.
        * \return The time, in microseconds, that will be waited on average.
        */
-      double avg_contention_time(net::encoding_sptr enc, uint8_t txc) const;
+      virtual double avg_contention_time(net::encoding_sptr enc, uint8_t txc) const;
 
       /**
        * Return the contention window size for transmission attempt
@@ -63,7 +63,7 @@ namespace metrics {
        * \param txc The number of the (re)transmission attempt.
        * \return The maximum size, in slot times, of the contention window.
        */
-      uint16_t max_contention_slots(net::encoding_sptr enc, uint8_t txc) const;
+      virtual uint16_t max_contention_slots(net::encoding_sptr enc, uint8_t txc) const;
 
       /**
        * Return the contention window time for transmission attempt
@@ -74,7 +74,7 @@ namespace metrics {
        * \param txc The number of the (re)transmission attempt.
        * \return The maximum time, in microseconds, used for the contention window.
        */
-      double max_contention_time(net::encoding_sptr enc, uint8_t txc) const;
+      virtual double max_contention_time(net::encoding_sptr enc, uint8_t txc) const;
 
       /**
        * Return the amount of time taken by the RTS/CTS exchange.
@@ -84,7 +84,14 @@ namespace metrics {
        * \param has_short_preamble true if short preambles are in use; otherwise false.
        * \return The time, in microseconds, used  by the RTS/CTS exchange.
        */
-      double rts_cts_time(net::encoding_sptr enc, uint32_t frame_sz, bool short_preamble) const;
+      virtual double rts_cts_time(net::encoding_sptr enc, uint32_t frame_sz, bool short_preamble) const;
+
+   private:
+
+      /**
+       * The current value for this metric.
+       */
+      float value_;
 
    };
 

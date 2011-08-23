@@ -51,20 +51,29 @@ main(int ac, char **av)
       w = wnic_sptr(new wnic_timestamp_swizzle(w));
       w = wnic_sptr(new wnic_timestamp_fix(w));
 
-      uint32_t n = 1;
+      
       bool contending = false;
-      for(buffer_sptr b, p; b = w->read(); ++n){
+      uint_least32_t n_ifs = 0, t_ifs = 0;
+      buffer_sptr b(w->read()), p;
+      uint64_t adj =  b->info()->timestamp1();
+      for(uint32_t n = 1; b; ++n){
          frame f(b);
          frame_control fc(f.fc());
-         if(contending) {
+         if((fc.subtype() == DATA_QOS || fc.subtype() == DATA) && contending) {
             int32_t ifs = b->info()->timestamp1() - p->info()->timestamp2();
-            cout << n << " " << ifs << endl;
+            cout << n << " " << b->info()->timestamp1() - adj << " " << ifs << endl;
             contending = false;
+            ++n_ifs;
+            t_ifs += ifs;
          } else if(fc.subtype() == CTRL_ACK) {
             p = b;
             contending = true;
+         } else {
+            contending = false;
          }
+         b = w->read();
       }
+      cerr << "AVG CONTENTION TIME = " << (t_ifs / static_cast<double>(n_ifs)) << endl;
    } catch(const error& x) {
       cerr << x.what() << endl;
    } catch(const std::exception& x) {
