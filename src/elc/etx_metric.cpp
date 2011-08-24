@@ -116,6 +116,11 @@ etx_metric::compute(uint32_t delta_us)
 }
 
 void
+etx_metric::reset()
+{
+}
+
+void
 etx_metric::write(ostream& os) const
 {
    // os << "ETX: " << value();

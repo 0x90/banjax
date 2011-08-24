@@ -62,11 +62,16 @@ namespace metrics {
       virtual etx_metric *clone() const;
 
       /**
-       * Compute the metric and reset the internal state.
+       * Compute the metric.
        *
        * \param delta_us The time (in microseconds) over which to compute the metric.
        */
       virtual void compute(uint32_t delta_us);
+
+      /**
+       * Reset the internal state of the metric.
+       */
+      virtual void reset();
 
       /**
        * Write this object in human-readable form to ostream os.

@@ -86,13 +86,6 @@ namespace metrics {
        */
       virtual double rts_cts_time(net::encoding_sptr enc, uint32_t frame_sz, bool short_preamble) const;
 
-   private:
-
-      /**
-       * The current value for this metric.
-       */
-      float value_;
-
    };
 
 }

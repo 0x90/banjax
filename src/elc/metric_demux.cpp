@@ -73,6 +73,14 @@ metric_demux::compute(uint32_t delta_us)
 }
 
 void
+metric_demux::reset()
+{
+   for(linkmap::iterator i(links_.begin()); i != links_.end(); ++i) {
+      (i->second)->reset();
+   }
+}
+
+void
 metric_demux::write(ostream& os) const
 {
    for(linkmap::const_iterator i(links_.begin()); i != links_.end(); ++i) {
@@ -89,7 +97,7 @@ metric_demux::find(const eui_48& addr)
       m = i->second;
    } else {
       m = metric_sptr(proto_->clone());
-      links_[addr] = m;
+      links_.insert(pair<eui_48, metric_sptr>(addr, m));
    }
    return m;
 }

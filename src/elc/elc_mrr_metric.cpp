@@ -96,7 +96,11 @@ elc_mrr_metric::compute(uint32_t junk)
 {
    const double AVG_PKT_SZ = packet_octets_ / static_cast<double>(packet_count_);
    mrr_ = (n_pkt_succ_ * AVG_PKT_SZ) / (t_pkt_succ_ + t_pkt_fail_);
+}
 
+void
+elc_mrr_metric::reset()
+{
    n_pkt_succ_ = 0;
    t_pkt_succ_ = 0;
    t_pkt_fail_ = 0;

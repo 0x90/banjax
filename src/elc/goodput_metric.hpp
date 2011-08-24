@@ -77,6 +77,11 @@ namespace metrics {
       virtual void compute(uint32_t delta_us);
 
       /**
+       * Reset the internal state of the metric.
+       */
+      virtual void reset();
+
+      /**
        * Write this object in human-readable form to ostream os.
        *
        * \param os A reference to the stream to write to.

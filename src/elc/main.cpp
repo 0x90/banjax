@@ -92,6 +92,7 @@ main(int ac, char **av)
             m->compute(uS_PER_TICK);
             cout << "TIME: " << tick / uS_PER_TICK << endl;
             cout << *m << endl;
+            m->reset();
          }
          // update metric with frame
          m->add(b);

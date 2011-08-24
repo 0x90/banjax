@@ -95,7 +95,11 @@ void
 pktsz_metric::compute(uint32_t junk)
 {
    pktsz_ = octets_ / static_cast<double>(packets_);
+}
 
+void
+pktsz_metric::reset()
+{
    packets_ = 0;
    octets_ = 0;
 }

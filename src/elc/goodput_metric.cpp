@@ -107,9 +107,14 @@ goodput_metric::clone() const
 void
 goodput_metric::compute(uint32_t delta_us)
 {
-   mac_goodput_ = frame_octets_ / static_cast<float>(delta_us);
-   iperf_goodput_ = packet_octets_ / static_cast<float>(delta_us);
+   double delta = delta_us;
+   iperf_goodput_ = packet_octets_ / delta;
+   mac_goodput_ = frame_octets_ / delta;
+}
 
+void
+goodput_metric::reset()
+{
    frame_octets_ = 0;
    packet_octets_ = 0;
 }

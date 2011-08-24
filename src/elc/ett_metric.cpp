@@ -15,11 +15,13 @@ using namespace net;
 using namespace std;
 using metrics::ett_metric;
 
-ett_metric::ett_metric()
+ett_metric::ett_metric() :
+   metric()
 {
 }
 
-ett_metric::ett_metric(const ett_metric& other)
+ett_metric::ett_metric(const ett_metric& other) :
+   metric(other)
 {
 }
 
@@ -27,6 +29,7 @@ ett_metric&
 ett_metric::operator=(const ett_metric& other)
 {
    if(&other != this) {
+      metric::operator=(other);
    }
    return *this;
 }
@@ -46,10 +49,9 @@ ett_metric::clone() const
    return new ett_metric(*this);
 }
 
-double
-ett_metric::metric() const
+void
+ett_metric::compute(uint32_t delta_us) const
 {
-   return 0.0;
 }
 
 void
@@ -60,5 +62,5 @@ ett_metric::reset()
 void
 ett_metric::write(ostream& os) const
 {
-   os << "ETT: " << metric();
+   os << "ETT: ToDo";
 }

@@ -60,11 +60,11 @@ namespace metrics {
       virtual ett_metric *clone() const;
 
       /**
-       * Compute and return the ELC metric.
+       * Compute the ELC metric.
        *
-       * \return A double specifying the metric value.
+       * \param delta_us The time (in microseconds) over which to compute the metric.
        */
-      virtual double metric() const;
+      virtual void compute(uint32_t delta_us) const;
 
       /**
        * Resets this metric to its initial state.

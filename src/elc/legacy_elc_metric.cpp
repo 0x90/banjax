@@ -97,7 +97,11 @@ legacy_elc_metric::compute(uint32_t delta_us)
    const double TMT = AVG_PKT_SZ / BEST_TX_TIME;
    const double FDR = PKTS / FRMS;
    elc_ = FDR * TMT;
+}
 
+void
+legacy_elc_metric::reset()
+{
    frames_ = 0;
    packets_ = 0;
    packet_octets_ = 0;

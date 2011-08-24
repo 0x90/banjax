@@ -77,7 +77,11 @@ txc_metric::compute(uint32_t junk)
    const double FRMS = frames_;
    const double PKTS = packets_;
    txc_ = FRMS / PKTS;
+}
 
+void
+txc_metric::reset()
+{
    frames_ = 0;
    packets_ = 0;
 }

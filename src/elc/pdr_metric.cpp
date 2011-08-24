@@ -80,7 +80,11 @@ pdr_metric::compute(uint32_t delta_us)
    const double ATTEMPTS = attempts_;
    const double GOOD = good_;
    pdr_ = GOOD / ATTEMPTS;
+}
 
+void
+pdr_metric::reset()
+{
    attempts_ = 0;
    good_ = 0;
 }

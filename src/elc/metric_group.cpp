@@ -66,6 +66,14 @@ metric_group::compute(uint32_t delta_us)
 }
 
 void
+metric_group::reset()
+{
+   for(metric_list::iterator i(metrics_.begin()); i != metrics_.end(); ++i) {
+      (*i)->reset();
+   }
+}
+
+void
 metric_group::write(ostream& os) const
 {
    metric_list::const_iterator i(metrics_.begin());
