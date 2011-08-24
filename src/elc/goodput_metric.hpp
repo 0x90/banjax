@@ -70,7 +70,7 @@ namespace metrics {
       virtual goodput_metric *clone() const;
 
       /**
-       * Compute the metric and reset the internal state.
+       * Compute the metric.
        *
        * \param delta_us The time (in microseconds) over which to compute the metric.
        */
