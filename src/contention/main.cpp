@@ -61,7 +61,7 @@ main(int ac, char **av)
          frame_control fc(f.fc());
          if((fc.subtype() == DATA_QOS || fc.subtype() == DATA) && contending) {
             int32_t ifs = b->info()->timestamp1() - p->info()->timestamp2();
-            cout << n << " " << b->info()->timestamp1() - adj << " " << ifs << endl;
+            cout << n << " " << b->info()->timestamp1() << " " << ifs << endl;
             contending = false;
             ++n_ifs;
             t_ifs += ifs;
