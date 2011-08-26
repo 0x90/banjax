@@ -25,7 +25,8 @@ using metrics::txc_metric;
 txc_metric::txc_metric() :
    frames_(0),
    packets_(0),
-   txc_(0.0)
+   frms_(0.0),
+   pkts_(0.0)
 {
 }
 
@@ -33,7 +34,8 @@ txc_metric::txc_metric(const txc_metric& other) :
    abstract_metric(other),
    frames_(other.frames_),
    packets_(other.packets_),
-   txc_(other.txc_)
+   frms_(other.frms_),
+   pkts_(other.pkts_)
 {
 }
 
@@ -44,7 +46,8 @@ txc_metric::operator=(const txc_metric& other)
       abstract_metric::operator=(other);
       frames_ = other.frames_;
       packets_ = other.packets_;
-      txc_ = other.txc_;
+      pkts_ = other.pkts_;
+      frms_ = other.frms_;
    }
    return *this;
 }
@@ -74,9 +77,8 @@ txc_metric::clone() const
 void
 txc_metric::compute(uint32_t junk)
 {
-   const double FRMS = frames_;
-   const double PKTS = packets_;
-   txc_ = FRMS / PKTS;
+   frms_ = frames_;
+   pkts_ = packets_;
 }
 
 void
@@ -89,5 +91,5 @@ txc_metric::reset()
 void
 txc_metric::write(ostream& os) const
 {
-   os << "TXC: " << txc_;
+   os << "PKTS: " << pkts_ << ", FRMS: " << frms_ << ", TXC: " << frms_ / pkts_;
 }

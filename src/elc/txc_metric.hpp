@@ -98,6 +98,16 @@ namespace metrics {
       uint_least32_t frames_;
 
       /**
+       * The frame count stash.
+       */
+      double frms_;
+
+      /**
+       * The packet count stash.
+       */
+      double pkts_;
+
+      /**
        * The average TXC value.
        */
       double txc_;
