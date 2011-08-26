@@ -5,4 +5,5 @@ SUBDIRS = \
 	contention \
 	elc \
 	probe \
+	traffic \
 	tscal
