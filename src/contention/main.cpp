@@ -30,10 +30,11 @@ main(int ac, char **av)
 {
    try {
 
-      string what;
+      string enc_str, what;
       options_description options("program options");
       options.add_options()
          ("help,?", "produce this help message")
+         ("encoding,e", value<string>(&enc_str)->default_value("OFDM"), "channel encoding")
          ("input,i", value<string>(&what)->default_value("mon0"), "input file/device name")
          ;
 
@@ -50,7 +51,7 @@ main(int ac, char **av)
       w = wnic_sptr(new wnic_encoding_fix(w, CHANNEL_CODING_OFDM | CHANNEL_PREAMBLE_LONG));
       w = wnic_sptr(new wnic_timestamp_swizzle(w));
       w = wnic_sptr(new wnic_timestamp_fix(w));
-
+      encoding_sptr enc(encoding::get(enc_str));
       
       bool contending = false;
       uint_least32_t n_ifs = 0, t_ifs = 0;
@@ -73,7 +74,7 @@ main(int ac, char **av)
          }
          b = w->read();
       }
-      cerr << "AVG CONTENTION TIME = " << (t_ifs / static_cast<double>(n_ifs)) << endl;
+      cerr << "AVG CONTENTION TIME = " << (t_ifs / static_cast<double>(n_ifs)) - enc->DIFS() << endl;
    } catch(const error& x) {
       cerr << x.what() << endl;
    } catch(const std::exception& x) {

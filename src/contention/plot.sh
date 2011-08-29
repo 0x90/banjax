@@ -1,9 +1,10 @@
 #!/bin/bash
 
 p="$1"
+c="${p/.pcap/.cw}"
 d="${p/.pcap/.data}"
 e="${p/.pcap/.eps}"
-./analyse -i "$p" | awk '{ print $3; }' | sort -n | uniq -c | awk '{ print $2, $1; }' > "$d"
+./analyse -i "$p" 2> "$c" | awk '{ print $3; }' | sort -n | uniq -c | awk '{ print $2, $1; }' > "$d"
 
 gnuplot <<EOF
 #!/usr/bin/gnuplot
