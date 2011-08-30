@@ -67,12 +67,13 @@ legacy_elc_metric::add(buffer_sptr b)
 {
    frame f(b);
    frame_control fc(f.fc());
+   const uint32_t CRC_SZ = 4;
    buffer_info_sptr info(b->info());
    if(DATA_FRAME == fc.type() && info->has(TX_FLAGS)) {
       bool tx_success = (0 == (info->tx_flags() & TX_FLAGS_FAIL));
       if(tx_success && info->channel_encoding() == enc_) {
          ++packets_;
-         packet_octets_ += b->data_size();
+         packet_octets_ += b->data_size() + CRC_SZ;
          rates_Kbs_sum_ += info->rate_Kbs();
       }
       frames_ += info->has(DATA_RETRIES) ? 1 + info->data_retries() : 1;
@@ -133,10 +134,17 @@ legacy_elc_metric::closest_rate(uint32_t r) const
 uint32_t 
 legacy_elc_metric::successful_tx_time(uint32_t rate_Kbs, uint16_t frame_sz) const
 {
-   const uint32_t T_RTS_CTS = /* (rts_cts_threshold_ <= FRAME_SZ) ? rts_cts_time(enc, FRAME_SZ, PREAMBLE) : */ 0;
+   // SG: ToDo: Sort this 
+   const bool PREAMBLE = false; 
+
+   // SG: Reintroduce the T_CW term!
+
+   const uint32_t T_CW = avg_contention_time(enc_, 0);
+   const uint32_t T_RTS_CTS
+= /* (rts_cts_threshold_ <= frame_sz) ? rts_cts_time(enc, frame_sz, PREAMBLE) : */ 0;
    const uint32_t T_DATA = enc_->txtime(frame_sz, rate_Kbs, false);
    const uint32_t ACK_SZ = 14;
    const uint32_t T_ACK = enc_->txtime(ACK_SZ, enc_->response_rate(rate_Kbs), false);
 
-   return T_RTS_CTS + T_DATA + enc_->SIFS() + T_ACK + enc_->DIFS();
+   return T_CW + T_RTS_CTS + T_DATA + enc_->SIFS() + T_ACK + enc_->DIFS();
 }

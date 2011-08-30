@@ -8,12 +8,7 @@
 #define __STDC_CONSTANT_MACROS
 
 #include <goodput_metric.hpp>
-#include <dot11/frame.hpp>
 #include <dot11/data_frame.hpp>
-#include <dot11/frame.hpp>
-#include <dot11/ip_hdr.hpp>
-#include <dot11/llc_hdr.hpp>
-#include <dot11/udp_hdr.hpp>
 
 #include <iostream>
 #include <iomanip>
@@ -66,21 +61,6 @@ goodput_metric::add(buffer_sptr b)
    buffer_info_sptr info(b->info());
    data_frame_sptr df(f.as_data_frame());
    if(info->has(TX_FLAGS) && df) {
-
-      // ignore non-iperf traffic
-      llc_hdr_sptr llc(df->get_llc_hdr());
-      if(!llc)
-         return;
-      ip_hdr_sptr ip(llc->get_ip_hdr());
-      if(!ip)
-         return;
-      udp_hdr_sptr udp(ip->get_udp_hdr());
-      if(!udp)
-         return;
-      if(udp->dst_port() != 5001)
-         return;
-
-      // update metric info
       bool failed = (info->tx_flags() & TX_FLAGS_FAIL);
       if(!failed) {
          const uint32_t IEEE80211_HDR_SZ = 26;
@@ -88,13 +68,12 @@ goodput_metric::add(buffer_sptr b)
          const uint32_t IP_HDR_SZ = 20;
          const uint32_t UDP_HDR_SZ = 8;
          const uint16_t HDR_SZ = IEEE80211_HDR_SZ + LLC_HDR_SZ + IP_HDR_SZ + UDP_HDR_SZ;
-         const uint16_t FRAME_SZ = b->data_size();
+         const uint32_t CRC_SZ = 4;
+         const uint16_t FRAME_SZ = b->data_size() + CRC_SZ;
 
          packet_octets_ += FRAME_SZ - HDR_SZ;
-         const uint32_t CRC_SZ = 4;
-         frame_octets_ += FRAME_SZ + CRC_SZ;
+         frame_octets_ += FRAME_SZ;
       }
-
    }
 }
 

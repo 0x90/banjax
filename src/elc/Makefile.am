@@ -9,6 +9,7 @@ elc_SOURCES = \
 	elc_mrr_metric.cpp \
 	etx_metric.cpp \
 	goodput_metric.cpp \
+	iperf_metric_wrapper.cpp \
 	legacy_elc_metric.cpp \
 	metric_demux.cpp \
 	metric_group.cpp \

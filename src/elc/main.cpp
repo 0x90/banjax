@@ -11,6 +11,7 @@
 // #include <ett_metric.hpp>
 #include <etx_metric.hpp>
 #include <goodput_metric.hpp>
+#include <iperf_metric_wrapper.hpp>
 #include <legacy_elc_metric.hpp>
 #include <metric_demux.hpp>
 #include <metric_group.hpp>
@@ -70,10 +71,10 @@ main(int ac, char **av)
 
       encoding_sptr enc(encoding::get(enc_str));
    	metric_group_sptr proto(new metric_group);
-      proto->push_back(metric_sptr(new goodput_metric));
-      proto->push_back(metric_sptr(new elc_metric(rts_cts_threshold, cw)));
-      proto->push_back(metric_sptr(new elc_mrr_metric(rts_cts_threshold)));
-      proto->push_back(metric_sptr(new legacy_elc_metric(enc)));
+      proto->push_back(metric_sptr(new iperf_metric_wrapper(metric_sptr(new goodput_metric))));
+      proto->push_back(metric_sptr(new iperf_metric_wrapper(metric_sptr(new elc_metric(rts_cts_threshold, cw)))));
+      proto->push_back(metric_sptr(new iperf_metric_wrapper(metric_sptr(new elc_mrr_metric(rts_cts_threshold)))));
+      proto->push_back(metric_sptr(new iperf_metric_wrapper(metric_sptr(new legacy_elc_metric(enc)))));
       proto->push_back(metric_sptr(new txc_metric));
       metric_sptr m(metric_sptr(new metric_demux(proto)));
 
