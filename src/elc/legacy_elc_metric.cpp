@@ -105,10 +105,10 @@ legacy_elc_metric::compute(uint32_t delta_us)
    const double FDR = PKTS / FRMS;
    elc_ = FDR * EMT;
 
-   const uint16_t MTU_SZ = 1536;
-   const rateset rates(enc_->supported_rates());
-   const uint16_t max_rate = *(rates.rbegin());
-   const double TMT = successful_tx_time(max_rate, MTU_SZ);
+   const uint16_t MTU_SZ = /* 802.11 MTU: 1536, MAX IPERF: */ 1084;
+   const rateset RATES(enc_->supported_rates());
+   const uint16_t MAX_RATE = *(RATES.rbegin());
+   const double TMT = successful_tx_time(MAX_RATE, MTU_SZ);
    classic_elc_ = FDR * TMT;
 }
 
