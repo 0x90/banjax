@@ -71,12 +71,12 @@ main(int ac, char **av)
 
       encoding_sptr enc(encoding::get(enc_str));
    	metric_group_sptr proto(new metric_group);
-      proto->push_back(metric_sptr(new iperf_metric_wrapper(metric_sptr(new goodput_metric))));
-      proto->push_back(metric_sptr(new iperf_metric_wrapper(metric_sptr(new elc_metric(rts_cts_threshold, cw)))));
-      proto->push_back(metric_sptr(new iperf_metric_wrapper(metric_sptr(new elc_mrr_metric(rts_cts_threshold)))));
-      proto->push_back(metric_sptr(new iperf_metric_wrapper(metric_sptr(new legacy_elc_metric(enc)))));
+      proto->push_back(metric_sptr(new  goodput_metric));
+      proto->push_back(metric_sptr(new elc_metric(cw, rts_cts_threshold)));
+      proto->push_back(metric_sptr(new elc_mrr_metric(cw, rts_cts_threshold)));
+      proto->push_back(metric_sptr(new legacy_elc_metric(enc, rts_cts_threshold)));
       proto->push_back(metric_sptr(new txc_metric));
-      metric_sptr m(metric_sptr(new metric_demux(proto)));
+      metric_sptr m(new iperf_metric_wrapper(metric_sptr(new metric_demux(proto))));
 
       wnic_sptr w(wnic::open(what));
       w = wnic_sptr(new wnic_wallclock_fix(w));

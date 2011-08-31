@@ -21,12 +21,15 @@ using namespace net;
 using namespace std;
 using metrics::legacy_elc_metric;
 
-legacy_elc_metric::legacy_elc_metric(encoding_sptr enc) :
+legacy_elc_metric::legacy_elc_metric(encoding_sptr enc, uint16_t rts_cts_threshold) :
+   abstract_metric(),
    enc_(enc),
+   rts_cts_threshold_(rts_cts_threshold),
    frames_(0),
    packets_(0),
    packet_octets_(0),
    rates_Kbs_sum_(0),
+   classic_elc_(0.0),
    elc_(0.0)
 {
 }
@@ -34,13 +37,14 @@ legacy_elc_metric::legacy_elc_metric(encoding_sptr enc) :
 legacy_elc_metric::legacy_elc_metric(const legacy_elc_metric& other) :
    abstract_metric(other),
    enc_(other.enc_),
+   rts_cts_threshold_(other.rts_cts_threshold_),
    frames_(other.frames_),
    packets_(other.packets_),
    packet_octets_(other.packet_octets_),
    rates_Kbs_sum_(other.rates_Kbs_sum_),
+   classic_elc_(other.classic_elc_),
    elc_(other.elc_)
 {
-
 }
 
 legacy_elc_metric&
@@ -49,10 +53,12 @@ legacy_elc_metric::operator=(const legacy_elc_metric& other)
    if(this != &other) {
       abstract_metric::operator=(other);
       enc_ = other.enc_;
+      rts_cts_threshold_ = other.rts_cts_threshold_;
       frames_ = other.frames_;
       packets_ = other.packets_;
       packet_octets_ = other.packet_octets_;
       rates_Kbs_sum_ = other.rates_Kbs_sum_;
+      classic_elc_ = other.classic_elc_;
       elc_ = other.elc_;
    }
    return *this;
@@ -95,9 +101,15 @@ legacy_elc_metric::compute(uint32_t delta_us)
    const double AVG_PKT_RATE_Kbs = rates_Kbs_sum_ / PKTS;
 
    const double BEST_TX_TIME = successful_tx_time(closest_rate(AVG_PKT_RATE_Kbs), AVG_PKT_SZ);
-   const double TMT = AVG_PKT_SZ / BEST_TX_TIME;
+   const double EMT = AVG_PKT_SZ / BEST_TX_TIME;
    const double FDR = PKTS / FRMS;
-   elc_ = FDR * TMT;
+   elc_ = FDR * EMT;
+
+   const uint16_t MTU_SZ = 1536;
+   const rateset rates(enc_->supported_rates());
+   const uint16_t max_rate = *(rates.rbegin());
+   const double TMT = successful_tx_time(max_rate, MTU_SZ);
+   classic_elc_ = FDR * TMT;
 }
 
 void
@@ -134,14 +146,10 @@ legacy_elc_metric::closest_rate(uint32_t r) const
 uint32_t 
 legacy_elc_metric::successful_tx_time(uint32_t rate_Kbs, uint16_t frame_sz) const
 {
-   // SG: ToDo: Sort this 
-   const bool PREAMBLE = false; 
-
-   // SG: Reintroduce the T_CW term!
+   const bool PREAMBLE = false; // ToDo: recover preamble from encoding
 
    const uint32_t T_CW = avg_contention_time(enc_, 0);
-   const uint32_t T_RTS_CTS
-= /* (rts_cts_threshold_ <= frame_sz) ? rts_cts_time(enc, frame_sz, PREAMBLE) : */ 0;
+   const uint32_t T_RTS_CTS = (rts_cts_threshold_ <= frame_sz) ? rts_cts_time(enc_, frame_sz, PREAMBLE) : 0;
    const uint32_t T_DATA = enc_->txtime(frame_sz, rate_Kbs, false);
    const uint32_t ACK_SZ = 14;
    const uint32_t T_ACK = enc_->txtime(ACK_SZ, enc_->response_rate(rate_Kbs), false);

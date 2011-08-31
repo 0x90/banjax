@@ -19,28 +19,28 @@ using namespace net;
 using namespace std;
 using metrics::elc_metric;
 
-elc_metric::elc_metric(uint16_t rts_cts_threshold, uint16_t cw_time_us) :
+elc_metric::elc_metric(uint16_t cw_time_us, uint16_t rts_cts_threshold) :
    abstract_metric(),
+   cw_time_us_(cw_time_us),
    rts_cts_threshold_(rts_cts_threshold),
    n_pkt_succ_(0),
    t_pkt_succ_(0.0),
    t_pkt_fail_(0.0),
    packet_octets_(0),
    packet_count_(0),
-   cw_time_us_(cw_time_us),
    elc_(0)
 {
 }
 
 elc_metric::elc_metric(const elc_metric& other) :
    abstract_metric(other),
+   cw_time_us_(other.cw_time_us_),
    rts_cts_threshold_(other.rts_cts_threshold_),
    n_pkt_succ_(other.n_pkt_succ_),
    t_pkt_succ_(other.t_pkt_succ_),
    t_pkt_fail_(other.t_pkt_fail_),
    packet_octets_(other.packet_octets_),
    packet_count_(other.packet_count_),
-   cw_time_us_(other.cw_time_us_),
    elc_(other.elc_)
 {
 }
@@ -50,13 +50,13 @@ elc_metric::operator=(const elc_metric& other)
 {
    if(&other != this) {
       abstract_metric::operator=(other);
+      cw_time_us_ = other.cw_time_us_;
       rts_cts_threshold_ = other.rts_cts_threshold_;
       n_pkt_succ_ = other.n_pkt_succ_;
       t_pkt_succ_ = other.t_pkt_succ_;
       t_pkt_fail_ = other.t_pkt_fail_;
       packet_octets_ = other.packet_octets_;
       packet_count_ = other.packet_count_;
-      cw_time_us_ = other.cw_time_us_;
       elc_ = other.elc_;
    }
    return *this;

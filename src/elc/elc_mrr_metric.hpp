@@ -21,10 +21,10 @@ namespace metrics {
       /**
        * elc_mrr_metric constructor.
        *
-       * \param rts_cts_threshold Use RTS/CTS when rts_cts_threshold <= frame size
        * \param cw_time_us The measured contention window size.
+       * \param rts_cts_threshold Use RTS/CTS when rts_cts_threshold <= frame size
        */
-      explicit elc_mrr_metric(uint16_t rts_cts_threshold, uint16_t cw_time_us = 0);
+      explicit elc_mrr_metric(uint16_t cw_time_us, uint16_t rts_cts_threshold);
 
       /**
        * elc_metric copy constuctor.
@@ -125,6 +125,11 @@ namespace metrics {
    private:
 
       /**
+       * The measured contention window time (in microseconds).
+       */
+      uint16_t cw_time_us_;
+
+      /**
        * The RTS/CTS threshold.
        */
       uint16_t rts_cts_threshold_;
@@ -153,11 +158,6 @@ namespace metrics {
        * The number of packets sent on this elc_mrr_metric.
        */
       uint32_t packet_count_;
-
-      /**
-       * The measured contention window time (in microseconds).
-       */
-      uint16_t cw_time_us_;
 
       /**
        * The value of the this ELC/MRR metric.

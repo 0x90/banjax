@@ -27,8 +27,9 @@ namespace metrics {
        * legacy_elc_metric constructor.
        *
        * \param enc The encoding used.
+       * \param rts_cts_threshold The frame size above which we need to use RTS/CTS.
        */
-      explicit legacy_elc_metric(net::encoding_sptr enc);
+      legacy_elc_metric(net::encoding_sptr enc, uint16_t rts_cts_threshold);
 
       /**
        * legacy_elc_metric copy constuctor.
@@ -116,6 +117,11 @@ namespace metrics {
       net::encoding_sptr enc_;
 
       /**
+       * The RTS/CTS threshold.
+       */
+      uint16_t rts_cts_threshold_;
+
+      /**
        * The total number of frame transmission attempts.
        */
       uint32_t frames_;
@@ -134,6 +140,11 @@ namespace metrics {
        * Sum of the data rates used to send packets (used to compute average).
        */
       uint_least32_t rates_Kbs_sum_;
+
+      /**
+       * The current value for "classic" ELC using TMT.
+       */
+      double classic_elc_;
 
       /**
        * The current value of this ELC metric.
