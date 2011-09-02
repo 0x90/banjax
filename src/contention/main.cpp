@@ -52,29 +52,91 @@ main(int ac, char **av)
       w = wnic_sptr(new wnic_timestamp_swizzle(w));
       w = wnic_sptr(new wnic_timestamp_fix(w));
       encoding_sptr enc(encoding::get(enc_str));
-      
-      bool contending = false;
-      uint_least32_t n_ifs = 0, t_ifs = 0;
-      buffer_sptr b(w->read()), p;
-      uint64_t adj =  b->info()->timestamp1();
+
+      uint16_t txc = 0;
+      uint_least32_t n_cw = 0, t_cw = 0;
+      buffer_sptr b(w->read()), p, null;
+      enum { SKIPPING, CONTENDING, TRANSMITTING } state = SKIPPING;
       for(uint32_t n = 1; b; ++n){
          frame f(b);
          frame_control fc(f.fc());
-         if((fc.subtype() == DATA_QOS || fc.subtype() == DATA) && contending) {
-            int32_t ifs = b->info()->timestamp1() - p->info()->timestamp2();
-            cout << n << " " << b->info()->timestamp1() << " " << ifs << endl;
-            contending = false;
-            ++n_ifs;
-            t_ifs += ifs;
-         } else if(fc.subtype() == CTRL_ACK) {
-            p = b;
-            contending = true;
-         } else {
-            contending = false;
+         switch(state) {
+
+         default:
+         case SKIPPING:
+            switch(fc.subtype()) {
+            case CTRL_ACK:
+               state = CONTENDING;
+               p = b;
+               break;
+            default:
+               state = SKIPPING;
+               p = null;
+               break;
+            }
+            break;
+
+         case CONTENDING:
+            switch(fc.subtype()) {
+            case DATA:
+            case DATA_QOS:
+               if(!fc.retry()) {
+                  state = TRANSMITTING;
+                  txc = 0;
+                  int32_t ifs = b->info()->timestamp1() - p->info()->timestamp2();
+                  cout << n << " " << b->info()->timestamp1() << " " << ifs << " " << txc << endl;
+                  ++n_cw;
+                  t_cw += ifs;
+                  p = b;
+               } else {
+                  state = SKIPPING;
+                  p = null;
+               }
+               break;
+            case CTRL_ACK:
+               state = CONTENDING;
+               p = b;
+               break;
+            default:
+               state = SKIPPING;
+               p = null;
+               break;
+            }
+            break;
+
+         case TRANSMITTING:
+            switch(fc.subtype()) {
+            case DATA:
+            case DATA_QOS:
+               if(fc.retry()) {
+                  state = TRANSMITTING;
+                  ++txc;
+                  int32_t ifs = b->info()->timestamp1() - p->info()->timestamp2();
+                  cout << n << " " << b->info()->timestamp1() << " " << ifs << " " << txc << endl;
+                  ++n_cw;
+                  t_cw += ifs;
+                  p = b;
+               } else {
+                  state = SKIPPING;
+                  p = null;
+               }
+               break;
+            case CTRL_ACK:
+               state = CONTENDING;
+               p = b;
+               break;
+            default:
+               state = SKIPPING;
+               p = null;
+               break;
+            }
+            break;
+
          }
          b = w->read();
       }
-      cerr << "AVG CONTENTION TIME = " << (t_ifs / static_cast<double>(n_ifs)) - enc->DIFS() << endl;
+      cerr << "AVG CONTENTION TIME = " << (t_cw / static_cast<double>(n_cw)) - enc->DIFS() << endl;
+
    } catch(const error& x) {
       cerr << x.what() << endl;
    } catch(const std::exception& x) {

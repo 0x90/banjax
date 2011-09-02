@@ -63,8 +63,9 @@ namespace metrics {
        * Compute the ELC metric.
        *
        * \param delta_us The time (in microseconds) over which to compute the metric.
+       * \return The value of this metric as a double.
        */
-      virtual void compute(uint32_t delta_us) const;
+      virtual double compute(uint32_t delta_us);
 
       /**
        * Resets this metric to its initial state.

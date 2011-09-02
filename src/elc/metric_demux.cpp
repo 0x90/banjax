@@ -64,12 +64,14 @@ metric_demux::clone() const
    return new metric_demux(*this);
 }
 
-void
+double
 metric_demux::compute(uint32_t delta_us)
 {
+   double sum = 0;
    for(linkmap::iterator i(links_.begin()); i != links_.end(); ++i) {
-      (i->second)->compute(delta_us);
+      sum += (i->second)->compute(delta_us);
    }
+   return sum / links_.size();
 }
 
 void

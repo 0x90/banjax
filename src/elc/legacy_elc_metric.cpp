@@ -21,9 +21,10 @@ using namespace net;
 using namespace std;
 using metrics::legacy_elc_metric;
 
-legacy_elc_metric::legacy_elc_metric(encoding_sptr enc, uint16_t rts_cts_threshold) :
+legacy_elc_metric::legacy_elc_metric(encoding_sptr enc, uint16_t mtu_sz, uint16_t rts_cts_threshold) :
    abstract_metric(),
    enc_(enc),
+   mtu_sz_(mtu_sz),
    rts_cts_threshold_(rts_cts_threshold),
    frames_(0),
    packets_(0),
@@ -37,6 +38,7 @@ legacy_elc_metric::legacy_elc_metric(encoding_sptr enc, uint16_t rts_cts_thresho
 legacy_elc_metric::legacy_elc_metric(const legacy_elc_metric& other) :
    abstract_metric(other),
    enc_(other.enc_),
+   mtu_sz_(other.mtu_sz_),
    rts_cts_threshold_(other.rts_cts_threshold_),
    frames_(other.frames_),
    packets_(other.packets_),
@@ -53,6 +55,7 @@ legacy_elc_metric::operator=(const legacy_elc_metric& other)
    if(this != &other) {
       abstract_metric::operator=(other);
       enc_ = other.enc_;
+      mtu_sz_ = other.mtu_sz_;
       rts_cts_threshold_ = other.rts_cts_threshold_;
       frames_ = other.frames_;
       packets_ = other.packets_;
@@ -92,7 +95,7 @@ legacy_elc_metric::clone() const
    return new legacy_elc_metric(*this);
 }
 
-void
+double
 legacy_elc_metric::compute(uint32_t delta_us)
 {
    const double FRMS = frames_;
@@ -105,11 +108,13 @@ legacy_elc_metric::compute(uint32_t delta_us)
    const double FDR = PKTS / FRMS;
    elc_ = FDR * EMT;
 
-   const uint16_t MTU_SZ = /* 802.11 MTU: 1536, MAX IPERF: */ 1084;
+   const uint16_t MTU_SZ = mtu_sz_;
    const rateset RATES(enc_->supported_rates());
    const uint16_t MAX_RATE = *(RATES.rbegin());
    const double TMT = successful_tx_time(MAX_RATE, MTU_SZ);
    classic_elc_ = FDR * TMT;
+
+   return elc_;
 }
 
 void
@@ -124,7 +129,7 @@ legacy_elc_metric::reset()
 void
 legacy_elc_metric::write(ostream& os) const
 {
-   os << "LegacyELC: " << elc_;
+   os << "LegacyELC: " << elc_ << ", ClassicELC: " << classic_elc_;
 }
 
 uint32_t

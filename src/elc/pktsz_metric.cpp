@@ -91,10 +91,11 @@ pktsz_metric::clone() const
    return new pktsz_metric(*this);
 }
 
-void
+double
 pktsz_metric::compute(uint32_t junk)
 {
    pktsz_ = octets_ / static_cast<double>(packets_);
+   return pktsz_;
 }
 
 void

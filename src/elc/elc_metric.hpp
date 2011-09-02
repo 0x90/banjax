@@ -66,8 +66,9 @@ namespace metrics {
        * Compute the metric.
        *
        * \param delta_us The time (in microseconds) over which to compute the metric.
+       * \return The value of this metric as a double.
        */
-      virtual void compute(uint32_t delta_us);
+      virtual double compute(uint32_t delta_us);
 
       /**
        * Reset the internal state of the metric.
@@ -157,7 +158,7 @@ namespace metrics {
       uint32_t packet_count_;
 
       /**
-       * The current value of this ELC metric.
+       * Stashed value of this metric.
        */
       double elc_;
 

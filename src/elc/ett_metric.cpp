@@ -49,9 +49,10 @@ ett_metric::clone() const
    return new ett_metric(*this);
 }
 
-void
+double
 ett_metric::compute(uint32_t delta_us) const
 {
+   return 0.0;
 }
 
 void

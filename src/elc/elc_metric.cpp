@@ -92,11 +92,12 @@ elc_metric::clone() const
    return new elc_metric(*this);
 }
 
-void
+double
 elc_metric::compute(uint32_t junk)
 {
    const double AVG_PKT_SZ = packet_octets_ / static_cast<double>(packet_count_);
    elc_ = (n_pkt_succ_ * AVG_PKT_SZ) / (t_pkt_succ_ + t_pkt_fail_);
+   return elc_;
 }
 
 void

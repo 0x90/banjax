@@ -53,8 +53,9 @@ namespace metrics {
        * Compute the metric.
        *
        * \param delta_us The time (in microseconds) over which to compute the metric.
+       * \return The value of this metric as a double.
        */
-      virtual void compute(uint32_t delta_us) = 0;
+      virtual double compute(uint32_t delta_us) = 0;
 
       /**
        * Reset the internal state of the metric.

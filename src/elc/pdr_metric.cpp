@@ -74,12 +74,13 @@ pdr_metric::clone() const
    return new pdr_metric(*this);
 }
 
-void
+double
 pdr_metric::compute(uint32_t delta_us)
 {
    const double ATTEMPTS = attempts_;
    const double GOOD = good_;
    pdr_ = GOOD / ATTEMPTS;
+   return pdr_;
 }
 
 void

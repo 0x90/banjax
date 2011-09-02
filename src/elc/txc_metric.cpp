@@ -74,11 +74,12 @@ txc_metric::clone() const
    return new txc_metric(*this);
 }
 
-void
+double
 txc_metric::compute(uint32_t junk)
 {
    frms_ = frames_;
    pkts_ = packets_;
+   return frms_ / pkts_;
 }
 
 void

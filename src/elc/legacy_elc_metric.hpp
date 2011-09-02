@@ -27,9 +27,10 @@ namespace metrics {
        * legacy_elc_metric constructor.
        *
        * \param enc The encoding used.
+       * \param mtu_sz_ The MTU size to use in computing ELC.
        * \param rts_cts_threshold The frame size above which we need to use RTS/CTS.
        */
-      legacy_elc_metric(net::encoding_sptr enc, uint16_t rts_cts_threshold);
+      legacy_elc_metric(net::encoding_sptr enc, uint16_t mtu_sz,  uint16_t rts_cts_threshold);
 
       /**
        * legacy_elc_metric copy constuctor.
@@ -71,8 +72,9 @@ namespace metrics {
        * Compute the metric.
        *
        * \param delta_us The time (in microseconds) over which to compute the metric.
+       * \return The value of this metric as a double.
        */
-      virtual void compute(uint32_t delta_us);
+      virtual double compute(uint32_t delta_us);
 
       /**
        * Reset the internal state of the metric.
@@ -115,6 +117,11 @@ namespace metrics {
        * The encoding used to compute the metric.
        */
       net::encoding_sptr enc_;
+
+      /**
+       * The size of the MTU to use when computing the metric.
+       */
+      uint16_t mtu_sz_;
 
       /**
        * The RTS/CTS threshold.

@@ -8,16 +8,16 @@
 #define __STDC_LIMIT_MACROS
 #include <elc_metric.hpp>
 #include <elc_mrr_metric.hpp>
-// #include <ett_metric.hpp>
 #include <etx_metric.hpp>
 #include <goodput_metric.hpp>
 #include <iperf_metric_wrapper.hpp>
 #include <legacy_elc_metric.hpp>
+#include <metric.hpp>
 #include <metric_demux.hpp>
 #include <metric_group.hpp>
-#include <metric.hpp>
 #include <pdr_metric.hpp>
 #include <pktsz_metric.hpp>
+#include <residual.hpp>
 #include <txc_metric.hpp>
 
 #include <net/buffer_info.hpp>
@@ -45,7 +45,7 @@ main(int ac, char **av)
    try {
 
       bool help;
-      uint16_t cw;
+      uint16_t cw, mtu_sz;
       string enc_str, what;
       uint16_t port_no;
       uint16_t rts_cts_threshold;
@@ -56,6 +56,7 @@ main(int ac, char **av)
          ("cw,c", value(&cw)->default_value(0), "size of contention window in microseconds (0 = compute average)")
          ("encoding,e", value<string>(&enc_str)->default_value("OFDM"), "channel encoding")
          ("input,i", value<string>(&what)->default_value("mon0"), "input file/device name")
+         ("mtu,m", value<uint16_t>(&mtu_sz)->default_value(1536), "MTU size used for legacy ELC")
          ("port,p", value<uint16_t>(&port_no)->default_value(50000), "port number used for ETX probes")
          ("rts-threshold,r", value<uint16_t>(&rts_cts_threshold)->default_value(UINT16_MAX), "RTS threshold level")
          ;
@@ -74,7 +75,8 @@ main(int ac, char **av)
       proto->push_back(metric_sptr(new  goodput_metric));
       proto->push_back(metric_sptr(new elc_metric(cw, rts_cts_threshold)));
       proto->push_back(metric_sptr(new elc_mrr_metric(cw, rts_cts_threshold)));
-      proto->push_back(metric_sptr(new legacy_elc_metric(enc, rts_cts_threshold)));
+      proto->push_back(metric_sptr(new legacy_elc_metric(enc, mtu_sz, rts_cts_threshold)));
+      proto->push_back(metric_sptr(new residual("RELC", metric_sptr(new legacy_elc_metric(enc, mtu_sz, rts_cts_threshold)))));
       proto->push_back(metric_sptr(new txc_metric));
       metric_sptr m(new iperf_metric_wrapper(metric_sptr(new metric_demux(proto))));
 

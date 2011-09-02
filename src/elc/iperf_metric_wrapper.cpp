@@ -76,10 +76,10 @@ iperf_metric_wrapper::clone() const
    return new iperf_metric_wrapper(*this);
 }
 
-void
+double
 iperf_metric_wrapper::compute(uint32_t delta_us)
 {
-   wrapped_metric_->compute(delta_us);
+   return wrapped_metric_->compute(delta_us);
 }
 
 void

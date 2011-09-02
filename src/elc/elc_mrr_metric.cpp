@@ -91,11 +91,12 @@ elc_mrr_metric::clone() const
    return new elc_mrr_metric(*this);
 }
 
-void
+double
 elc_mrr_metric::compute(uint32_t junk)
 {
    const double AVG_PKT_SZ = packet_octets_ / static_cast<double>(packet_count_);
    mrr_ = (n_pkt_succ_ * AVG_PKT_SZ) / (t_pkt_succ_ + t_pkt_fail_);
+   return mrr_;
 }
 
 void
@@ -171,5 +172,10 @@ elc_mrr_metric::frame_fail_time(buffer_sptr b, uint32_t rate_Kbs) const
    const bool PREAMBLE =  info->has(CHANNEL_FLAGS) && (info->channel_flags() & CHANNEL_PREAMBLE_SHORT);
    const uint32_t T_RTS_CTS = (rts_cts_threshold_ <= FRAME_SZ) ? rts_cts_time(enc, FRAME_SZ, PREAMBLE) : 0;
    const uint32_t T_DATA = enc->txtime(FRAME_SZ, rate_Kbs, PREAMBLE);
+
+#if 1 /* ath5k */
+   return T_RTS_CTS + T_DATA + /* enc->SIFS() + */ enc->ACKTimeout() /* + enc->DIFS() */;
+#else
    return T_RTS_CTS + T_DATA + enc->SIFS() + enc->ACKTimeout() + enc->DIFS();
+#endif
 }

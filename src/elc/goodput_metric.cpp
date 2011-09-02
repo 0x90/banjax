@@ -83,12 +83,13 @@ goodput_metric::clone() const
    return new goodput_metric(*this);
 }
 
-void
+double
 goodput_metric::compute(uint32_t delta_us)
 {
    double delta = delta_us;
    iperf_goodput_ = packet_octets_ / delta;
    mac_goodput_ = frame_octets_ / delta;
+   return mac_goodput_;
 }
 
 void

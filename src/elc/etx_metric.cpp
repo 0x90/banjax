@@ -105,14 +105,14 @@ etx_metric::clone() const
    return new etx_metric(*this);
 }
 
-void
+double
 etx_metric::compute(uint32_t delta_us)
 {
    double d_f = 1.0; // ToDo: fix me!
    double d_r = 1.0; // ToDo: fix me!
    // stash value(/* 1.0 / */ d_f * d_r);
-
    // advance the probe window
+   return 0.0;
 }
 
 void
