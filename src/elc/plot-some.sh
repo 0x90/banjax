@@ -26,16 +26,24 @@ if [ -f $d ]; then
 					 p="$p$d\"$f\" using 1:6 with lines title \"ELC (Legacy)\""
 					 d=", "
 					 ;;
+				"classic")
+					 p="$p$d\"$f\" using 1:7 with lines title \"RELC (Legacy)\""
+					 d=", "
+					 ;;
+				"relc")
+					 p="$p$d\"$f\" using 1:8 with lines title \"RELC (Legacy)\""
+					 d=", "
+					 ;;
 				"pkt")
-					 p="$p$d\"$f\" using 1:7 with lines title \"packets\" axes x1y2"
+					 p="$p$d\"$f\" using 1:9 with lines title \"packets\" axes x1y2"
 					 d=", "
 					 ;;
 				"frm")
-					 p="$p$d\"$f\" using 1:8 with lines title \"frames\" axes x1y2"
+					 p="$p$d\"$f\" using 1:10 with lines title \"frames\" axes x1y2"
 					 d=", "
 					 ;;
 				"txc")
-					 p="$p$d\"$f\" using 1:9 with lines title \"TXC\" axes x1y2"
+					 p="$p$d\"$f\" using 1:11 with lines title \"TXC\" axes x1y2"
 					 d=", "
 					 ;;
 				*)

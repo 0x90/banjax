@@ -174,5 +174,11 @@ elc_metric::frame_fail_time(buffer_sptr b) const
    const uint32_t DATA_RATE = info->rate_Kbs();
    const uint32_t T_DATA = enc->txtime(FRAME_SZ, DATA_RATE, PREAMBLE);
 
-   return T_RTS_CTS + T_DATA + enc->SIFS() + enc->ACKTimeout() + enc->DIFS();
+#if 1
+   /* ATH5K? */
+   return T_RTS_CTS + T_DATA + enc->ACKTimeout();
+#else
+   /* 802.11 */
+   return T_RTS_CTS + T_DATA /* + enc->SIFS()? */ + enc->ACKTimeout() + enc->DIFS();
+#endif
 }
