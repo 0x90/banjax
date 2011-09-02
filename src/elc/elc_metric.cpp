@@ -124,9 +124,9 @@ elc_metric::packet_succ_time(buffer_sptr b) const
    encoding_sptr enc(info->channel_encoding());
    uint8_t retries = info->data_retries();
    for(uint8_t i = 0; i < retries; ++i) {
-      usecs += (cw_time_us_ ? cw_time_us_ : avg_contention_time(enc, i)) + frame_fail_time(b);
+      usecs += (cw_time_us_ ? cw_time_us_ : avg_contention_time(enc, /*i*/ 0)) + frame_fail_time(b);
    }
-   return usecs + (cw_time_us_ ? cw_time_us_ : avg_contention_time(enc, retries)) + frame_succ_time(b);
+   return usecs + (cw_time_us_ ? cw_time_us_ : avg_contention_time(enc, /*retries*/ 0)) + frame_succ_time(b);
 }
 
 double
@@ -137,7 +137,7 @@ elc_metric::packet_fail_time(buffer_sptr b) const
    encoding_sptr enc(info->channel_encoding());
    uint8_t retries = info->data_retries();
    for(uint8_t i = 0; i < retries + 1; ++i) {
-      usecs += (cw_time_us_ ? cw_time_us_ : avg_contention_time(enc, i)) + frame_fail_time(b);
+      usecs += (cw_time_us_ ? cw_time_us_ : avg_contention_time(enc, /*i*/ 0)) + frame_fail_time(b);
    }
    return usecs;
 }
