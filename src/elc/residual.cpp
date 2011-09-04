@@ -19,7 +19,7 @@ using namespace net;
 using namespace std;
 using metrics::residual;
 
-residual::residual(string name, metric_sptr m) :
+residual::residual(metric_sptr m, string name) :
    metric(),
    m_(m),
    name_(name),
@@ -57,6 +57,8 @@ residual::~residual()
 void
 residual::add(buffer_sptr b)
 {
+   m_->add(b);
+
    buffer_info_sptr info(b->info());
    encoding_sptr enc(info->channel_encoding());
 
@@ -82,8 +84,8 @@ residual::clone() const
 double
 residual::compute(uint32_t delta_us)
 {
-   double idle_fraction = static_cast<double>(delta_us - busy_time_) / delta_us;
-   residual_ = m_->compute(delta_us) * idle_fraction;
+   double busy_fraction = static_cast<double>(busy_time_) /  delta_us;
+   residual_ = m_->compute(delta_us) / busy_fraction;
    return residual_;
 }
 

@@ -27,10 +27,10 @@ namespace metrics {
       /**
        * residual constructor.
        *
-       * \param name The name used for this metric when printing.
        * \param m A non-null pointer to a metric.
+       * \param name The name used for this metric when printing.
        */
-      explicit residual(std::string name, metric_sptr m);
+      explicit residual(metric_sptr m, std::string name);
 
       /**
        * residual copy constuctor.
@@ -91,14 +91,14 @@ namespace metrics {
    private:
 
       /**
-       * The name of this residual metric.
-       */
-      std::string name_;
-
-      /**
        * The metric for which we're computing the residual value.
        */
       metric_sptr m_;
+
+      /**
+       * The name of this residual metric.
+       */
+      std::string name_;
 
       /**
        * The number of microseconds the channel has used since compute() was last called.

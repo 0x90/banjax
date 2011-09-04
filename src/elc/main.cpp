@@ -76,7 +76,7 @@ main(int ac, char **av)
       proto->push_back(metric_sptr(new elc_metric(cw, rts_cts_threshold)));
       proto->push_back(metric_sptr(new elc_mrr_metric(cw, rts_cts_threshold)));
       proto->push_back(metric_sptr(new legacy_elc_metric(enc, mtu_sz, rts_cts_threshold)));
-      proto->push_back(metric_sptr(new residual("RELC", metric_sptr(new legacy_elc_metric(enc, mtu_sz, rts_cts_threshold)))));
+      proto->push_back(metric_sptr(new residual(metric_sptr(new legacy_elc_metric(enc, mtu_sz, rts_cts_threshold)), "RELC")));
       proto->push_back(metric_sptr(new txc_metric));
       metric_sptr m(new iperf_metric_wrapper(metric_sptr(new metric_demux(proto))));
 
