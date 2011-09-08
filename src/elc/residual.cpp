@@ -84,8 +84,8 @@ residual::clone() const
 double
 residual::compute(uint32_t delta_us)
 {
-   double busy_fraction = static_cast<double>(busy_time_) /  delta_us;
-   residual_ = m_->compute(delta_us) / busy_fraction;
+   double idle_fraction = static_cast<double>(delta_us - busy_time_) / delta_us;
+   residual_ = m_->compute(delta_us) * idle_fraction;
    return residual_;
 }
 
