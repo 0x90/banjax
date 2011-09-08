@@ -111,7 +111,8 @@ legacy_elc_metric::compute(uint32_t delta_us)
    const uint16_t MTU_SZ = mtu_sz_;
    const rateset RATES(enc_->supported_rates());
    const uint16_t MAX_RATE = *(RATES.rbegin());
-   const double TMT = successful_tx_time(MAX_RATE, MTU_SZ);
+   const double TXTIME = successful_tx_time(MAX_RATE, MTU_SZ);
+   const double TMT = MTU_SZ / TXTIME;
    classic_elc_ = FDR * TMT;
 
    return elc_;

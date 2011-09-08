@@ -27,7 +27,7 @@ if [ -f $d ]; then
 					 d=", "
 					 ;;
 				"classic")
-					 p="$p$d\"$f\" using 1:7 with lines title \"RELC (Legacy)\""
+					 p="$p$d\"$f\" using 1:7 with lines title \"ELC (Classic)\""
 					 d=", "
 					 ;;
 				"relc")
