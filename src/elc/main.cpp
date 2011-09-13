@@ -73,6 +73,7 @@ main(int ac, char **av)
       encoding_sptr enc(encoding::get(enc_str));
    	metric_group_sptr proto(new metric_group);
       proto->push_back(metric_sptr(new  goodput_metric));
+      proto->push_back(metric_sptr(new residual(metric_sptr(new goodput_metric), "Residual")));
       proto->push_back(metric_sptr(new elc_metric(cw, rts_cts_threshold)));
       proto->push_back(metric_sptr(new elc_mrr_metric(cw, rts_cts_threshold)));
       proto->push_back(metric_sptr(new legacy_elc_metric(enc, mtu_sz, rts_cts_threshold)));

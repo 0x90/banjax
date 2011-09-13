@@ -20,7 +20,7 @@ using namespace std;
 using metrics::residual;
 
 residual::residual(metric_sptr m, string name) :
-   metric(),
+   abstract_metric(),
    m_(m),
    name_(name),
    busy_time_(0),
@@ -29,7 +29,7 @@ residual::residual(metric_sptr m, string name) :
 }
 
 residual::residual(const residual& other) :
-   metric(other),
+   abstract_metric(other),
    m_(other.m_),
    name_(other.name_),
    busy_time_(other.busy_time_),
@@ -41,7 +41,7 @@ residual&
 residual::operator=(const residual& other)
 {
    if(this != &other) {
-      metric::operator=(other);
+      abstract_metric::operator=(other);
       m_ = other.m_;
       name_ = other.name_;
       busy_time_ = other.busy_time_;
@@ -59,20 +59,35 @@ residual::add(buffer_sptr b)
 {
    m_->add(b);
 
+   frame f(b);
+   frame_control fc(f.fc());
    buffer_info_sptr info(b->info());
    encoding_sptr enc(info->channel_encoding());
 
-   const size_t CRC_SZ = 4;
    const uint16_t RATE_Kbs = info->rate_Kbs();
+   const size_t CRC_SZ = 4;
    const size_t FRAME_SZ = b->data_size() + CRC_SZ;
-   const bool PREAMBLE = false; // ToDo: get from encoding
 
    if(info->has(TX_FLAGS)) {
+      // ToDo: pass txc to airtime, use MRR rate info
       uint16_t txc = 1 + (info->has(DATA_RETRIES) ? info->data_retries() : 0);
-      busy_time_ += txc * enc->txtime(FRAME_SZ, RATE_Kbs, PREAMBLE);
+      busy_time_ += txc * airtime(enc, RATE_Kbs, fc.type(), FRAME_SZ);
    } else {
-      busy_time_ += enc->txtime(FRAME_SZ, RATE_Kbs, PREAMBLE);
+      busy_time_ += airtime(enc, RATE_Kbs, fc.type(), FRAME_SZ);
    }
+}
+
+uint32_t
+residual::airtime(encoding_sptr enc, uint16_t rate_Kbs, frame_type ft, uint32_t frame_sz) const
+{
+   uint32_t t;
+   const bool PREAMBLE = false; // ToDo: get from encoding
+   if(CTRL_FRAME == ft) {
+      t = enc->SIFS() + enc->txtime(frame_sz, rate_Kbs, PREAMBLE);
+   } else {
+      t = enc->DIFS() + avg_contention_time(enc, 0) + enc->txtime(frame_sz, rate_Kbs, PREAMBLE);
+   }
+   return t;
 }
 
 residual*

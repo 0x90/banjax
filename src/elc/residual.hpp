@@ -8,7 +8,8 @@
 #ifndef METRICS_RESIDUAL_HPP
 #define METRICS_RESIDUAL_HPP
 
-#include <metric.hpp>
+#include <abstract_metric.hpp>
+#include <dot11/frame_type.hpp>
 #include <net/encoding.hpp>
 #include <net/eui_48.hpp>
 #include <net/buffer.hpp>
@@ -21,7 +22,7 @@ namespace metrics {
     * residual measures the channel idle/busy fraction and then
     * applies that to the metric passed to it in the constructor.
     */
-   class residual : public metric {
+   class residual : public abstract_metric {
    public:
 
       /**
@@ -87,6 +88,21 @@ namespace metrics {
        * \param os A reference to the stream to write to.
        */
       virtual void write(std::ostream& os) const;
+
+   private:
+
+      /**
+       * Return the busy time for a particular frame. Unlike the
+       * hardware busy counter we try to account for the interframe
+       * spacing and contention required to transmit.
+       *
+       * \param enc A non-null pointer to the encoding.
+       * \param rate_Kbs The TX rates in units of 1Kb/s.
+       * \param t The frame type.
+       * \param frame_sz The frame size (including CRC).
+       * \return 
+       */
+      uint32_t airtime(net::encoding_sptr enc, uint16_t rate_Kbs, dot11::frame_type t, uint32_t frame_sz) const;
 
    private:
 
