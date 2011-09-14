@@ -56,6 +56,7 @@ main(int ac, char **av)
       uint_least32_t t_data = 0, n_data = 0;
       uint_least32_t t_mgmt = 0, n_mgmt = 0;
       uint_least32_t  t_bad = 0,  n_bad = 0;
+      uint_least32_t   t_cw = 0,   n_cw = 0;
       uint_least32_t t_iperf = 0, n_iperf = 0, sz_iperf = 0;
       
       uint_least32_t sz_data = 0;
@@ -101,6 +102,8 @@ main(int ac, char **av)
                t_iperf += txtime;
                t_iperf += info->channel_encoding()->DIFS();
                sz_iperf += b->data_size() + CRC_SZ;
+               ++n_cw;
+               t_cw += b->info()->timestamp1() - t2 - info->channel_encoding()->DIFS();
             }
             break;
          case MGMT_FRAME:
@@ -118,8 +121,7 @@ main(int ac, char **av)
       }
 
       double dur = t2 - t1;
-      double cw = n_data * 85.5;
-
+      double est_cw = 76.5 + 9.0;
 
       cout << ", TIME, COUNT, AVG TIME, % TIME, AVG SIZE" << endl;
 
@@ -130,7 +132,8 @@ main(int ac, char **av)
       cout << "  BAD: " <<  t_bad  << ", " <<  n_bad <<  ", " <<   t_bad /  static_cast<double>(n_bad)  << "%" << endl;
       cout << endl;
       cout << "TOTAL: " << t_ctrl + t_data + t_mgmt + t_bad << ", " << n_ctrl + n_data + n_mgmt + n_bad << endl;
-      cout << "ESTCW: " << cw << ", " << (cw / dur) * 100.0 << "%" << endl;
+      cout << "CW: "    << t_cw / static_cast<double>(n_cw) << ", " << (t_cw / dur) * 100.0 << "%" << endl;
+      cout << "ESTCW: " << est_cw << ", " << ((n_data * est_cw) / dur) * 100.0 << "%" << endl;
       cout << endl;
 
    } catch(const error& x) {
