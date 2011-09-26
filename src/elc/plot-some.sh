@@ -6,7 +6,6 @@ p=""
 d=""
 
 if [ -f $d ]; then
-elc/
 	 shift
 	 for arg in $*; do
 		  case $arg in
