@@ -84,12 +84,6 @@ main(int ac, char **av)
             frame_control fc(f.fc());
             buffer_info_sptr info(b->info()); 
             uint16_t txtime = info->timestamp2() - info->timestamp1();
-
-            if(fc.retry()) {
-               t2 = b->info()->timestamp2();
-               continue;
-            }
-
             switch(fc.type()) {
             case CTRL_FRAME:
                ++n_ctrl;
