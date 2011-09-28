@@ -2,8 +2,10 @@
 #
 
 SUBDIRS = \
+	beacons \
 	contention \
 	elc \
+	icmp \
 	probe \
 	traffic \
 	tscal

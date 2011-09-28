@@ -54,17 +54,9 @@ main(int ac, char **av)
       w = wnic_sptr(new wnic_timestamp_swizzle(w));
       w = wnic_sptr(new wnic_timestamp_fix(w));
 
-      uint_least32_t t_ctrl = 0, n_ctrl = 0;
-      uint_least32_t t_ctrl_ifs = 0, n_ctrl_ifs = 0;
-      uint_least32_t t_ctrl_delta = 0, n_ctrl_delta = 0;
-
-      uint_least32_t t_data = 0, n_data = 0;
-      uint_least32_t t_data_ifs = 0, n_data_ifs = 0;
-      uint_least32_t t_data_cw = 0, n_data_cw = 0;
-
-      uint_least32_t t_mgmt = 0, n_mgmt = 0;
-      uint_least32_t t_mgmt_ifs = 0, n_mgmt_ifs = 0;
-      uint_least32_t t_mgmt_cw = 0, n_mgmt_cw = 0;
+      uint_least32_t n_ctrl = 0, t_ctrl = 0, t_ctrl_ifs = 0, t_ctrl_delta = 0;
+      uint_least32_t n_data = 0, t_data = 0, t_data_ifs = 0, t_data_cw = 0;
+      uint_least32_t n_mgmt = 0, t_mgmt = 0, t_mgmt_ifs = 0, t_mgmt_cw = 0;
 
       uint_least32_t t_bad = 0, n_bad = 0;
 
@@ -88,19 +80,18 @@ main(int ac, char **av)
             case CTRL_FRAME:
                ++n_ctrl;
                t_ctrl += txtime;
-               ++n_ctrl_ifs;
                t_ctrl_ifs += info->channel_encoding()->SIFS();
-               ++n_ctrl_delta;
                t_ctrl_delta += info->timestamp1() - t2 - info->channel_encoding()->SIFS();
                break;
             case DATA_FRAME:
                ++n_data;
                t_data += txtime;
                sz_data += b->data_size() + CRC_SZ;
-               ++n_data_ifs;
                t_data_ifs += info->channel_encoding()->DIFS();
-               ++n_data_cw;
                t_data_cw += info->timestamp1() - t2 - info->channel_encoding()->DIFS();
+
+               cerr << n << " " << info->timestamp1() - t2 << endl;
+
                if(df = f.as_data_frame()) {
                   // iperf?
                   llc_hdr_sptr llc(df->get_llc_hdr());
@@ -123,9 +114,7 @@ main(int ac, char **av)
             case MGMT_FRAME:
                ++n_mgmt;
                t_mgmt += txtime;
-               ++n_mgmt_ifs;
                t_mgmt_ifs += info->channel_encoding()->DIFS();
-               ++n_mgmt_cw;
                t_mgmt_cw += info->timestamp1() - t2 - info->channel_encoding()->DIFS();
                break;
             default:
@@ -140,35 +129,34 @@ main(int ac, char **av)
          double dur = t2 - t1;
          if(use_sexprs) {
             cout << "(define t-dur " << t2 - t1 << ")" << endl;
-            cout << "(define t-ctrl " << t_ctrl  << ")" << endl;
             cout << "(define n-ctrl " << n_ctrl <<  ")" << endl;
+            cout << "(define t-ctrl " << t_ctrl  << ")" << endl;
             cout << "(define t-ctrl-ifs " << t_ctrl_ifs << ")" << endl;
-            cout << "(define n-ctrl-ifs " << n_ctrl_ifs << ")" << endl;
             cout << "(define t-ctrl-delta " << t_ctrl_delta << ")" << endl;
-            cout << "(define n-ctrl-delta " << n_ctrl_delta << ")" << endl;
-            cout << "(define t-data " << t_data  << ")" << endl;
             cout << "(define n-data " << n_data <<  ")" << endl;
+            cout << "(define t-data " << t_data  << ")" << endl;
             cout << "(define t-data-ifs " << t_data_ifs << ")" << endl;
-            cout << "(define n-data-ifs " << n_data_ifs << ")" << endl;
             cout << "(define t-data-cw " << t_data_cw << ")" << endl;
-            cout << "(define n-data-cw " << n_data_cw << ")" << endl;
-            cout << "(define t-mgmt " << t_mgmt  << ")" << endl;
             cout << "(define n-mgmt " << n_mgmt <<  ")" << endl;
+            cout << "(define t-mgmt " << t_mgmt  << ")" << endl;
             cout << "(define t-mgmt-ifs " << t_mgmt_ifs << ")" << endl;
-            cout << "(define n-mgmt-ifs " << n_mgmt_ifs << ")" << endl;
             cout << "(define t-mgmt-cw " << t_mgmt_cw << ")" << endl;
-            cout << "(define n-mgmt-cw " << n_mgmt_cw << ")" << endl;
+            cout << "(define n-iperf " << n_iperf <<  ")" << endl;
+            cout << "(define t-iperf " << t_iperf  << ")" << endl;
          } else {
             cout << "T_DUR: " << t2 - t1 << ", ";
-            cout << "T_CTRL: " << t_ctrl  << ", N_CTRL: " << n_ctrl <<  ", ";
-            cout << "T_CTRL_IFS: " << t_ctrl_ifs << ", N_CTRL_IFS: " << n_ctrl_ifs << ", ";
-            cout << "T_CTRL_DELTA: " << t_ctrl_delta << ", N_DELTA: " << n_ctrl_delta << ", ";
-            cout << "T_DATA: " << t_data  << ", N_DATA: " << n_data <<  ", ";
-            cout << "T_DATA_IFS: " << t_data_ifs << ", N_DATA_IFS: " << n_data_ifs << ", ";
-            cout << "T_DATA_CW: " << t_data_cw << ", N_DATA_CW: " << n_data_cw << ", ";
-            cout << "T_MGMT: " << t_mgmt  << ", N_MGMT: " << n_mgmt <<  ", ";
-            cout << "T_MGMT_IFS: " << t_mgmt_ifs << ", N_MGMT_IFS: " << n_mgmt_ifs << ", ";
-            cout << "T_MGMT_CW: " << t_mgmt_cw << ", N_MGMT_CW: " << n_mgmt_cw << ", ";
+            cout << "N_CTRL: " << n_ctrl << ", ";
+            cout << "T_CTRL: " << t_ctrl  <<  ", ";
+            cout << "T_CTRL_IFS: " << t_ctrl_ifs << ", ";
+            cout << "T_CTRL_DELTA: " << t_ctrl_delta << ", ";
+            cout << "N_DATA: " << n_data << ", ";
+            cout << "T_DATA: " << t_data  << ", ";
+            cout << "T_DATA_IFS: " << t_data_ifs << ", ";
+            cout << "T_DATA_CW: " << t_data_cw << ", ";
+            cout << "N_MGMT: " << n_mgmt  << ", ";
+            cout << "T_MGMT: " << t_mgmt  << ", ";
+            cout << "T_MGMT_IFS: " << t_mgmt_ifs << ", ";
+            cout << "T_MGMT_CW: " << t_mgmt_cw << ", ";
             cout << "T_TOTAL: " << t_ctrl + t_bad + t_ctrl_ifs + t_ctrl_delta +  + t_mgmt + t_mgmt_ifs + t_mgmt_cw + t_data + t_data_ifs + t_data_cw << ", N_TOTAL: " << n_ctrl + n_data + n_mgmt + n_bad << endl;
             if(n_bad) {
                cerr << "unknown frames found in capture!" << endl;
