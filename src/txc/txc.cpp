@@ -63,8 +63,7 @@ main(int ac, char **av)
             ++frms;
          }
       }
-
-      cout << "txc: " << txs << ", ";
+      cout << "txc: " << txs / static_cast<double>(frms) << ", ";
       cout << "min: " << min_txc << ", ";
       cout << "max: " << max_txc << endl;
 
