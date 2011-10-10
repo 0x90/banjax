@@ -47,7 +47,7 @@ abstract_metric::avg_contention_time(encoding_sptr enc, uint8_t txc) const
 {
    CHECK_NOT_NULL(enc.get());
 
-   double n_slots_avg = (1 + max_contention_slots(enc, txc)) / 2.0;
+   double n_slots_avg = (max_contention_slots(enc, txc) - 1) / 2.0;
    double t_contention = (n_slots_avg * enc->slot_time()) + enc->slot_time();
    return t_contention;
 }

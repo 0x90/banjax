@@ -19,6 +19,8 @@ set style data histograms
 set xlabel "slot"
 set ylabel "frequency"
 
+set xrange [:256]
+
 plot "$d" using 1:2 with impulses title "frequency"
 
 EOF

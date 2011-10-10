@@ -26,18 +26,63 @@ using namespace dot11;
 using namespace net;
 using namespace std;
 
+string
+frame_type_as_string(frame_control fc)
+{
+   string s;
+   switch(fc.type()) {
+   case MGMT_FRAME:
+      switch(fc.subtype()) {
+      case MGMT_ACTION:
+         s = "MGMT_ACTION";
+         break;
+      case MGMT_BEACON:
+         s = "MGMT_BEACON";
+         break;
+      default:
+         s = "MGMT";
+         break;
+      }
+      break;
+
+   case CTRL_FRAME:
+      switch(fc.subtype()) {
+      case CTRL_ACK:
+         s = "CTRL_ACK";
+         break;
+      case CTRL_CTS:
+         s = "CTRL_CTS";
+         break;
+      case CTRL_RTS:
+         s = "CTRL_RTS";
+         break;
+      default:
+         s = "CTRL";
+         break;
+      }
+      break;
+
+   case DATA_FRAME:
+      s = "DATA";
+      break;
+   }
+   return s;
+}
+
+
 int
 main(int ac, char **av)
 {
    try {
 
       string what;
-      bool use_sexprs;
+      bool use_sexprs = false, verbose = false;
       options_description options("program options");
       options.add_options()
          ("help,?", "produce this help message")
          ("input,i", value<string>(&what)->default_value("mon0"), "input file/device name")
          ("scheme,s", value<bool>(&use_sexprs)->zero_tokens(), "write output as scheme definitions")
+         ("verbose,v", value<bool>(&verbose)->zero_tokens(), "write verbose output")
          ;
 
       variables_map vars;       
@@ -57,9 +102,7 @@ main(int ac, char **av)
       uint_least32_t n_ctrl = 0, t_ctrl = 0, t_ctrl_ifs = 0, t_ctrl_delta = 0;
       uint_least32_t n_data = 0, t_data = 0, t_data_ifs = 0, t_data_cw = 0;
       uint_least32_t n_mgmt = 0, t_mgmt = 0, t_mgmt_ifs = 0, t_mgmt_cw = 0;
-
       uint_least32_t t_bad = 0, n_bad = 0;
-
       uint_least32_t t_iperf = 0, n_iperf = 0, sz_iperf = 0;
       uint_least32_t sz_data = 0;
 
@@ -67,6 +110,7 @@ main(int ac, char **av)
       map<eui_48, uint16_t> seq_nos;
       map<eui_48, uint16_t>::iterator seq_no;
       buffer_sptr b(w->read());
+      frame_control prev_fc;
       if(b) {
          // Note: The measurement begins from the end of the first frame.
          uint64_t t1 = b->info()->timestamp2(), t2 = t1;
@@ -89,9 +133,10 @@ main(int ac, char **av)
                sz_data += b->data_size() + CRC_SZ;
                t_data_ifs += info->channel_encoding()->DIFS();
                t_data_cw += info->timestamp1() - t2 - info->channel_encoding()->DIFS();
-
-               cerr << n << " " << info->timestamp1() - t2 << endl;
-
+               if(verbose) {
+                  cout << n << " " << info->timestamp1() << " " << info->timestamp1() - t2 << " ";
+                  cout << frame_type_as_string(prev_fc) << " " << frame_type_as_string(fc) << endl;
+               }
                if(df = f.as_data_frame()) {
                   // iperf?
                   llc_hdr_sptr llc(df->get_llc_hdr());
@@ -120,10 +165,13 @@ main(int ac, char **av)
             default:
                ++n_bad;
                t_bad += 0;
-               // NB: even "bad" frames would have some IFS and maybe CW time!
+               if(verbose) {
+                  cerr << "unknown frame type at frame " << n << endl;
+               }
                break;
             }
             t2 = b->info()->timestamp2();
+            prev_fc = fc;
          }
 
          double dur = t2 - t1;
@@ -157,11 +205,10 @@ main(int ac, char **av)
             cout << "T_MGMT: " << t_mgmt  << ", ";
             cout << "T_MGMT_IFS: " << t_mgmt_ifs << ", ";
             cout << "T_MGMT_CW: " << t_mgmt_cw << ", ";
-            cout << "T_TOTAL: " << t_ctrl + t_bad + t_ctrl_ifs + t_ctrl_delta +  + t_mgmt + t_mgmt_ifs + t_mgmt_cw + t_data + t_data_ifs + t_data_cw << ", N_TOTAL: " << n_ctrl + n_data + n_mgmt + n_bad << endl;
             if(n_bad) {
-               cerr << "unknown frames found in capture!" << endl;
-               cerr << " T_BAD: "  <<  t_bad  << ", N_BAD: "  <<  n_bad << ", ";
+               cout << " T_BAD: "  <<  t_bad  << ", N_BAD: "  <<  n_bad << ", ";
             }
+            cout << "T_TOTAL: " << t_ctrl + t_bad + t_ctrl_ifs + t_ctrl_delta +  + t_mgmt + t_mgmt_ifs + t_mgmt_cw + t_data + t_data_ifs + t_data_cw << ", N_TOTAL: " << n_ctrl + n_data + n_mgmt + n_bad << endl;
          }
       }
 

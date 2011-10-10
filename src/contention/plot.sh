@@ -18,6 +18,7 @@ set style data histograms
 
 set xlabel "delay (us)"
 set ylabel "frequency"
+set xrange [:620]
 
 plot "$d" using 1:2 with boxes title "frequency"
 

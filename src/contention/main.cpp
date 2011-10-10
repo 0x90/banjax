@@ -55,7 +55,7 @@ main(int ac, char **av)
 
       uint16_t txc = 0;
       uint_least32_t n_cw = 0, t_cw = 0;
-      buffer_sptr b(w->read()), p, null;
+      buffer_sptr b(w->read()), p, pp, null;
       enum { SKIPPING, CONTENDING, TRANSMITTING } state = SKIPPING;
       for(uint32_t n = 1; b; ++n){
          frame f(b);
@@ -89,8 +89,16 @@ main(int ac, char **av)
                   t_cw += ifs;
                   p = b;
                } else {
-                  state = SKIPPING;
-                  p = null;
+                  cerr << n << " - possible ACK/RETRANSMIT transition!" << endl;
+                  // we assume sender hasn't seen the ACK
+                  // WARNING: beware of ACKTimeouts!
+                  state = TRANSMITTING;
+                  ++txc;
+                  int32_t ifs = b->info()->timestamp1() - pp->info()->timestamp2();
+                  cout << n << " " << b->info()->timestamp1() << " " << ifs << " " << txc << endl;
+                  ++n_cw;
+                  t_cw += ifs;
+                  p = pp;
                }
                break;
             case CTRL_ACK:
@@ -123,6 +131,7 @@ main(int ac, char **av)
                break;
             case CTRL_ACK:
                state = CONTENDING;
+               pp = p;
                p = b;
                break;
             default:

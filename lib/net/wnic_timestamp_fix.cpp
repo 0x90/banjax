@@ -45,12 +45,17 @@ wnic_timestamp_fix::read()
       buffer_info_sptr info(buf->info());
       if(info->has(RATE_Kbs | CHANNEL_FLAGS | TIMESTAMP1) ^ (info->has(RATE_Kbs | CHANNEL_FLAGS | TIMESTAMP2))) {
 
+         // guard against MadWifi giving us a rate of 0Kb/s
+         uint32_t rate_Kbs = info->rate_Kbs();
+         encoding_sptr enc(info->channel_encoding());
+         if(!rate_Kbs) {
+            rate_Kbs = enc->default_rate();
+         }
+
          // compute txtime
          uint32_t t = 0;
          const uint32_t CRC_SZ = 4;
-         uint32_t rate_Kbs = info->rate_Kbs();
          bool has_short_preamble = info->channel_flags() & CHANNEL_PREAMBLE_SHORT;
-         encoding_sptr enc(info->channel_encoding());
          t = enc->txtime(buf->data_size() + CRC_SZ, rate_Kbs, has_short_preamble);
 
          // adjust timestamp
