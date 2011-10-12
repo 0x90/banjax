@@ -30,12 +30,13 @@ main(int ac, char **av)
 {
    try {
 
-      string enc_str, what;
+      string enc_str, ta_str, what;
       options_description options("program options");
       options.add_options()
          ("help,?", "produce this help message")
          ("encoding,e", value<string>(&enc_str)->default_value("OFDM"), "channel encoding")
          ("input,i", value<string>(&what)->default_value("mon0"), "input file/device name")
+         ("ta,a", value<string>(&ta_str)->default_value("00:0b:6b:0a:82:34"), "transmitter address")
          ;
 
       variables_map vars;       
@@ -53,10 +54,11 @@ main(int ac, char **av)
       w = wnic_sptr(new wnic_timestamp_fix(w));
       encoding_sptr enc(encoding::get(enc_str));
 
-      uint16_t txc = 0;
+      eui_48 ta(ta_str.c_str());
+      uint16_t txc = 0, seq_no = 0;
       uint_least32_t n_cw = 0, t_cw = 0;
-      buffer_sptr b(w->read()), p, pp, null;
-      enum { SKIPPING, CONTENDING, TRANSMITTING } state = SKIPPING;
+      buffer_sptr b(w->read()), p, sp, null;
+      enum { SKIPPING, CONTENDING, TRANSMITTING, ACKNOWLEDGING } state = SKIPPING;
       for(uint32_t n = 1; b; ++n){
          frame f(b);
          frame_control fc(f.fc());
@@ -80,25 +82,18 @@ main(int ac, char **av)
             switch(fc.subtype()) {
             case DATA:
             case DATA_QOS:
-               if(!fc.retry()) {
+               if(f.address2() == ta && !fc.retry()) {
                   state = TRANSMITTING;
                   txc = 0;
+                  seq_no = f.sc().sequence_no();
                   int32_t ifs = b->info()->timestamp1() - p->info()->timestamp2();
                   cout << n << " " << b->info()->timestamp1() << " " << ifs << " " << txc << endl;
                   ++n_cw;
                   t_cw += ifs;
                   p = b;
                } else {
-                  cerr << n << " - possible ACK/RETRANSMIT transition!" << endl;
-                  // we assume sender hasn't seen the ACK
-                  // WARNING: beware of ACKTimeouts!
-                  state = TRANSMITTING;
-                  ++txc;
-                  int32_t ifs = b->info()->timestamp1() - pp->info()->timestamp2();
-                  cout << n << " " << b->info()->timestamp1() << " " << ifs << " " << txc << endl;
-                  ++n_cw;
-                  t_cw += ifs;
-                  p = pp;
+                  state = SKIPPING;
+                  p = null;
                }
                break;
             case CTRL_ACK:
@@ -116,7 +111,7 @@ main(int ac, char **av)
             switch(fc.subtype()) {
             case DATA:
             case DATA_QOS:
-               if(fc.retry()) {
+               if(f.address2() == ta && fc.retry() && f.sc().sequence_no() == seq_no) {
                   state = TRANSMITTING;
                   ++txc;
                   int32_t ifs = b->info()->timestamp1() - p->info()->timestamp2();
@@ -130,8 +125,8 @@ main(int ac, char **av)
                }
                break;
             case CTRL_ACK:
-               state = CONTENDING;
-               pp = p;
+               state = ACKNOWLEDGING;
+               sp = p;
                p = b;
                break;
             default:
@@ -140,6 +135,48 @@ main(int ac, char **av)
                break;
             }
             break;
+
+         case ACKNOWLEDGING:
+            switch(fc.subtype()) {
+            case DATA:
+            case DATA_QOS:
+               if(f.address2() == ta && fc.retry() && f.sc().sequence_no() == seq_no) {
+                  state = TRANSMITTING;
+                  ++txc;
+                  int32_t ifs = b->info()->timestamp1() - p->info()->timestamp2();
+                  // NB: we assume sender detects RF energy and waits
+                  cout << n << " " << b->info()->timestamp1() << " " << ifs << " " << txc <<  " *" << endl;
+                  ++n_cw;
+                  t_cw += ifs;
+                  p = b;
+                  sp = null;
+               } else if(f.address2() == ta && !fc.retry()) {
+                  state = TRANSMITTING;
+                  txc = 0;
+                  seq_no = f.sc().sequence_no();
+                  int32_t ifs = b->info()->timestamp1() - p->info()->timestamp2();
+                  cout << n << " " << b->info()->timestamp1() << " " << ifs << " " << txc << endl;
+                  ++n_cw;
+                  t_cw += ifs;
+                  p = b;
+                  sp = null;
+               } else {
+                  state = SKIPPING;
+                  p = null;
+                  sp = null;
+               }
+               break;
+            case CTRL_ACK:
+               state = CONTENDING;
+               p = b;
+               sp = null;
+               break;
+            default:
+               state = SKIPPING;
+               p = null;
+               sp = null;
+               break;
+            }
 
          }
          b = w->read();

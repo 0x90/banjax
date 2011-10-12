@@ -1,12 +1,13 @@
 #!/bin/bash
 
-p="$1"
-c="${p/.pcap/.cw}"
-d="${p/.pcap/.data}"
-e="${p/.pcap/.eps}"
-./analyse -i "$p" 2> "$c" | awk '{ print $3; }' | sort -n | uniq -c | awk '{ print $2, $1; }' > "$d"
+for p in $*; do
 
-gnuplot <<EOF
+	c="${p/.pcap/.cw}"
+	d="${p/.pcap/.data}"
+	e="${p/.pcap/.eps}"
+	./analyse -i "$p" 2> "$c" | awk '{ print $3; }' | sort -n | uniq -c | awk '{ print $2, $1; }' > "$d"
+
+	gnuplot <<EOF
 #!/usr/bin/gnuplot
 
 set term postscript color enhanced eps
@@ -23,3 +24,5 @@ set xrange [:620]
 plot "$d" using 1:2 with boxes title "frequency"
 
 EOF
+
+done

@@ -112,8 +112,10 @@ namespace metrics {
 
       /**
        * Compute the time taken to unsuccessfully send frame b. This
-       * includes inter-frame spacing, ACKTIMEOUT and the RTS/CTS if
-       * necessary.
+       * includes inter-frame spacing and the RTS/CTS if necessary. An
+       * interestng corner-case occurs when the ACK (or anything else)
+       * is received but cannot be decoded. In that case no ACKTimeout
+       * is needed.
        *
        * \param b A shared_ptr to the buffer.
        * \return The time, in microseconds, used by the failed exchange.

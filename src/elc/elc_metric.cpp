@@ -124,9 +124,9 @@ elc_metric::packet_succ_time(buffer_sptr b) const
    encoding_sptr enc(info->channel_encoding());
    uint8_t retries = info->data_retries();
    for(uint8_t i = 0; i < retries; ++i) {
-      usecs += (cw_time_us_ ? cw_time_us_ : avg_contention_time(enc, /*i*/ 0)) + frame_fail_time(b);
+      usecs += (cw_time_us_ ? cw_time_us_ : avg_contention_time(enc, i)) + frame_fail_time(b);
    }
-   return usecs + (cw_time_us_ ? cw_time_us_ : avg_contention_time(enc, /*retries*/ 0)) + frame_succ_time(b);
+   return usecs + (cw_time_us_ ? cw_time_us_ : avg_contention_time(enc, retries)) + frame_succ_time(b);
 }
 
 double
@@ -137,7 +137,7 @@ elc_metric::packet_fail_time(buffer_sptr b) const
    encoding_sptr enc(info->channel_encoding());
    uint8_t retries = info->data_retries();
    for(uint8_t i = 0; i < retries + 1; ++i) {
-      usecs += (cw_time_us_ ? cw_time_us_ : avg_contention_time(enc, /*i*/ 0)) + frame_fail_time(b);
+      usecs += (cw_time_us_ ? cw_time_us_ : avg_contention_time(enc, i)) + frame_fail_time(b);
    }
    return usecs;
 }
@@ -158,7 +158,9 @@ elc_metric::frame_succ_time(buffer_sptr b) const
    const uint32_t ACK_RATE = enc->response_rate(DATA_RATE);
    const uint32_t T_ACK = enc->txtime(ACK_SZ, ACK_RATE, PREAMBLE);
 
-   return T_RTS_CTS + T_DATA + enc->SIFS() + T_ACK + enc->DIFS();
+   /* TODO: make this QoS-aware */
+   
+   return enc->DIFS() + T_RTS_CTS + T_DATA + enc->SIFS() + T_ACK;
 }
 
 double
@@ -174,11 +176,6 @@ elc_metric::frame_fail_time(buffer_sptr b) const
    const uint32_t DATA_RATE = info->rate_Kbs();
    const uint32_t T_DATA = enc->txtime(FRAME_SZ, DATA_RATE, PREAMBLE);
 
-#if 1
-   /* ATH5K? */
-   return T_RTS_CTS + T_DATA + enc->ACKTimeout();
-#else
-   /* 802.11 */
-   return T_RTS_CTS + T_DATA /* + enc->SIFS()? */ + enc->ACKTimeout() + enc->DIFS();
-#endif
+   /* TODO: make this QoS-aware */
+   return enc->DIFS() + T_RTS_CTS + T_DATA + enc->ACKTimeout();
 }
