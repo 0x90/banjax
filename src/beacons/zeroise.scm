@@ -1,4 +1,4 @@
-#!/opt/local/bin/guile
+#!/usr/bin/guile
 !#
 
 (use-modules (ice-9 format))
