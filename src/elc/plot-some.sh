@@ -41,11 +41,11 @@ if [ -f $d ]; then
 					 p="$p$d\"$f\" using 1:9 with lines title \"Residual (ELC-Legacy)\""
 					 d=", "
 					 ;;
-				"pkt")
+				"packets")
 					 p="$p$d\"$f\" using 1:10 with lines title \"packets\" axes x1y2"
 					 d=", "
 					 ;;
-				"frm")
+				"frames")
 					 p="$p$d\"$f\" using 1:11 with lines title \"frames\" axes x1y2"
 					 d=", "
 					 ;;
