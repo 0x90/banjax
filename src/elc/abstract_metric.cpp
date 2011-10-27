@@ -47,6 +47,8 @@ abstract_metric::avg_contention_time(encoding_sptr enc, uint8_t txc) const
 {
    CHECK_NOT_NULL(enc.get());
 
+   txc %= 10; // NOTE: ath5k collapses the contention window after 10 retries
+
    double n_slots_avg = (max_contention_slots(enc, txc) - 1) / 2.0;
    double t_contention = (n_slots_avg * enc->slot_time());
    return t_contention;
