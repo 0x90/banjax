@@ -81,5 +81,9 @@ set y2range [:12]
 plot $p 
 EOF
 
+	 if [ ! -s "$o" ]; then
+		  rm "$o"
+	 fi
+
 fi
 exit 0
