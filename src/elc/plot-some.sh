@@ -1,8 +1,7 @@
 #!/bin/bash
 
 f="$1"
-b=`basename $f`
-o="${b/.data/.eps}"
+o="${f/.data/.eps}"
 p=""
 d=""
 
@@ -16,8 +15,8 @@ if [ -f $d ]; then
 					 p="$p$d\"$f\" using 1:(Mb(\$2)) with lines title \"Goodput\""
 					 d=", "
 					 ;;
-				"iperf")
-					 p="$p$d\"$f\" using 1:(Mb(\$3)) with lines title \"iperf\""
+				"octets")
+					 p="$p$d\"$f\" using 1:3 with lines title \"octets\" axes x1y2"
 					 d=", "
 					 ;;
 				"residual")
@@ -25,7 +24,7 @@ if [ -f $d ]; then
 					 d=", "
 					 ;;
 				"elc")
-					 p="$p$d\"$f\" using 1:(Mb(\$5)) with lines title \"Link Capacity\""
+					 p="$p$d\"$f\" using 1:(Mb(\$5)) with lines title \"ELC\""
 					 d=", "
 					 ;;
 				"mrr")
@@ -44,11 +43,11 @@ if [ -f $d ]; then
 					 p="$p$d\"$f\" using 1:(Mb(\$9)) with lines title \"Residual (ELC-Legacy)\""
 					 d=", "
 					 ;;
-				"packets")
+				"pkt")
 					 p="$p$d\"$f\" using 1:10 with lines title \"packets\" axes x1y2"
 					 d=", "
 					 ;;
-				"frames")
+				"frm")
 					 p="$p$d\"$f\" using 1:11 with lines title \"frames\" axes x1y2"
 					 d=", "
 					 ;;
@@ -68,8 +67,8 @@ if [ -f $d ]; then
 set term postscript color enhanced eps
 set out "$o"
 
-# function to convert MiB/s -> Mb/s
-Mb(x)=(x * 8e6) / (1024 ** 2)
+# function to convert MB/s -> Mb/s
+Mb(x)=x * 8
 
 set ytics nomirror
 set y2tics

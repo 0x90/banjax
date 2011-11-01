@@ -7,6 +7,7 @@ SUBDIRS = \
 	elc \
 	icmp \
 	probe \
+	strip \
 	traffic \
 	tscal \
 	txc

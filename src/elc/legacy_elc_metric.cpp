@@ -96,7 +96,7 @@ legacy_elc_metric::clone() const
 }
 
 double
-legacy_elc_metric::compute(uint32_t delta_us)
+legacy_elc_metric::compute(uint32_t ignored_delta_us)
 {
    const double FRMS = frames_;
    const double PKTS = packets_;
@@ -154,11 +154,13 @@ legacy_elc_metric::successful_tx_time(uint32_t rate_Kbs, uint16_t frame_sz) cons
 {
    const bool PREAMBLE = false; // ToDo: recover preamble from encoding
 
-   const uint32_t T_CW = avg_contention_time(enc_, 0);
+   const uint32_t T_CW = avg_contention_time(enc_, 0); // NB we don't consider increasing TXC!
    const uint32_t T_RTS_CTS = (rts_cts_threshold_ <= frame_sz) ? rts_cts_time(enc_, frame_sz, PREAMBLE) : 0;
    const uint32_t T_DATA = enc_->txtime(frame_sz, rate_Kbs, false);
    const uint32_t ACK_SZ = 14;
    const uint32_t T_ACK = enc_->txtime(ACK_SZ, enc_->response_rate(rate_Kbs), false);
 
-   return T_CW + T_RTS_CTS + T_DATA + enc_->SIFS() + T_ACK + enc_->DIFS();
+   /* TODO: make QoS aware!
+    */
+   return /**/ 9 + /**/ enc_->DIFS() + T_CW + T_RTS_CTS + T_DATA + enc_->SIFS() + T_ACK;
 }
