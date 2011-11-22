@@ -37,13 +37,11 @@ main(int ac, char **av)
       const uint8_t *octets;
       struct pcap_pkthdr hdr;
       while(octets = pcap_next(in, &hdr)) {
-
          if(110 == hdr.caplen && 0xff == octets[58] && 0xff == octets[59]) {
             writing = !writing;
          } else if(writing) {
             pcap_dump(reinterpret_cast<u_char*>(out), &hdr, octets);
          }
-
       }
       pcap_dump_close(out);
       pcap_close(dead);

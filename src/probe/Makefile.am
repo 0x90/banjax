@@ -5,8 +5,8 @@ bin_PROGRAMS = probe
 
 probe_SOURCES = \
 	main.cpp \
-	link.cpp \
-	link_monitor.cpp \
+	wireless_link.cpp \
+	wireless_link_monitor.cpp \
 	timespec.cpp
 
 probe_CPPFLAGS = -I@top_srcdir@/lib

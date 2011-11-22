@@ -5,7 +5,7 @@
  */
 
 #define __STDC_LIMIT_MACROS ON
-#include <link_monitor.hpp>
+#include <wireless_link_monitor.hpp>
 #include <timespec.hpp>
 
 #include <boost/program_options.hpp>
@@ -18,7 +18,8 @@ using namespace ETX;
 using namespace std;
 
 /**
- * <tt>main(int,charr**)</tt> function for the ETX link-quality monitor. 
+ * <tt>main(int,charr**)</tt> function for the ETX link-quality
+ * monitor.
  *
  * \param ac The argument count.
  * \param av The argument vector.
@@ -57,7 +58,7 @@ main(int ac, char **av)
          exit(EXIT_SUCCESS);
       }
 
-      link_monitor m(bind_str, port_no, probe_sz, window_sz, delay_s, verbose);
+      wireless_link_monitor m(bind_str, port_no, probe_sz, window_sz, delay_s, verbose);
       m.run(duration_s);
       exit(EXIT_SUCCESS);
 
