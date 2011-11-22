@@ -12,13 +12,17 @@ main(int ac, char **av)
 {
    while(++av, --ac) {
 
+      string path(*av);
+      string backup(path + ".orig");
+
       char err[PCAP_ERRBUF_SIZE];
-      pcap_t *in = pcap_open_offline(*av, err);
+      pcap_t *in = pcap_open_offline(path.c_str(), err);
       if(!in) {
          cerr << err << endl;
          exit(EXIT_FAILURE);
       }
-      unlink(*av);
+      link(path.c_str(), backup.c_str());
+      unlink(path.c_str());
 
       const size_t MAX_BUF_SZ = 8192;
       pcap_t *dead = pcap_open_dead(pcap_datalink(in), MAX_BUF_SZ);
@@ -27,9 +31,9 @@ main(int ac, char **av)
          exit(EXIT_FAILURE);
       }
 
-      pcap_dumper_t *out = pcap_dump_open(dead, *av);
+      pcap_dumper_t *out = pcap_dump_open(dead, path.c_str());
       if(!out) {
-         cerr << "error: failed to open " << *av << " for writing" << endl;
+         cerr << "error: failed to open " << path << " for writing" << endl;
          exit(EXIT_FAILURE);
       }
 
