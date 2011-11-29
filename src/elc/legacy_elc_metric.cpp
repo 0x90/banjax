@@ -103,8 +103,8 @@ legacy_elc_metric::compute(uint32_t ignored_delta_us)
    const double AVG_PKT_SZ = packet_octets_ / PKTS;
    const double AVG_PKT_RATE_Kbs = rates_Kbs_sum_ / PKTS;
 
-   const double BEST_TX_TIME = successful_tx_time(closest_rate(AVG_PKT_RATE_Kbs), AVG_PKT_SZ);
-   const double EMT = AVG_PKT_SZ / BEST_TX_TIME;
+   const double EST_TX_TIME = successful_tx_time(closest_rate(AVG_PKT_RATE_Kbs), AVG_PKT_SZ);
+   const double EMT = AVG_PKT_SZ / EST_TX_TIME;
    const double FDR = PKTS / FRMS;
    elc_ = FDR * EMT;
 

@@ -9,8 +9,8 @@
 #define METRICS_AIRTIME_METRIC_HPP
 
 #include <abstract_metric.hpp>
-
-#include map;
+#include <net/encoding.hpp>
+#include <map>
 
 namespace metrics {
 
@@ -24,9 +24,10 @@ namespace metrics {
       /**
        * airtime_metric constructor.
        *
-       * \param rts_cts_threshold Use RTS/CTS when rts_cts_threshold <= frame size
+       * \param enc A non-null pointer to the encoding.
+       * \param rts_cts_threshold Use RTS/CTS when rts_cts_threshold <= test frame size
        */
-      airtime_metric(uint16_t rts_cts_threshold);
+      airtime_metric(net::encoding_sptr enc, uint16_t rts_cts_threshold);
 
       /**
        * airtime_metric copy constuctor.
@@ -98,9 +99,19 @@ namespace metrics {
    private:
 
       /**
+       * Pointer to the default channel encoding.
+       */
+      net::encoding_sptr enc_;
+
+      /**
        * The RTS/CTS threshold.
        */
       uint16_t rts_cts_threshold_;
+
+      /**
+       * The total number of successfully delivered frames.
+       */
+      uint32_t frames_;
 
       /**
        * The total number of successfully delivered packets.
@@ -118,14 +129,14 @@ namespace metrics {
       uint_least32_t rates_Kbs_sum_;
 
       /**
-       * Map from rate to FDR.
+       * Total number of frames successfully delivered at a given rate.
        */
-      typedef std::map< uint32_t, std::pair<uint32_t, uint32_t> > map_rate_fdr_t;
+      std::map<uint32_t, uint32_t> frames_rate_;
 
       /**
-       * Per-rate FDR statistics.
+       * Total number of packets successfully delivered at a given rate.
        */
-      map_rate_fdr_t rate_fdr_;
+      std::map<uint32_t, uint32_t> packets_rate_;
 
       /**
        * Stashed value of this metric.

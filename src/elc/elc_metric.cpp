@@ -95,10 +95,9 @@ elc_metric::clone() const
 double
 elc_metric::compute(uint32_t delta_us)
 {
-   const double AVG_PKT_SZ = packet_octets_ / static_cast<double>(packet_count_);
    const double T_BEACON = 0;
    const double T_DEAD = (delta_us / .1024) * T_BEACON;
-   elc_ = (n_pkt_succ_ * AVG_PKT_SZ) / (t_pkt_succ_ + t_pkt_fail_ + T_DEAD);
+   elc_ = packet_octets_ / (t_pkt_succ_ + t_pkt_fail_ + T_DEAD);
    return elc_;
 }
 
