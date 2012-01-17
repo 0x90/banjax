@@ -21,19 +21,17 @@ using namespace net;
 using namespace std;
 using metrics::etx_metric;
 
-etx_metric::etx_metric(uint16_t probe_port) :
-   probe_addr_(0),
+etx_metric::etx_metric(uint16_t probe_port, uint16_t window_sz) :
    probe_port_(probe_port),
-   tx_frames_(0),
-   tx_success_(0)
+   window_sz_(window_sz * 1000000),
+   rx_probes_()
 {
 }
 
 etx_metric::etx_metric(const etx_metric& other) :
-   probe_addr_(other.probe_addr_),
    probe_port_(other.probe_port_),
-   tx_frames_(other.tx_frames_),
-   tx_success_(other.tx_success_)
+   window_sz_(other.window_sz_),
+   rx_probes_(other.rx_probes_)
 {
 }
 
@@ -41,10 +39,8 @@ etx_metric&
 etx_metric::operator=(const etx_metric& other)
 {
    if(&other != this) {
-      probe_addr_ = other.probe_addr_;
       probe_port_ = other.probe_port_;
-      tx_frames_ = other.tx_frames_;
-      tx_success_ = other.tx_success_;
+      rx_probes_ = other.rx_probes_;
    }
    return *this;
 }
@@ -71,29 +67,15 @@ etx_metric::add(buffer_sptr b)
       if(!udp)
          return;
 
-
+      // add UDP probes to queue
       buffer_info_sptr info(b->info());
-      if(info->has(TX_FLAGS)) {
+      if(udp->src_port() == probe_port_&& !info->has(TX_FLAGS)) {
 
-         if(udp->src_port() == probe_port_) {
-#if 0
-            // ToDo: remember IP address of outgoing frames
-            // gather data for forward delivery ratio
-            uint8_t txc = 1 + info->data_retries();
-            tx_frames_ += txc;
-            uint32_t tx_flags = info->tx_flags();
-            if(tx_flags & TX_FLAGS_FAIL) {
-               ++tx_success_;
-            }
-#endif
+         if(!rx_probes_.empty()) {
+            buffer_sptr p(rx_probes_.back());
+            data_frame prev(p);
          }
-      
-      } else {
-
-         if(udp->dst_port() == probe_port_) {
-            // ToDo:
-            // gather data for reverse delivery ratio - we should know our IP address by now
-         }
+         rx_probes_.push_back(b);
 
       }
    }
@@ -106,13 +88,25 @@ etx_metric::clone() const
 }
 
 double
-etx_metric::compute(uint32_t delta_us)
+etx_metric::compute(uint64_t mactime, uint32_t delta_us)
 {
-   double d_f = 1.0; // ToDo: fix me!
-   double d_r = 1.0; // ToDo: fix me!
-   // stash value(/* 1.0 / */ d_f * d_r);
-   // advance the probe window
-   return 0.0;
+   double d_f = 1.0;
+
+   // drop all probes that arrived before probe window
+   while(!rx_probes_.empty()) {
+      buffer_sptr b(rx_probes_.front());
+      buffer_info_sptr info(b->info());
+      if(window_sz_ <= (mactime - info->timestamp2())) {
+         rx_probes_.pop_front();
+      } else {
+         break;
+      }
+   }
+
+   double d_r = rx_probes_.size();
+
+   etx_ = 1.0 / d_f * d_r;
+   return etx_;
 }
 
 void
@@ -123,5 +117,5 @@ etx_metric::reset()
 void
 etx_metric::write(ostream& os) const
 {
-   // os << "ETX: " << value();
+   os << "ETX: " << etx_;
 }

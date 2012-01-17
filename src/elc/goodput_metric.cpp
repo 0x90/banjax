@@ -20,7 +20,7 @@ using namespace std;
 using metrics::goodput_metric;
 
 goodput_metric::goodput_metric() :
-   metric(),
+   abstract_metric(),
    frame_octets_(0),
    packet_octets_(0),
    iperf_goodput_(0),
@@ -29,7 +29,7 @@ goodput_metric::goodput_metric() :
 }
 
 goodput_metric::goodput_metric(const goodput_metric& other) :
-   metric(other),
+   abstract_metric(other),
    frame_octets_(other.frame_octets_),
    packet_octets_(other.packet_octets_),
    iperf_goodput_(other.iperf_goodput_),
@@ -41,7 +41,7 @@ goodput_metric&
 goodput_metric::operator=(const goodput_metric& other)
 {
    if(this != &other) {
-      metric::operator=(other);
+      abstract_metric::operator=(other);
       frame_octets_ = other.frame_octets_;
       packet_octets_ = other.packet_octets_;
       iperf_goodput_ = other.iperf_goodput_;

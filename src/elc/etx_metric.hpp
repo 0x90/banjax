@@ -10,10 +10,12 @@
 
 #include <metric.hpp>
 
+#include <deque>
+
 namespace metrics {
 
    /**
-    * etx_metric is the new ELC metric.
+    * etx_metric estimated transmission count metric.
     */
    class etx_metric : public metric {
    public:
@@ -21,9 +23,10 @@ namespace metrics {
       /**
        * etx_metric constructor.
        * 
-       * \param probe_port The port number used for ETX probes. 
+       * \param probe_port The port number used for ETX probes.
+       * \param window_sz The size of the probe window (in seconds).
        */
-      explicit etx_metric(uint16_t probe_port);
+      etx_metric(uint16_t probe_port, uint16_t window_sz);
 
       /**
        * etx_metric copy constuctor.
@@ -64,10 +67,11 @@ namespace metrics {
       /**
        * Compute the metric.
        *
+       * \param mactime The MAC time (in microseconds) for the end of the time period.
        * \param delta_us The time (in microseconds) over which to compute the metric.
        * \return The value of this metric as a double.
        */
-      virtual double compute(uint32_t delta_us);
+      virtual double compute(uint64_t mactime, uint32_t delta_us);
 
       /**
        * Reset the internal state of the metric.
@@ -84,24 +88,24 @@ namespace metrics {
    private:
 
       /**
-       * The address from which we're sending probe packets.
-       */
-      uint32_t probe_addr_;
-
-      /**
        * The port on which we're sending probe packets.
        */
       uint32_t probe_port_;
 
       /**
-       * The number of frames transmitted in total.
+       * The size (in microseconds) for the probe window.
        */
-      uint32_t tx_frames_;
+      uint32_t window_sz_;
 
       /**
-       * The number of frames successfully transmitted.
+       * Vector of probe arrival times.
        */
-      uint32_t tx_success_;
+      std::deque<net::buffer_sptr> rx_probes_;
+
+      /**
+       * The stashed value of the ETX metric.
+       */
+      double etx_;
 
    };
 

@@ -5,8 +5,8 @@
  *
  */
 
-#ifndef METRICS_AIRTIME_METRIC_HPP
-#define METRICS_AIRTIME_METRIC_HPP
+#ifndef METRICS_AIRTIME_METRIC_OLSR_HPP
+#define METRICS_AIRTIME_METRIC_OLSR_HPP
 
 #include <abstract_metric.hpp>
 #include <net/encoding.hpp>
@@ -15,59 +15,59 @@
 namespace metrics {
 
    /**
-    * airtime_metric is defined by 802.11s as its default routing
+    * airtime_metric_olsr is defined by 802.11s as its default routing
     * metric (see IEEE 802.11s-d8 s 11A.7).
     *
-    * This is our version. It attempts to be faithful to the spec and
-    * uses similar estimations to those used by ELC to combine an
-    * estimate of data rate and retransmissions into the result.
+    * This version is nased on the OLSR metric as described in Aure
+    * and Li, Optimized Path-Selection using Airtime Metric in OLSR
+    * Networks, 2008.
     */
-   class airtime_metric : public abstract_metric {
+   class airtime_metric_olsr : public abstract_metric {
    public:
 
       /**
-       * airtime_metric constructor.
+       * airtime_metric_olsr constructor.
        *
        * \param enc A non-null pointer to the encoding.
        * \param rts_cts_threshold Use RTS/CTS when rts_cts_threshold <= test frame size
        */
-      airtime_metric(net::encoding_sptr enc, uint16_t rts_cts_threshold);
+      airtime_metric_olsr(net::encoding_sptr enc, uint16_t rts_cts_threshold);
 
       /**
-       * airtime_metric copy constuctor.
+       * airtime_metric_olsr copy constuctor.
        *
-       * \param other The other airtime_metric to initialize from.
+       * \param other The other airtime_metric_olsr to initialize from.
        */
-      airtime_metric(const airtime_metric& other);
+      airtime_metric_olsr(const airtime_metric_olsr& other);
 
       /**
-       * airtime_metric assignment operator.
+       * airtime_metric_olsr assignment operator.
        *
-       * \param other The other airtime_metric to assign from.
-       * \return A reference to this airtime_metric.
+       * \param other The other airtime_metric_olsr to assign from.
+       * \return A reference to this airtime_metric_olsr.
        */
-      airtime_metric& operator=(const airtime_metric& other);
+      airtime_metric_olsr& operator=(const airtime_metric_olsr& other);
 
       /**
-       * airtime_metric destructor.
+       * airtime_metric_olsr destructor.
        */
-     virtual ~airtime_metric();
+     virtual ~airtime_metric_olsr();
 
       /**
-       * Add a frame to the airtime_metric and update the airtime_metric statistics.
+       * Add a frame to the airtime_metric_olsr and update the airtime_metric_olsr statistics.
        *
        * \param b A shared_pointer to the buffer containing the frame.
        */
       virtual void add(net::buffer_sptr b);
 
       /**
-       * Return a pointer to a clone (deep copy) of this airtime_metric
+       * Return a pointer to a clone (deep copy) of this airtime_metric_olsr
        * instance. The clone is allocated on the heap using new and
        * the caller is responsible for ensuring it is deleted.
        *
-       * \return A pointer to a new airtime_metric instance.
+       * \return A pointer to a new airtime_metric_olsr instance.
        */
-      virtual airtime_metric *clone() const;
+      virtual airtime_metric_olsr *clone() const;
 
       /**
        * Compute the metric.
@@ -151,4 +151,4 @@ namespace metrics {
 
 }
 
-#endif // METRICS_AIRTIME_METRIC_HPP
+#endif // METRICS_AIRTIME_METRIC_OLSR_HPP

@@ -21,10 +21,11 @@ for f in ${PCAP_FILES[*]}; do
 
 \begin{figure}[ht]
   \centering
-  \subfigure[fixed]{
+  \subfigure[traffic]{
     \includegraphics[width=65mm]{$f}
   }
-  \subfigure[detail]{
+  \subfigure[contention
+  ]{
     \includegraphics[width=65mm]{$ff}
   }
   \caption{$l}

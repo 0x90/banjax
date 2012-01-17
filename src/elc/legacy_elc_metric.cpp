@@ -21,7 +21,8 @@ using namespace net;
 using namespace std;
 using metrics::legacy_elc_metric;
 
-legacy_elc_metric::legacy_elc_metric(encoding_sptr enc, uint16_t mtu_sz, uint16_t rts_cts_threshold) :
+
+legacy_elc_metric::legacy_elc_metric(encoding_sptr enc, uint32_t rate_Kbs, uint16_t mtu_sz, uint16_t rts_cts_threshold) :
    abstract_metric(),
    enc_(enc),
    mtu_sz_(mtu_sz),
@@ -30,9 +31,11 @@ legacy_elc_metric::legacy_elc_metric(encoding_sptr enc, uint16_t mtu_sz, uint16_
    packets_(0),
    packet_octets_(0),
    rates_Kbs_sum_(0),
+   rate_Kbs_(rate_Kbs),
    classic_elc_(0.0),
    elc_(0.0)
 {
+   rate_Kbs_ = closest_rate(rate_Kbs_); 
 }
 
 legacy_elc_metric::legacy_elc_metric(const legacy_elc_metric& other) :
@@ -44,6 +47,7 @@ legacy_elc_metric::legacy_elc_metric(const legacy_elc_metric& other) :
    packets_(other.packets_),
    packet_octets_(other.packet_octets_),
    rates_Kbs_sum_(other.rates_Kbs_sum_),
+   rate_Kbs_(other.rate_Kbs_),
    classic_elc_(other.classic_elc_),
    elc_(other.elc_)
 {
@@ -61,6 +65,7 @@ legacy_elc_metric::operator=(const legacy_elc_metric& other)
       packets_ = other.packets_;
       packet_octets_ = other.packet_octets_;
       rates_Kbs_sum_ = other.rates_Kbs_sum_;
+      rate_Kbs_ = other.rate_Kbs_;
       classic_elc_ = other.classic_elc_;
       elc_ = other.elc_;
    }
@@ -103,6 +108,11 @@ legacy_elc_metric::compute(uint32_t ignored_delta_us)
    const double AVG_PKT_SZ = packet_octets_ / PKTS;
    const double AVG_PKT_RATE_Kbs = rates_Kbs_sum_ / PKTS;
 
+   /* ToDo: Computing the average rate (EMT) here is done the
+    * straightforward way picking the nearest rate. There are
+    * proposals to either use linear interpolation or to compute the
+    * time differently. Check the pictures from the whiteboard!
+    */
    const double EST_TX_TIME = successful_tx_time(closest_rate(AVG_PKT_RATE_Kbs), AVG_PKT_SZ);
    const double EMT = AVG_PKT_SZ / EST_TX_TIME;
    const double FDR = PKTS / FRMS;
@@ -162,5 +172,5 @@ legacy_elc_metric::successful_tx_time(uint32_t rate_Kbs, uint16_t frame_sz) cons
 
    /* TODO: make QoS aware!
     */
-   return /**/ 9 + /**/ enc_->DIFS() + T_CW + T_RTS_CTS + T_DATA + enc_->SIFS() + T_ACK;
+   return /* AIFS[BE] */ 9 + enc_->DIFS() /* AIFS[BE] */ + T_CW + T_RTS_CTS + T_DATA + enc_->SIFS() + T_ACK;
 }

@@ -58,11 +58,11 @@ metric_group::clone() const
 }
 
 double
-metric_group::compute(uint32_t delta_us)
+metric_group::compute(uint64_t mactime, uint32_t delta_us)
 {
    double sum = 0.0;
    for(metric_list::iterator i(metrics_.begin()); i != metrics_.end(); ++i) {
-      sum += (*i)->compute(delta_us);
+      sum += (*i)->compute(mactime, delta_us);
    }
    return sum / metrics_.size();
 }

@@ -6,6 +6,7 @@ bin_PROGRAMS = elc
 elc_SOURCES = \
 	abstract_metric.cpp \
 	airtime_metric.cpp \
+	airtime_metric_linux.cpp \
 	elc_metric.cpp \
 	elc_mrr_metric.cpp \
 	etx_metric.cpp \

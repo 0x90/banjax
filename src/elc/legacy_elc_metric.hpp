@@ -27,10 +27,11 @@ namespace metrics {
        * legacy_elc_metric constructor.
        *
        * \param enc The encoding used.
+       * \rate_Kbs The maximum link rate (used to compute TMT).
        * \param mtu_sz_ The MTU size to use in computing ELC.
        * \param rts_cts_threshold The frame size above which we need to use RTS/CTS.
        */
-      legacy_elc_metric(net::encoding_sptr enc, uint16_t mtu_sz,  uint16_t rts_cts_threshold);
+      legacy_elc_metric(net::encoding_sptr enc, uint32_t rate_Kbs, uint16_t mtu_sz,  uint16_t rts_cts_threshold);
 
       /**
        * legacy_elc_metric copy constuctor.
@@ -147,6 +148,11 @@ namespace metrics {
        * Sum of the data rates used to send packets (used to compute average).
        */
       uint_least32_t rates_Kbs_sum_;
+
+      /**
+       * The maximum link rate.
+       */
+      uint32_t rate_Kbs_;
 
       /**
        * The current value for "classic" ELC using TMT.

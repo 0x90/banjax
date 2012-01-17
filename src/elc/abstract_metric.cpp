@@ -12,6 +12,7 @@
 
 #include <algorithm>
 #include <math.h>
+#include <stdexcept>
 
 using namespace dot11;
 using namespace net;
@@ -21,6 +22,18 @@ using util::raise;
 
 abstract_metric::~abstract_metric()
 {
+}
+
+double
+abstract_metric::compute(uint64_t, uint32_t delta_us)
+{
+   compute(delta_us);
+}
+
+double
+abstract_metric::compute(uint32_t delta_us)
+{
+   raise<logic_error>(__PRETTY_FUNCTION__, __FILE__, __LINE__, "not implemented!");
 }
 
 abstract_metric::abstract_metric() :
