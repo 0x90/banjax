@@ -16,10 +16,6 @@ t="${p/.pcap/.extract}"
 o="${p/.pcap/.eps}"
 
 declare -A axis
-axis["ELC"]=""
-axis["ELC(Legacy)"]=""
-axis["ELC(Classic)"]=""
-axis["Goodput"]=""
 axis["Octets"]="axes x1y2"
 axis["Packets"]="axes x1y2"
 axis["Frames"]="axes x1y2"
@@ -35,9 +31,9 @@ $h/extract.scm Time $fields < "$d" > "$t"
 if [ -s "$t" ]; then
 	 s=""
     d=""
-	 let n=1
+	 let n=2
 	 for f in $*; do
-		  s="${s}${d}\"${t}\" using 1:(Mb(${n})) with lp title \"${f}\""
+		  s="${s}${d}\"${t}\" using 1:(Mb(\$${n})) with lp title \"${f}\""
 		  [ "${axis[$f]}" != "" ] && s="${s} ${axis[$f]}"
 		  d=", "
 		  let n=n+1
@@ -62,9 +58,9 @@ set y2range [:12]
 
 plot $s 
 EOF
-	 if [ -f "${t}" ]; then
-		  rm "$t"
-	 fi
+	 # if [ -f "${t}" ]; then
+	 # 	  rm "$t"
+	 # fi
 
 	 if [[ -f "${o}" && ! -s "${o}" ]]; then
 		  rm "$o"
