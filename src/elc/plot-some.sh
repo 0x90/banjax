@@ -33,13 +33,17 @@ if [ -s "$t" ]; then
     d=""
 	 let n=2
 	 for f in $*; do
-		  s="${s}${d}\"${t}\" using 1:(Mb(\$${n})) with lp title \"${f}\""
-		  [ "${axis[$f]}" != "" ] && s="${s} ${axis[$f]}"
+		  if [ "${axis[$f]}" == "" ]; then
+				s="${s}${d}\"${t}\" using 1:(Mb(\$${n})) with lp title \"${f}\""
+		  else
+				s="${s}${d}\"${t}\" using 1:${n} with lp title \"${f}\" ${axis[$f]}"
+		  fi
 		  d=", "
 		  let n=n+1
     done
-
-	 [ "$Y1RANGE" != "" ] && Y1RANGE="set yrange [:$Y1RANGE]"
+	 [ "$XRANGE" != "" ] && Y1RANGE="set xrange [$XRANGE]"
+	 [ "$YRANGE" != "" ] && YRANGE="set yrange [$YRANGE]"
+	 [ "$Y1RANGE" != "" ] && Y1RANGE="set y1range [$Y1RANGE]"
 	 gnuplot <<EOF
 set term postscript color enhanced eps
 set out "$o"
@@ -50,11 +54,14 @@ Mb(x)=x * 8
 set grid xtics ytics
 set ytics nomirror
 set y2tics
+
 set xlabel "Time (s)"
 set ylabel "Traffic (Mb)"
-$Y1RANGE
 set y2label "Count"
-set y2range [:12]
+
+$XRANGE
+$YRANGE
+$Y1RANGE
 
 plot $s 
 EOF

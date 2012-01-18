@@ -140,7 +140,7 @@ legacy_elc_metric::reset()
 void
 legacy_elc_metric::write(ostream& os) const
 {
-   os << "Legacy ELC: " << elc_ << ", Classic ELC: " << classic_elc_;
+   os << "Legacy: " << elc_ << ", Classic: " << classic_elc_;
 }
 
 uint32_t
