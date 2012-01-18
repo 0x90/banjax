@@ -107,7 +107,7 @@ main(int ac, char **av)
          uint64_t timestamp = info->timestamp_wallclock();
          for(; tick <= timestamp; tick += uS_PER_TICK) {
             m->compute(tick, uS_PER_TICK);
-            cout << "TIME: " << tick / uS_PER_TICK << endl;
+            cout << "Time: " << tick / uS_PER_TICK << endl;
             cout << *m << endl;
             m->reset();
          }

@@ -1,10 +1,8 @@
 #!/bin/bash
 
-p=`dirname $0`
-i="$1"
-if [ -f $i ]; then
-   d="${i/.pcap/.data}"
-   $p/elc -m 1086 -i $1 | sed 's/,//g' | sed 's/nan/0/g' | awk -f $p/plot.awk > "$d"
-   exit 0
-fi
-exit 1
+h=`dirname $0`
+for f in $*; do
+	 $h/plot-some.sh "${f}" ELC "ELC(Legacy)" Goodput TXC
+done
+
+exit 0

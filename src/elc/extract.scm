@@ -22,7 +22,7 @@
 (define (filter-named-fields in out fields)
 
   (define (make-field-regexp f)
-    (make-regexp (string-append f ":[ \t\n]*([^ \t\n]*)") regexp/icase))
+    (make-regexp (string-append f ":[ \t\n]*([^, \t\n]*)") regexp/icase))
   
   (let ((regexps (map make-field-regexp fields)))
     (filter-port in (lambda (s)
