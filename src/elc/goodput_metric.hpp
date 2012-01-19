@@ -8,7 +8,7 @@
 #ifndef METRICS_GOODPUT_METRIC_HPP
 #define METRICS_GOODPUT_METRIC_HPP
 
-#include <metric.hpp>
+#include <abstract_metric.hpp>
 #include <net/encoding.hpp>
 #include <net/eui_48.hpp>
 #include <net/buffer.hpp>
@@ -25,7 +25,7 @@ namespace metrics {
     * that other wireless metrics do not have to account of LLC/IP/UDP
     * headers when they estimate link capacity.
     */
-   class goodput_metric : public metric {
+   class goodput_metric : public abstract_metric {
    public:
 
       /**

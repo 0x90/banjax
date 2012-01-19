@@ -4,8 +4,8 @@
  * Copyright NICTA, 2011
  */
 
-#ifndef ETX_LINK_HPP
-#define ETX_LINK_HPP
+#ifndef ETX_WIRELESS_LINK_HPP
+#define ETX_WIRELESS_LINK_HPP
 
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
@@ -14,31 +14,31 @@
 namespace ETX {
 
 	/**
-    * link represents a link between two stations.
+    * wireless_link represents a link between two wireless stations.
     */
-   class link : public boost::noncopyable {
+   class wireless_link : public boost::noncopyable {
    public:
 
       /**
-       * link constructor.
+       * wireless_link constructor.
        *
        * \param window_sz The size of the receive window.
        */
-      explicit link(uint16_t window_sz);
+      explicit wireless_link(uint16_t window_sz);
 
       /**
-       * link destructor.
+       * wireless_link destructor.
        */
-      ~link();
+      ~wireless_link();
 
       /**
-       * Inform the link that the clock has ticked and we need to
+       * Inform the wireless_link that the clock has ticked and we need to
        * commit the current probe count to the probe window.
        */
       void advance_probe_window();
 
       /**
-       * Notify the link of the arrival of the probe.
+       * Notify the wireless_link of the arrival of the probe.
        *
        * \param seq_no The sequence number of the received probe
        */
@@ -46,7 +46,7 @@ namespace ETX {
 
       /**
        * Return the number of probes received successfully on this
-       * link during the probe window.
+       * wireless_link during the probe window.
        *
        * \return A uint16_t giving the number of probes received.
        */
@@ -60,7 +60,7 @@ namespace ETX {
       uint16_t rx_probe_window() const;
 
       /**
-       * Set the transmit delivery ratio for this link.
+       * Set the transmit delivery ratio for this wireless_link.
        *
        * \param probe_count A uint16_t specifying the number of probes received.
        * \param probe_window A uint16_t specifying the size of the probe window. 
@@ -69,7 +69,7 @@ namespace ETX {
 
       /**
        * Return the number of tx_probes delivered successfully on this
-       * link during this tx probe window.
+       * wireless_link during this tx probe window.
        */
       uint16_t tx_probe_count() const;
 
@@ -125,10 +125,10 @@ namespace ETX {
    };
 
    /**
-    * Alias for shared_ptr<link>.
+    * Alias for shared_ptr<wireless_link>.
     */
-   typedef boost::shared_ptr<link> link_sptr;
+   typedef boost::shared_ptr<wireless_link> wireless_link_sptr;
 
 }
 
-#endif // ETX_LINK_HPP
+#endif // ETX_WIRELESS_LINK_HPP

@@ -26,6 +26,27 @@ namespace metrics {
        */
       virtual ~abstract_metric();
 
+      /**
+       * Compute the metric. Subclasses must implement either this
+       * method or the comput(uint32_t) version. Failure to do so will
+       * result in a logic_error being thrown at runtime.
+       *
+       * \param mactime The 64 bit MAC time for the end of the time period.
+       * \param delta_us The time (in microseconds) since we last computed the metric.
+       * \return The value of this metric as a double.
+       */
+      virtual double compute(uint64_t mactime, uint32_t delta_us);
+
+      /**
+       * Compute the metric. This is called by the default
+       * compute(uint64_t, uint32_t) and simply discards the (often
+       * unused) mactime parameter.
+       *
+       * \param delta_us The time (in microseconds) since we last computed the metric.
+       * \return The value of this metric as a double.
+       */
+      virtual double compute(uint32_t delta_us);
+
    protected:
 
       /**

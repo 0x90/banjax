@@ -5,12 +5,15 @@ bin_PROGRAMS = elc
 
 elc_SOURCES = \
 	abstract_metric.cpp \
+	airtime_metric.cpp \
+	airtime_metric_linux.cpp \
 	elc_metric.cpp \
 	elc_mrr_metric.cpp \
 	etx_metric.cpp \
 	goodput_metric.cpp \
 	iperf_metric_wrapper.cpp \
 	legacy_elc_metric.cpp \
+	metric_damper.cpp \
 	metric_demux.cpp \
 	metric_group.cpp \
 	metric.cpp \

@@ -65,11 +65,11 @@ metric_demux::clone() const
 }
 
 double
-metric_demux::compute(uint32_t delta_us)
+metric_demux::compute(uint64_t mactime, uint32_t delta_us)
 {
    double sum = 0;
    for(linkmap::iterator i(links_.begin()); i != links_.end(); ++i) {
-      sum += (i->second)->compute(delta_us);
+      sum += (i->second)->compute(mactime, delta_us);
    }
    return sum / links_.size();
 }
@@ -86,7 +86,7 @@ void
 metric_demux::write(ostream& os) const
 {
    for(linkmap::const_iterator i(links_.begin()); i != links_.end(); ++i) {
-      cout << i->first << ", " << *(i->second) << endl;
+      cout << "MAC: " << i->first << ", " << *(i->second) << endl;
    }
 }
 

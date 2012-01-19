@@ -6,7 +6,7 @@
 
 #define __STDC_LIMIT_MACROS ON
 
-#include <link_monitor.hpp>
+#include <wireless_link_monitor.hpp>
 #include <timespec.hpp>
 #include <util/exceptions.hpp>
 
@@ -37,7 +37,7 @@ using boost::mutex;
 using boost::thread_group;
 
 
-link_monitor::link_monitor(const string& bind_str, uint16_t port_no, uint16_t probe_sz, uint16_t window_sz, uint16_t delay_s, bool verbose) :
+wireless_link_monitor::wireless_link_monitor(const string& bind_str, uint16_t port_no, uint16_t probe_sz, uint16_t window_sz, uint16_t delay_s, bool verbose) :
    bind_str_(bind_str),
    port_no_(port_no),
    probe_sz_(probe_sz),
@@ -50,12 +50,12 @@ link_monitor::link_monitor(const string& bind_str, uint16_t port_no, uint16_t pr
 {
 }
 
-link_monitor::~link_monitor()
+wireless_link_monitor::~wireless_link_monitor()
 {
 }
 
 void
-link_monitor::run(uint32_t dur_s)
+wireless_link_monitor::run(uint32_t dur_s)
 {
    verbose_msg("starting run...");
 
@@ -63,8 +63,8 @@ link_monitor::run(uint32_t dur_s)
 
    // start the reader+writer
    boost::thread_group threads;
-   threads.create_thread(function0<void>(boost::bind(&link_monitor::reader, this)));
-   threads.create_thread(function0<void>(boost::bind(&link_monitor::writer, this)));
+   threads.create_thread(function0<void>(boost::bind(&wireless_link_monitor::reader, this)));
+   threads.create_thread(function0<void>(boost::bind(&wireless_link_monitor::writer, this)));
 
    // sleep
    timespec sleep, junk;
@@ -80,35 +80,35 @@ link_monitor::run(uint32_t dur_s)
 }
 
 uint32_t
-link_monitor::addr() const
+wireless_link_monitor::addr() const
 {
    mutex::scoped_lock lock(mutex_);
    return addr_;
 }
 
 void
-link_monitor::addr(uint32_t a)
+wireless_link_monitor::addr(uint32_t a)
 {
    mutex::scoped_lock lock(mutex_);
    addr_ = a;
 }
 
 bool
-link_monitor::quit() const
+wireless_link_monitor::quit() const
 {
    mutex::scoped_lock lock(mutex_);
    return quit_;
 }
 
 void
-link_monitor::quit(bool b)
+wireless_link_monitor::quit(bool b)
 {
    mutex::scoped_lock lock(mutex_);
    quit_ = b;
 }
 
 void
-link_monitor::raise_error(const char *func, const char* file, int line, int err, const char *what) const
+wireless_link_monitor::raise_error(const char *func, const char* file, int line, int err, const char *what) const
 {
    ostringstream msg;
    msg << what << ": " << strerror(errno) << " (" << errno << ")" << endl;
@@ -116,7 +116,7 @@ link_monitor::raise_error(const char *func, const char* file, int line, int err,
 }
 
 void
-link_monitor::read_probe(uint32_t neighbour_addr, const uint8_t *buf, size_t buf_sz)
+wireless_link_monitor::read_probe(uint32_t neighbour_addr, const uint8_t *buf, size_t buf_sz)
 {
    CHECK_NOT_NULL(buf);
    CHECK_MIN_SIZE(buf_sz, sizeof(probe));
@@ -125,11 +125,11 @@ link_monitor::read_probe(uint32_t neighbour_addr, const uint8_t *buf, size_t buf
    if(addr_ != neighbour_addr) {
       const probe *p = reinterpret_cast<const probe*>(buf);
       // update reverse delivery info
-      link_sptr l;
-      linkmap::iterator i(links_.find(neighbour_addr));
-      if(links_.end() == i) {
-         l = link_sptr(new link(window_sz_));
-         links_[neighbour_addr] = l;
+      wireless_link_sptr l;
+      linkmap::iterator i(wireless_links_.find(neighbour_addr));
+      if(wireless_links_.end() == i) {
+         l = wireless_link_sptr(new wireless_link(window_sz_));
+         wireless_links_[neighbour_addr] = l;
       } else {
          l = i->second;
       }
@@ -137,11 +137,11 @@ link_monitor::read_probe(uint32_t neighbour_addr, const uint8_t *buf, size_t buf
       // use probe to update tx delivery info
       uint16_t NOF_INFOS = ntohs(p->nof_infos);
       for(uint16_t i = 0; i < NOF_INFOS; ++i) {
-         const probe::info *info = &p->links[i];
-         const uint8_t *next = reinterpret_cast<const uint8_t*>(&p->links[i+1]);
+         const probe::info *info = &p->wireless_links[i];
+         const uint8_t *next = reinterpret_cast<const uint8_t*>(&p->wireless_links[i+1]);
          if(buf + buf_sz < next)
             break;
-         // locate link and update metric
+         // locate wireless_link and update metric
          uint32_t info_addr = ntohl(info->addr);
          if(addr_ == info_addr) {
             l->tx_delivery_ratio(ntohs(info->rx_probe_count), ntohs(info->rx_probe_window));
@@ -151,7 +151,7 @@ link_monitor::read_probe(uint32_t neighbour_addr, const uint8_t *buf, size_t buf
 }
 
 void
-link_monitor::reader()
+wireless_link_monitor::reader()
 {
    verbose_msg("starting reader...");
 
@@ -207,7 +207,7 @@ link_monitor::reader()
 }
 
 size_t
-link_monitor::write_probe(uint8_t *buf, size_t buf_sz)
+wireless_link_monitor::write_probe(uint8_t *buf, size_t buf_sz)
 {
    uint16_t n = 0;
    uint8_t *next = buf;
@@ -217,13 +217,13 @@ link_monitor::write_probe(uint8_t *buf, size_t buf_sz)
    mutex::scoped_lock lock(mutex_);
    p->seq_no = htonl(seq_no_++);
    p->packet_sz = htons(buf_sz);
-   p->nof_infos = htons(links_.size());
-   for(linkmap::iterator i(links_.begin()); i != links_.end(); ++i) {
-      probe::info *info = &p->links[n++];
-      next = reinterpret_cast<uint8_t*>(&p->links[n]);
+   p->nof_infos = htons(wireless_links_.size());
+   for(linkmap::iterator i(wireless_links_.begin()); i != wireless_links_.end(); ++i) {
+      probe::info *info = &p->wireless_links[n++];
+      next = reinterpret_cast<uint8_t*>(&p->wireless_links[n]);
       if(buf + buf_sz < next)
          break;
-      link_sptr l = (*i).second;
+      wireless_link_sptr l = (*i).second;
       l->advance_probe_window();
       info->addr = htonl((*i).first);
       info->rx_probe_count = htons(l->rx_probe_count());
@@ -233,7 +233,7 @@ link_monitor::write_probe(uint8_t *buf, size_t buf_sz)
 }
 
 void
-link_monitor::writer()
+wireless_link_monitor::writer()
 {
    verbose_msg("starting writer...");
 
@@ -313,7 +313,7 @@ link_monitor::writer()
 }
 
 void
-link_monitor::verbose_msg(const string& msg)
+wireless_link_monitor::verbose_msg(const string& msg)
 {
    if(verbose_)
       cout << msg << endl;

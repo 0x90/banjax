@@ -7,14 +7,14 @@
 #define __STDC_LIMIT_MACROS ON
 #define __STDC_CONSTANT_MACROS ON
 
-#include <link.hpp>
+#include <wireless_link.hpp>
 
 #include <algorithm>
 
 using namespace ETX;
 using namespace std;
 
-link::link(uint16_t window_sz) :
+wireless_link::wireless_link(uint16_t window_sz) :
    last_seq_no_(0),
    rx_probe_count_(0),
    rx_probe_window_(0),
@@ -27,13 +27,13 @@ link::link(uint16_t window_sz) :
    fill(&rx_probes_[0], &rx_probes_[RX_PROBE_WINDOW_MAX_], 0);
 }
 
-link::~link()
+wireless_link::~wireless_link()
 {
    delete []rx_probes_;
 }
 
 void
-link::advance_probe_window()
+wireless_link::advance_probe_window()
 {
    rx_probes_[rx_probes_loc_] = rx_probe_count_;
    rx_probe_window_ = min(static_cast<uint16_t>(rx_probe_window_ + 1), RX_PROBE_WINDOW_MAX_);
@@ -42,7 +42,7 @@ link::advance_probe_window()
 }
 
 void
-link::rx_probe(uint32_t seq_no)
+wireless_link::rx_probe(uint32_t seq_no)
 {
    uint32_t missed = seq_no - last_seq_no_;
    const uint32_t PIVOT = UINT32_MAX / 2;
@@ -53,7 +53,7 @@ link::rx_probe(uint32_t seq_no)
 }
 
 uint16_t
-link::rx_probe_count() const
+wireless_link::rx_probe_count() const
 {
    uint16_t sum = 0;
    for(size_t i = 0; i < rx_probe_window_; ++i) {
@@ -63,26 +63,26 @@ link::rx_probe_count() const
 }
 
 uint16_t
-link::rx_probe_window() const
+wireless_link::rx_probe_window() const
 {
    return rx_probe_window_;
 }
 
 void
-link::tx_delivery_ratio(uint16_t probe_count, uint16_t probe_window)
+wireless_link::tx_delivery_ratio(uint16_t probe_count, uint16_t probe_window)
 {
    tx_probe_count_ = probe_count;
    tx_probe_window_ = probe_window;
 }
 
 uint16_t
-link::tx_probe_count() const
+wireless_link::tx_probe_count() const
 {
    return tx_probe_count_;
 }
 
 uint16_t
-link::tx_probe_window() const
+wireless_link::tx_probe_window() const
 {
    return tx_probe_window_;
 }

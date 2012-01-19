@@ -1,18 +1,8 @@
 #!/bin/bash
 
-p=`dirname $0`
-i="$1"
-if [ -f $i ]; then
-   o="${i/.pcap/.eps}"
-   d="${i/.pcap/.data}"
-   $p/elc -m 1086 -i $1 | sed 's/,//g' | sed 's/nan/0/g' | awk -f $p/plot.awk > plot.data
-   gnuplot $p/plot.gp
-	if [ -s plot.eps ]; then
-		 mv plot.eps "$o"
-	else
-		 rm plot.eps
-	fi
-   mv plot.data "$d"
-   exit 0
-fi
-exit 1
+h=`dirname $0`
+for f in $*; do
+	 $h/plot-some.sh "${f}" Goodput ELC Legacy  Damped-ELC TXC
+done
+
+exit 0

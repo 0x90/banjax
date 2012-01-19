@@ -97,10 +97,10 @@ residual::clone() const
 }
 
 double
-residual::compute(uint32_t delta_us)
+residual::compute(uint64_t mactime, uint32_t delta_us)
 {
    double idle_fraction = static_cast<double>(delta_us - busy_time_) / delta_us;
-   residual_ = m_->compute(delta_us) * idle_fraction;
+   residual_ = m_->compute(mactime, delta_us) * idle_fraction;
    return residual_;
 }
 

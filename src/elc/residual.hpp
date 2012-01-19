@@ -70,12 +70,15 @@ namespace metrics {
       virtual residual *clone() const;
 
       /**
-       * Compute the metric.
+       * Compute the metric. Subclasses must implement either this
+       * method or the comput(uint32_t) version. Failure to do so will
+       * result in a logic_error being thrown at runtime.
        *
-       * \param delta_us The time (in microseconds) over which to compute the metric.
+       * \param mactime The 64 bit MAC time for the end of the time period.
+       * \param delta_us The time (in microseconds) since the start of the time period.
        * \return The value of this metric as a double.
        */
-      virtual double compute(uint32_t delta_us);
+      virtual double compute(uint64_t mactime, uint32_t delta_us);
 
       /**
        * Reset the internal state of the metric.

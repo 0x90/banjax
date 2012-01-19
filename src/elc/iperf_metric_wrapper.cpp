@@ -77,9 +77,9 @@ iperf_metric_wrapper::clone() const
 }
 
 double
-iperf_metric_wrapper::compute(uint32_t delta_us)
+iperf_metric_wrapper::compute(uint64_t mactime, uint32_t delta_us)
 {
-   return wrapped_metric_->compute(delta_us);
+   return wrapped_metric_->compute(mactime, delta_us);
 }
 
 void

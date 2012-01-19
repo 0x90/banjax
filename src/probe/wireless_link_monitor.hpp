@@ -4,10 +4,10 @@
  * Copyright NICTA, 2011
  */
 
-#ifndef ETX_LINK_MONITOR_HPP
-#define ETX_LINK_MONITOR_HPP
+#ifndef ETX_WIRELESS_LINK_MONITOR_HPP
+#define ETX_WIRELESS_LINK_MONITOR_HPP
 
-#include <link.hpp>
+#include <wireless_link.hpp>
 
 #include <boost/noncopyable.hpp>
 #include <boost/thread/mutex.hpp>
@@ -15,19 +15,19 @@
 namespace ETX {
 
 	/**
-    * link_monitor is responsible for sending and monitoring ETX link
-    * quality probes to/from our neighbours. This function sends
+    * wireless_link_monitor is responsible for sending and monitoring ETX
+    * link quality probes to/from our neighbours. This function sends
     * packet_sz probe packets at intervals of delay_ms.
     */
-   class link_monitor : public boost::noncopyable {
+   class wireless_link_monitor : public boost::noncopyable {
    public:
 
       /**
-       * Construct a new link quality monitor with the specified
-       * attributes. If a specific interface address is given in
-       * bind_str then we bind to that and restrict probes to just
-       * that interface; otherwise probes are sent on all available
-       * interfaces.
+       * Construct a new wireless link quality monitor with the
+       * specified attributes. If a specific interface address is
+       * given in bind_str then we bind to that and restrict probes to
+       * just that interface; otherwise probes are sent on all
+       * available interfaces.
        *
        * \param bind_str A string specifying the IP address to bind.
        * \param port_no The port number to use.
@@ -36,15 +36,15 @@ namespace ETX {
        * \param delay_s The delay between subsequent probes (in seconds).
        * \param verbose true for verbose output; otherwise false.
        */
-      link_monitor(const std::string& bind_str, uint16_t port_no, uint16_t probe_sz, uint16_t window_sz, uint16_t delay_s, bool verbose);
+      wireless_link_monitor(const std::string& bind_str, uint16_t port_no, uint16_t probe_sz, uint16_t window_sz, uint16_t delay_s, bool verbose);
 
       /**
-       * link_monitor destructor.
+       * wireless_link_monitor destructor.
        */
-      ~link_monitor();
+      ~wireless_link_monitor();
 
       /**
-       * Run the link_monitor for the specified time period.
+       * Run the wireless_link_monitor for the specified time period.
        *
        * \param duration_s The time to run for in s.
        */
@@ -92,7 +92,7 @@ namespace ETX {
       /**
        * Parse the received probe and update the link quality
        * information. We extract our own forward delivery ratio from
-       * the probe payload and pass it to the link object.
+       * the probe payload and pass it to the wireless_link object.
        *
        * \param neighbour_addr Address of neighbour (in host order).
        * \param buf A (non-null) pointer to the probe packet. 
@@ -180,9 +180,9 @@ namespace ETX {
       volatile bool quit_;
 
       /**
-       * Alias for map<uint32_t, link_sptr>.
+       * Alias for map<uint32_t, wireless_link_sptr>.
        */
-      typedef std::map<uint32_t, link_sptr> linkmap;
+      typedef std::map<uint32_t, wireless_link_sptr> linkmap;
 
       /**
        * The sequence number of the next probe.
@@ -190,9 +190,9 @@ namespace ETX {
       uint32_t seq_no_;
 
       /**
-       * All the links we know about.
+       * All the wireless_links we know about.
        */
-      linkmap links_;
+      linkmap wireless_links_;
 
       /**
        * Physical representation of probe packet. All numeric
@@ -212,7 +212,7 @@ namespace ETX {
          uint16_t packet_sz;
 
          /**
-          * Count of the number of link_infos that follow.
+          * Count of the number of wireless_link_infos that follow.
           */
          uint16_t nof_infos;
 
@@ -236,7 +236,7 @@ namespace ETX {
              */
             uint16_t rx_probe_window;
 
-         } links[0];
+         } wireless_links[0];
 
       };
 
@@ -244,4 +244,4 @@ namespace ETX {
 
 }
 
-#endif // ETX_LINK_MONITOR_HPP
+#endif // ETX_WIRELESS_LINK_MONITOR_HPP

@@ -52,10 +52,11 @@ namespace metrics {
       /**
        * Compute the metric.
        *
-       * \param delta_us The time (in microseconds) over which to compute the metric.
+       * \param time The 64 bit MAC time for the end of the time period.
+       * \param delta_us The time (in microseconds)  since the start of the time period.
        * \return The value of this metric as a double.
        */
-      virtual double compute(uint32_t delta_us) = 0;
+      virtual double compute(uint64_t time, uint32_t delta_us) = 0;
 
       /**
        * Reset the internal state of the metric.

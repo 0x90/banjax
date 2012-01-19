@@ -92,5 +92,5 @@ txc_metric::reset()
 void
 txc_metric::write(ostream& os) const
 {
-   os << "PKTS: " << pkts_ << ", FRMS: " << frms_ << ", TXC: " << frms_ / pkts_;
+   os << "Packets: " << pkts_ << ", Frames: " << frms_ << ", TXC: " << frms_ / pkts_;
 }

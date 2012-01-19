@@ -6,6 +6,8 @@
 
 #define __STDC_CONSTANT_MACROS
 #define __STDC_LIMIT_MACROS
+#include <airtime_metric.hpp>
+#include <airtime_metric_linux.hpp>
 #include <elc_metric.hpp>
 #include <elc_mrr_metric.hpp>
 #include <etx_metric.hpp>
@@ -13,6 +15,7 @@
 #include <iperf_metric_wrapper.hpp>
 #include <legacy_elc_metric.hpp>
 #include <metric.hpp>
+#include <metric_damper.hpp>
 #include <metric_demux.hpp>
 #include <metric_group.hpp>
 #include <pdr_metric.hpp>
@@ -45,20 +48,27 @@ main(int ac, char **av)
    try {
 
       bool help;
-      uint16_t cw, mtu_sz;
       string enc_str, what;
+      uint16_t cw; 
+      uint16_t damp;
+      uint16_t mtu_sz;
       uint16_t port_no;
       uint16_t rts_cts_threshold;
+      uint32_t rate_Mbs;
+      size_t window_sz;
 
       options_description options("program options");
       options.add_options()
-         ("help,?", value(&help)->default_value(false)->zero_tokens(), "produce this help message")
          ("cw,c", value(&cw)->default_value(0), "size of contention window in microseconds (0 = compute average)")
+         ("damping,d", value(&damp)->default_value(5), "size of damping window in seconds")
          ("encoding,e", value<string>(&enc_str)->default_value("OFDM"), "channel encoding")
+         ("help,?", value(&help)->default_value(false)->zero_tokens(), "produce this help message")
          ("input,i", value<string>(&what)->default_value("mon0"), "input file/device name")
+         ("link-rate,l", value<uint32_t>(&rate_Mbs)->default_value(54), "Maximum link rate in Mb/s")
          ("mtu,m", value<uint16_t>(&mtu_sz)->default_value(1536), "MTU size used for legacy ELC")
          ("port,p", value<uint16_t>(&port_no)->default_value(50000), "port number used for ETX probes")
          ("rts-threshold,r", value<uint16_t>(&rts_cts_threshold)->default_value(UINT16_MAX), "RTS threshold level")
+         ("window,w", value<size_t>(&window_sz)->default_value(10), "ETX probe windows")
          ;
 
       variables_map vars;       
@@ -73,12 +83,16 @@ main(int ac, char **av)
       encoding_sptr enc(encoding::get(enc_str));
    	metric_group_sptr proto(new metric_group);
       proto->push_back(metric_sptr(new  goodput_metric));
-      proto->push_back(metric_sptr(new residual(metric_sptr(new goodput_metric), "Residual")));
       proto->push_back(metric_sptr(new elc_metric(cw, rts_cts_threshold)));
-      proto->push_back(metric_sptr(new elc_mrr_metric(cw, rts_cts_threshold)));
-      proto->push_back(metric_sptr(new legacy_elc_metric(enc, mtu_sz, rts_cts_threshold)));
-      proto->push_back(metric_sptr(new residual(metric_sptr(new legacy_elc_metric(enc, mtu_sz, rts_cts_threshold)), "RELC")));
+      proto->push_back(metric_sptr(new metric_damper("Damped-ELC", metric_sptr(new elc_metric(cw, rts_cts_threshold)), damp)));
+//      proto->push_back(metric_sptr(new elc_mrr_metric(cw, rts_cts_threshold)));
+      proto->push_back(metric_sptr(new legacy_elc_metric(enc, rate_Mbs * 1000, mtu_sz, rts_cts_threshold)));
+      proto->push_back(metric_sptr(new airtime_metric(enc, rts_cts_threshold)));
+//      proto->push_back(metric_sptr(new airtime_metric_linux(enc)));
+//      proto->push_back(metric_sptr(new etx_metric(port_no, window_sz)));
       proto->push_back(metric_sptr(new txc_metric));
+//      proto->push_back(metric_sptr(new residual(metric_sptr(new goodput_metric), "Residual")));
+//      proto->push_back(metric_sptr(new residual(metric_sptr(new legacy_elc_metric(enc, rate_Mbs * 1000, mtu_sz, rts_cts_threshold)), "RELC")));
       metric_sptr m(new iperf_metric_wrapper(metric_sptr(new metric_demux(proto))));
 
       wnic_sptr w(wnic::open(what));
@@ -93,8 +107,8 @@ main(int ac, char **av)
          info = b->info();
          uint64_t timestamp = info->timestamp_wallclock();
          for(; tick <= timestamp; tick += uS_PER_TICK) {
-            m->compute(uS_PER_TICK);
-            cout << "TIME: " << tick / uS_PER_TICK << endl;
+            m->compute(tick, uS_PER_TICK);
+            cout << "Time: " << tick / uS_PER_TICK << endl;
             cout << *m << endl;
             m->reset();
          }
