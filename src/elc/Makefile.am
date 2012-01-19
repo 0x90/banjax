@@ -14,6 +14,7 @@ elc_SOURCES = \
 	iperf_metric_wrapper.cpp \
 	legacy_elc_metric.cpp \
 	metric_damper.cpp \
+	metric_decimator.cpp \
 	metric_demux.cpp \
 	metric_group.cpp \
 	metric.cpp \
