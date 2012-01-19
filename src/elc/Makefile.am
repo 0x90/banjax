@@ -13,6 +13,7 @@ elc_SOURCES = \
 	goodput_metric.cpp \
 	iperf_metric_wrapper.cpp \
 	legacy_elc_metric.cpp \
+	metric_damper.cpp \
 	metric_demux.cpp \
 	metric_group.cpp \
 	metric.cpp \

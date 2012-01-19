@@ -41,9 +41,9 @@ if [ -s "$t" ]; then
 		  d=", "
 		  let n=n+1
     done
-	 [ "$XRANGE" != "" ] && Y1RANGE="set xrange [$XRANGE]"
+	 [ "$XRANGE" != "" ] && XRANGE="set xrange [$XRANGE]"
 	 [ "$YRANGE" != "" ] && YRANGE="set yrange [$YRANGE]"
-	 [ "$Y1RANGE" != "" ] && Y1RANGE="set y1range [$Y1RANGE]"
+	 [ "$Y2RANGE" != "" ] && Y2RANGE="set y2range [$Y2RANGE]"
 	 gnuplot <<EOF
 set term postscript color enhanced eps
 set out "$o"
@@ -61,7 +61,7 @@ set y2label "Count"
 
 $XRANGE
 $YRANGE
-$Y1RANGE
+$Y2RANGE
 
 plot $s 
 EOF
