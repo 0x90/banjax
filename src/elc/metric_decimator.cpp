@@ -30,7 +30,7 @@ metric_decimator::metric_decimator(const metric_decimator& other) :
    metric_(other.metric_->clone()),
    n_(other.n_),
    i_(other.i_),
-   value_(other.value)
+   value_(other.value_)
 {
 }
 

@@ -16,6 +16,7 @@
 #include <legacy_elc_metric.hpp>
 #include <metric.hpp>
 #include <metric_damper.hpp>
+#include <metric_decimator.hpp>
 #include <metric_demux.hpp>
 #include <metric_group.hpp>
 #include <pdr_metric.hpp>
@@ -84,6 +85,7 @@ main(int ac, char **av)
    	metric_group_sptr proto(new metric_group);
       proto->push_back(metric_sptr(new  goodput_metric));
       proto->push_back(metric_sptr(new elc_metric(cw, rts_cts_threshold)));
+      proto->push_back(metric_sptr(new metric_decimator("ELC-1PC", metric_sptr(new elc_metric(cw, rts_cts_threshold)), 100)));
       proto->push_back(metric_sptr(new metric_damper("Damped-ELC", metric_sptr(new elc_metric(cw, rts_cts_threshold)), damp)));
 //      proto->push_back(metric_sptr(new elc_mrr_metric(cw, rts_cts_threshold)));
       proto->push_back(metric_sptr(new legacy_elc_metric(enc, rate_Mbs * 1000, mtu_sz, rts_cts_threshold)));

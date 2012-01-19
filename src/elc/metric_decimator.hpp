@@ -110,8 +110,12 @@ namespace metrics {
       /**
        * Count of packets seen so far.
        */
-     uint32_t i_;
+      uint32_t i_;
 
+      /**
+       * The stashed value of this metric.
+       */
+      double value_;
    };
 
 }

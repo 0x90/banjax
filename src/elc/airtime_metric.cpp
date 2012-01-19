@@ -76,12 +76,12 @@ airtime_metric::add(buffer_sptr b)
    buffer_info_sptr info(b->info());
    if(DATA_FRAME == fc.type() && info->has(TX_FLAGS)) {
       // update frame stats
-      ++frames_;
+      frames_ += 1 + info->data_retries();
       // update packet stats
-      bool tx_success = (0 == (info->tx_flags() & TX_FLAGS_FAIL));
+      ++packets_;
+      packet_octets_ += b->data_size() + CRC_SZ;
+      bool tx_success = (!(info->tx_flags() & TX_FLAGS_FAIL));
       if(tx_success) {
-         ++packets_;
-         packet_octets_ += b->data_size() + CRC_SZ;
          rates_Kbs_sum_ += info->rate_Kbs();
       }
    } else if (MGMT_FRAME == fc.type()) {
