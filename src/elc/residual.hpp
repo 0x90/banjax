@@ -15,6 +15,7 @@
 #include <net/buffer.hpp>
 
 #include <boost/shared_ptr.hpp>
+#include <string>
 
 namespace metrics {
 

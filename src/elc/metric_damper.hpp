@@ -11,6 +11,7 @@
 #include <metric.hpp>
 
 #include <deque>
+#include <string>
 
 namespace metrics {
 
