@@ -111,7 +111,7 @@ legacy_elc_metric::compute(uint32_t ignored_delta_us)
 
    const double FRMS = frames_;
    const double PKTS = packets_;
-   const double AVG_PKT_SZ = packet_octets_ - HDR_SZ / PKTS;
+   const double AVG_PKT_SZ = (packet_octets_ - HDR_SZ) / PKTS;
    const double AVG_PKT_RATE_Kbs = rates_Kbs_sum_ / PKTS;
 
    /* ToDo: Computing the average rate (EMT) here is done the
