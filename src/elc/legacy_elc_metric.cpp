@@ -28,6 +28,7 @@ legacy_elc_metric::legacy_elc_metric(encoding_sptr enc, uint32_t rate_Kbs, uint1
    mtu_sz_(mtu_sz),
    rts_cts_threshold_(rts_cts_threshold),
    frames_(0),
+   frame_octets_(0),
    packets_(0),
    packet_octets_(0),
    rates_Kbs_sum_(0),
@@ -44,6 +45,7 @@ legacy_elc_metric::legacy_elc_metric(const legacy_elc_metric& other) :
    mtu_sz_(other.mtu_sz_),
    rts_cts_threshold_(other.rts_cts_threshold_),
    frames_(other.frames_),
+   frame_octets_(other.frame_octets_),
    packets_(other.packets_),
    packet_octets_(other.packet_octets_),
    rates_Kbs_sum_(other.rates_Kbs_sum_),
@@ -62,6 +64,7 @@ legacy_elc_metric::operator=(const legacy_elc_metric& other)
       mtu_sz_ = other.mtu_sz_;
       rts_cts_threshold_ = other.rts_cts_threshold_;
       frames_ = other.frames_;
+      frame_octets_ = other.frame_octets_;
       packets_ = other.packets_;
       packet_octets_ = other.packet_octets_;
       rates_Kbs_sum_ = other.rates_Kbs_sum_;
@@ -91,13 +94,13 @@ legacy_elc_metric::add(buffer_sptr b)
          const uint32_t LLC_HDR_SZ = 8;
          const uint32_t IP_HDR_SZ = 20;
          const uint32_t UDP_HDR_SZ = 8;
-         const uint32_t CRC_SZ = 4;
          const uint16_t HDR_SZ = IEEE80211_HDR_SZ + LLC_HDR_SZ + IP_HDR_SZ + UDP_HDR_SZ;
          
          ++packets_;
          packet_octets_ += b->data_size() - HDR_SZ;
          rates_Kbs_sum_ += info->rate_Kbs();
       }
+      frame_octets_ += b->data_size() + CRC_SZ;
       frames_ += info->has(DATA_RETRIES) ? 1 + info->data_retries() : 1;
    }
 }
@@ -116,13 +119,14 @@ legacy_elc_metric::compute(uint32_t ignored_delta_us)
    const double PKTS = packets_;
    const double AVG_PKT_SZ = packet_octets_ / PKTS;
    const double AVG_PKT_RATE_Kbs = rates_Kbs_sum_ / PKTS;
+   const double AVG_FRM_SZ = frame_octets_ / FRMS;
 
    /* ToDo: Computing the average rate (EMT) here is done the
     * straightforward way picking the nearest rate. There are
     * proposals to either use linear interpolation or to compute the
     * time differently. Check the pictures from the whiteboard!
     */
-   const double EST_TX_TIME = successful_tx_time(closest_rate(AVG_PKT_RATE_Kbs), AVG_PKT_SZ);
+   const double EST_TX_TIME = successful_tx_time(closest_rate(AVG_PKT_RATE_Kbs), AVG_FRM_SZ);
    const double EMT = AVG_PKT_SZ / EST_TX_TIME;
    const double FDR = PKTS / FRMS;
    elc_ = FDR * EMT;

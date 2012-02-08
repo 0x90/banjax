@@ -135,6 +135,11 @@ namespace metrics {
       uint32_t frames_;
 
       /**
+       * The total number of octets sent.
+       */
+      uint_least32_t frame_octets_;
+
+      /**
        * The total number of successfully delivered packets.
        */
       uint32_t packets_;
