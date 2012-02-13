@@ -27,11 +27,11 @@ namespace metrics {
        * legacy_elc_metric constructor.
        *
        * \param enc The encoding used.
-       * \rate_Kbs The maximum link rate (used to compute TMT).
-       * \param mtu_sz_ The MTU size to use in computing ELC.
+       * \rate_kbs The maximum link rate (used to compute TMT).
+       * \param mpdu_sz_ The MTU size to use in computing ELC.
        * \param rts_cts_threshold The frame size above which we need to use RTS/CTS.
        */
-      legacy_elc_metric(net::encoding_sptr enc, uint32_t rate_Kbs, uint16_t mtu_sz,  uint16_t rts_cts_threshold);
+      legacy_elc_metric(net::encoding_sptr enc, uint32_t rate_kbs, uint16_t mpdu_sz,  uint16_t rts_cts_threshold);
 
       /**
        * legacy_elc_metric copy constuctor.
@@ -106,11 +106,11 @@ namespace metrics {
        * the contention, RTS/CTS, interframe spacing and
        * acknowledgment.
        *
-       * \param rate_Kbs The rate in units of Kbs.
+       * \param rate_kbs The rate in units of kbs.
        * \param frame_sz The size of the frame in octets.
        * \return The time taken (in microseconds).
        */
-      uint32_t successful_tx_time(uint32_t rate_Kbs, uint16_t packet_sz) const;
+      uint32_t successful_tx_time(uint32_t rate_kbs, uint16_t packet_sz) const;
 
    private:
 
@@ -120,9 +120,9 @@ namespace metrics {
       net::encoding_sptr enc_;
 
       /**
-       * The size of the MTU to use when computing the metric.
+       * The size of the MPDU to use when computing the metric.
        */
-      uint16_t mtu_sz_;
+      uint16_t mpdu_sz_;
 
       /**
        * The RTS/CTS threshold.
@@ -132,32 +132,32 @@ namespace metrics {
       /**
        * The total number of frame transmission attempts.
        */
-      uint32_t frames_;
+      uint32_t frames_attempted_;
 
       /**
        * The total number of octets sent.
        */
-      uint_least32_t frame_octets_;
+      uint_least32_t frames_attempted_octets_;
 
       /**
-       * The total number of successfully delivered packets.
+       * The total number of successfully delivered frames.
        */
-      uint32_t packets_;
+      uint32_t frames_delivered_;
 
       /**
-       * The total number of IP payload octets successfully delivered.
+       * The total number of successfully delivered octets.
        */
-      uint_least32_t packet_octets_;
+      uint_least32_t frames_delivered_octets_;
 
       /**
        * Sum of the data rates used to send packets (used to compute average).
        */
-      uint_least32_t rates_Kbs_sum_;
+      uint_least32_t rates_kbs_sum_;
 
       /**
-       * The maximum link rate.
+       * The link rate (used to calculate TMT).
        */
-      uint32_t rate_Kbs_;
+      uint32_t rate_kbs_;
 
       /**
        * The current value for "classic" ELC using TMT.
@@ -165,7 +165,7 @@ namespace metrics {
       double classic_elc_;
 
       /**
-       * The current value of this ELC metric.
+       * The current value of this legacy ELC metric.
        */
       double elc_;
 

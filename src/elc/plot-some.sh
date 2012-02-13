@@ -23,7 +23,7 @@ axis["TXC"]="axes x1y2"
 
 # write the extract file
 if [ "$p" -nt "$d" ]; then
-	 $h/elc -m 1086 -i $p | sed 's/,//g' | sed 's/nan/0/g' | awk -f $h/plot.awk > $d
+	 $h/elc -m ${MPDU} -l ${RATE} -i $p | sed 's/,//g' | sed 's/nan/0/g' | awk -f $h/plot.awk > $d
 fi
 $h/extract.scm Time $fields < "$d" > "$t"
 
@@ -51,6 +51,7 @@ set out "$o"
 # function to convert MB/s -> Mb/s
 Mb(x)=x * 8
 
+set key box outside
 set grid xtics ytics
 set ytics nomirror
 set y2tics

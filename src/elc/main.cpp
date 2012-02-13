@@ -52,7 +52,7 @@ main(int ac, char **av)
       string enc_str, what;
       uint16_t cw; 
       uint16_t damp;
-      uint16_t mtu_sz;
+      uint16_t mpdu_sz;
       uint16_t port_no;
       uint16_t rts_cts_threshold;
       uint32_t rate_Mbs;
@@ -66,7 +66,7 @@ main(int ac, char **av)
          ("help,?", value(&help)->default_value(false)->zero_tokens(), "produce this help message")
          ("input,i", value<string>(&what)->default_value("mon0"), "input file/device name")
          ("link-rate,l", value<uint32_t>(&rate_Mbs)->default_value(54), "Maximum link rate in Mb/s")
-         ("mtu,m", value<uint16_t>(&mtu_sz)->default_value(1536), "MTU size used for legacy ELC")
+         ("mpdu,m", value<uint16_t>(&mpdu_sz)->default_value(1536), "MPDU size used metric calculation")
          ("port,p", value<uint16_t>(&port_no)->default_value(50000), "port number used for ETX probes")
          ("rts-threshold,r", value<uint16_t>(&rts_cts_threshold)->default_value(UINT16_MAX), "RTS threshold level")
          ("window,w", value<size_t>(&window_sz)->default_value(10), "ETX probe windows")
@@ -89,13 +89,13 @@ main(int ac, char **av)
 //      proto->push_back(metric_sptr(new metric_decimator("ELC-10PC", metric_sptr(new elc_metric(cw, rts_cts_threshold)), 10)));
       proto->push_back(metric_sptr(new metric_damper("Damped-ELC", metric_sptr(new elc_metric(cw, rts_cts_threshold)), damp)));
 //      proto->push_back(metric_sptr(new elc_mrr_metric(cw, rts_cts_threshold)));
-      proto->push_back(metric_sptr(new legacy_elc_metric(enc, rate_Mbs * 1000, mtu_sz, rts_cts_threshold)));
+      proto->push_back(metric_sptr(new legacy_elc_metric(enc, rate_Mbs * 1000, mpdu_sz, rts_cts_threshold)));
       proto->push_back(metric_sptr(new airtime_metric(enc, rts_cts_threshold)));
 //      proto->push_back(metric_sptr(new airtime_metric_linux(enc)));
 //      proto->push_back(metric_sptr(new etx_metric(port_no, window_sz)));
       proto->push_back(metric_sptr(new txc_metric));
 //      proto->push_back(metric_sptr(new residual(metric_sptr(new goodput_metric), "Residual")));
-//      proto->push_back(metric_sptr(new residual(metric_sptr(new legacy_elc_metric(enc, rate_Mbs * 1000, mtu_sz, rts_cts_threshold)), "RELC")));
+//      proto->push_back(metric_sptr(new residual(metric_sptr(new legacy_elc_metric(enc, rate_Mbs * 1000, mpdu_sz, rts_cts_threshold)), "RELC")));
       metric_sptr m(new iperf_metric_wrapper(metric_sptr(new metric_demux(proto))));
 
       wnic_sptr w(wnic::open(what));

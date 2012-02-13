@@ -89,7 +89,7 @@ namespace metrics {
    private:
 
       /**
-       * The total number of transmission attempts.
+       * The total number of successfully delivered packets.
        */
       uint_least32_t packets_;
 
