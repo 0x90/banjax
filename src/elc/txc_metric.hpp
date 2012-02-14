@@ -89,24 +89,14 @@ namespace metrics {
    private:
 
       /**
-       * The total number of successfully delivered packets.
+       * The total number of frames.
        */
-      uint_least32_t packets_;
+      uint_least32_t n_;
 
       /**
        * The total number of frame transmissions.
        */
-      uint_least32_t frames_;
-
-      /**
-       * The frame count stash.
-       */
-      double frms_;
-
-      /**
-       * The packet count stash.
-       */
-      double pkts_;
+      uint_least32_t transmissions_;
 
       /**
        * The average TXC value.
