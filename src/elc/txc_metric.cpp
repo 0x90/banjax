@@ -60,8 +60,11 @@ txc_metric::add(buffer_sptr b)
    frame_control fc(f.fc());
    buffer_info_sptr info(b->info());
    if(DATA_FRAME == fc.type() && info->has(TX_FLAGS)) {
-      ++n_;
-      transmissions_ += info->has(DATA_RETRIES) ? 1 + info->data_retries() : 1;
+      bool tx_success = !(info->tx_flags() & TX_FLAGS_FAIL);
+      if(tx_success) {
+         ++n_;
+         transmissions_ += info->has(DATA_RETRIES) ? 1 + info->data_retries() : 1;
+      }
    }
 }
 

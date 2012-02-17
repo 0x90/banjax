@@ -70,13 +70,11 @@ etx_metric::add(buffer_sptr b)
       // add UDP probes to queue
       buffer_info_sptr info(b->info());
       if(udp->src_port() == probe_port_&& !info->has(TX_FLAGS)) {
-
          if(!rx_probes_.empty()) {
             buffer_sptr p(rx_probes_.back());
             data_frame prev(p);
          }
          rx_probes_.push_back(b);
-
       }
    }
 }
@@ -104,7 +102,6 @@ etx_metric::compute(uint64_t mactime, uint32_t delta_us)
    }
 
    double d_r = rx_probes_.size();
-
    etx_ = 1.0 / d_f * d_r;
    return etx_;
 }

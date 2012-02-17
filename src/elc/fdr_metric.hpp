@@ -5,8 +5,8 @@
  *
  */
 
-#ifndef METRICS_TXC_METRIC_HPP
-#define METRICS_TXC_METRIC_HPP
+#ifndef METRICS_FDR_METRIC_HPP
+#define METRICS_FDR_METRIC_HPP
 
 #include <abstract_metric.hpp>
 #include <net/encoding.hpp>
@@ -18,53 +18,53 @@
 namespace metrics {
 
    /**
-    * txc_metric reports the average transmit count.
+    * fdr_metric reports the frame delivery ratio.
     */
-   class txc_metric : public abstract_metric {
+   class fdr_metric : public abstract_metric {
    public:
 
       /**
-       * txc_metric default constructor.
+       * fdr_metric default constructor.
        *
        * \param enc The encoding used.
        */
-      txc_metric();
+      fdr_metric();
 
       /**
-       * txc_metric copy constuctor.
+       * fdr_metric copy constuctor.
        *
-       * \param other The other txc_metric to initialize from.
+       * \param other The other fdr_metric to initialize from.
        */
-      txc_metric(const txc_metric& other);
+      fdr_metric(const fdr_metric& other);
 
       /**
-       * txc_metric assignment operator.
+       * fdr_metric assignment operator.
        *
-       * \param other The other txc_metric to assign from.
-       * \return A reference to this txc_metric.
+       * \param other The other fdr_metric to assign from.
+       * \return A reference to this fdr_metric.
        */
-      txc_metric& operator=(const txc_metric& other);
+      fdr_metric& operator=(const fdr_metric& other);
 
       /**
-       * txc_metric destructor.
+       * fdr_metric destructor.
        */
-     virtual ~txc_metric();
+     virtual ~fdr_metric();
 
       /**
-       * Add a frame to the txc_metric and update the txc_metric statistics.
+       * Add a frame to the fdr_metric and update the fdr_metric statistics.
        *
        * \param b A shared_pointer to the buffer containing the frame.
        */
       virtual void add(net::buffer_sptr b);
 
       /**
-       * Return a pointer to a clone (deep copy) of this txc_metric
+       * Return a pointer to a clone (deep copy) of this fdr_metric
        * instance. The clone is allocated on the heap using new and
        * the caller is responsible for ensuring it is deleted.
        *
-       * \return A poiner to a new txc_metric instance.
+       * \return A poiner to a new fdr_metric instance.
        */
-      virtual txc_metric *clone() const;
+      virtual fdr_metric *clone() const;
 
       /**
        * Compute the metric.
@@ -89,9 +89,19 @@ namespace metrics {
    private:
 
       /**
+       * The FDR.
+       */
+      double fdr_;
+
+      /**
        * The total number of packets.
        */
-      uint_least32_t n_;
+      uint_least32_t packets_;
+
+      /**
+       * The stashed total number of packets.
+       */
+      uint_least32_t packets_stash_;
 
       /**
        * The total number of frame transmission attempts.
@@ -99,12 +109,12 @@ namespace metrics {
       uint_least32_t transmissions_;
 
       /**
-       * The average TXC value.
+       * The stasged total number of frame transmission attempts.
        */
-      double txc_;
+      uint_least32_t transmissions_stash_;
 
    };
 
 }
 
-#endif // METRICS_TXC_METRIC_HPP
+#endif // METRICS_FDR_METRIC_HPP

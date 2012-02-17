@@ -99,13 +99,12 @@ double
 airtime_metric::compute(uint32_t ignored_delta_us)
 {
    const double PKTS = packets_;
-   const double AVG_PKT_SZ = packet_octets_ / PKTS;
    const double AVG_PKT_RATE_Kbs = rates_Kbs_sum_ / PKTS;
    const uint32_t rate_Kbs = closest_rate(AVG_PKT_RATE_Kbs);
    const double FDR = packets_ / static_cast<double>(frames_);
 
    const bool SHORT_PREAMBLE = false;
-   const uint32_t TEST_FRAME_SZ = 1024;
+   const uint32_t TEST_FRAME_SZ = 1024 + 62; // ToDo: what size? L2 or L4? Use given MTU_SZ?
    const uint32_t T_RTS_CTS = (rts_cts_threshold_ <= TEST_FRAME_SZ) ? rts_cts_time(enc_, TEST_FRAME_SZ, SHORT_PREAMBLE) : 0;
    const uint32_t T_DATA = enc_->txtime(TEST_FRAME_SZ, rate_Kbs, SHORT_PREAMBLE);
    const uint32_t ACK_SZ = 14;

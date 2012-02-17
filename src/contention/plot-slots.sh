@@ -3,7 +3,7 @@
 p="$1"
 c="${p/.pcap/.cw}"
 d="${p/.pcap/.data}"
-e="${p/.pcap/.eps}"
+e="${p/.pcap/.slots.eps}"
 ./analyse -i "$p" 2> "$c" | awk '{ print int(($3 - 34)/9); }' | sort -n | uniq -c | awk '{ print $2, $1; }' > "$d"
 
 gnuplot <<EOF

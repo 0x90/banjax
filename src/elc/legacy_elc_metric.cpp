@@ -86,7 +86,7 @@ legacy_elc_metric::add(buffer_sptr b)
    const uint32_t CRC_SZ = 4;
    buffer_info_sptr info(b->info());
    if(DATA_FRAME == fc.type() && info->has(TX_FLAGS)) {
-      bool tx_success = (0 == (info->tx_flags() & TX_FLAGS_FAIL));
+      bool tx_success = !(info->tx_flags() & TX_FLAGS_FAIL);
       if(tx_success && info->channel_encoding() == enc_) {
        
          ++frames_delivered_;

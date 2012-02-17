@@ -19,8 +19,9 @@ using namespace net;
 using namespace std;
 using metrics::elc_metric;
 
-elc_metric::elc_metric(uint16_t cw_time_us, uint16_t rts_cts_threshold) :
+elc_metric::elc_metric(uint16_t cw_time_us, uint16_t rts_cts_threshold, uint16_t beacon_time) :
    abstract_metric(),
+   beacon_time_(beacon_time),
    cw_time_us_(cw_time_us),
    rts_cts_threshold_(rts_cts_threshold),
    n_pkt_succ_(0),
@@ -34,6 +35,7 @@ elc_metric::elc_metric(uint16_t cw_time_us, uint16_t rts_cts_threshold) :
 
 elc_metric::elc_metric(const elc_metric& other) :
    abstract_metric(other),
+   beacon_time_(other.beacon_time_),
    cw_time_us_(other.cw_time_us_),
    rts_cts_threshold_(other.rts_cts_threshold_),
    n_pkt_succ_(other.n_pkt_succ_),
@@ -50,6 +52,7 @@ elc_metric::operator=(const elc_metric& other)
 {
    if(&other != this) {
       abstract_metric::operator=(other);
+      beacon_time_ = other.beacon_time_;
       cw_time_us_ = other.cw_time_us_;
       rts_cts_threshold_ = other.rts_cts_threshold_;
       n_pkt_succ_ = other.n_pkt_succ_;
@@ -95,8 +98,8 @@ elc_metric::clone() const
 double
 elc_metric::compute(uint32_t delta_us)
 {
-   const double T_BEACON = 0;
-   const double T_DEAD = (delta_us / .1024) * T_BEACON;
+   const double N_BEACONS = (delta_us / 102400.0);
+   const double T_DEAD =  N_BEACONS * beacon_time_;
    elc_ = packet_octets_ / (t_pkt_succ_ + t_pkt_fail_ + T_DEAD);
    return elc_;
 }
