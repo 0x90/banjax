@@ -104,7 +104,11 @@ main(int ac, char **av)
 
       wnic_sptr w(wnic::open(what));
       w = wnic_sptr(new wnic_wallclock_fix(w));
-      w = wnic_sptr(new wnic_encoding_fix(w, CHANNEL_CODING_OFDM | CHANNEL_PREAMBLE_LONG)); // ToDo: use cmd line opt to choose default coding!
+      if("OFDM" == enc_str) {
+         w = wnic_sptr(new wnic_encoding_fix(w, CHANNEL_CODING_OFDM | CHANNEL_PREAMBLE_LONG));
+      } else if("DSSS" == enc_str) {
+         w = wnic_sptr(new wnic_encoding_fix(w, CHANNEL_CODING_DSSS | CHANNEL_PREAMBLE_LONG));
+      }
       buffer_sptr b(w->read());
       buffer_info_sptr info(b->info());
       const uint64_t uS_PER_TICK = UINT64_C(1000000);
