@@ -1,7 +1,7 @@
 /* -*- mode: C++; tab-width: 3; -*- */
 
 /*
- * Copyright 2010-2011 Steve Glass
+ * Copyright 2010-2012 Steve Glass
  * 
  * This file is part of banjax.
  * 
@@ -25,7 +25,6 @@
 #include <util/dump.hpp>
 #include <util/exceptions.hpp>
 
-#include <algorithm>
 #include <cstddef>
 #include <pcap.h>
 #include <vector>
@@ -35,6 +34,7 @@ using namespace net;
 using util::dump;
 using util::le_to_cpu;
 using util::raise;
+using util::cpu_to_le;
 
 const uint32_t RADIOTAP_TSFT              = 0x0001;
 const uint32_t RADIOTAP_FLAGS             = 0x0002;
@@ -95,15 +95,133 @@ radiotap_datalink::~radiotap_datalink()
 {
 }
 
+uint8_t*
+radiotap_datalink::advance(uint8_t *& p, uint8_t field_sz)
+{
+   size_t n = field_sz - 1;
+   uint8_t *x = reinterpret_cast<uint8_t*>((reinterpret_cast<size_t>(p) + n) & ~n);
+   p = x + field_sz;
+   return x;
+}
+
 size_t
 radiotap_datalink::format(const buffer& b, size_t frame_sz, uint8_t *frame)
 {
    CHECK_NOT_NULL(frame);
-   // ToDo: add the datalink header
-   size_t n = std::min(frame_sz, b.data_size());
-   const uint8_t *buf = b.data();
-   copy(&buf[0], &buf[n], frame);
-   return n;
+
+   uint8_t *p = frame + sizeof(radiotap_header);
+   size_t p_sz = frame_sz;
+   const_buffer_info_sptr info(b.info());
+   radiotap_header *hdr = reinterpret_cast<radiotap_header*>(frame);
+   uint32_t flags = 0;
+
+   // compute radiotap header size
+   if(info->has(TIMESTAMP1)) {
+      flags |=  RADIOTAP_TSFT;
+      advance(p, 8);
+    }
+   if(info->has(RX_FLAGS)) {
+      flags |= RADIOTAP_FLAGS;
+      advance(p, 1);
+   }
+   if(info->has(RATE_Kbs)) {
+      flags |= RADIOTAP_RATE;
+      advance(p, 1);
+   }
+   if(info->has(FREQ_MHz) && info->has(CHANNEL_FLAGS)) {
+      flags |= RADIOTAP_CHANNEL;
+      advance(p, 2);
+      advance(p, 2);
+   }
+   if(info->has(SIGNAL_dBm)) {
+      flags |= RADIOTAP_DBM_ANTSIGNAL;
+      advance(p, 1);
+   }
+   if(info->has(TX_FLAGS)) {
+      flags |= RADIOTAP_TXFLAGS;
+      advance(p, 2);
+   }
+   if(info->has(RTS_RETRIES)) {
+      flags |= RADIOTAP_RTS_RETRIES;
+      advance(p, 1);
+   }
+   if(info->has(DATA_RETRIES)) {
+      flags |= RADIOTAP_DATA_RETRIES;
+      advance(p, 1);
+   }
+
+   // ensure everything will fit in output buffer
+   uint16_t hdr_sz = p - frame;
+   uint16_t reqd_sz = hdr_sz + b.data_size();
+   if(frame_sz < reqd_sz) {
+      ostringstream msg;
+      msg << "output buffer too small for radiotap header and frame body" << endl;
+      msg << reqd_sz << " < (" << hdr_sz << "+" << b.data_size() << ")" << endl;
+      raise<length_error>(__PRETTY_FUNCTION__, __FILE__, __LINE__, msg.str());
+   }
+
+   // write the header fields
+   hdr->version_ = 0;
+   cpu_to_le(hdr_sz, reinterpret_cast<uint8_t*>(&hdr->size_));
+   cpu_to_le(flags, reinterpret_cast<uint8_t*>(&hdr->bitmaps_[0]));
+   p = frame + sizeof(radiotap_header);
+   if(info->has(TIMESTAMP1)) {
+      uint64_t ts = info->timestamp1();
+      cpu_to_le(ts, advance(p, 8));
+   }
+   if(info->has(RX_FLAGS)) {
+      uint8_t f = 0;
+      if(info->has(CHANNEL_FLAGS) && (info->channel_flags() & CHANNEL_PREAMBLE_SHORT))
+         f |= RADIOTAP_FLAGS_SHORTPRE;
+      if(info->rx_flags() & RX_FLAGS_BAD_FCS)
+         f |= RADIOTAP_FLAGS_BAD_FCS;
+      *(advance(p, 1)) = f;
+   }
+   if(info->has(RATE_Kbs)) {
+      uint8_t rate_kbs = info->rate_Kbs() / 500;
+      *(advance(p, 1)) = rate_kbs;
+   }
+   if(info->has(FREQ_MHz) && info->has(CHANNEL_FLAGS)) {
+      uint16_t freq_MHz = info->freq_MHz();
+      uint16_t chan_flags = 0;
+      flags_t info_flags = info->channel_flags();
+      if(info_flags & CHANNEL_CODING_DSSS)
+         chan_flags |= RADIOTAP_CHAN_CCK;
+      if(info_flags & CHANNEL_CODING_OFDM)
+         chan_flags |= RADIOTAP_CHAN_OFDM;
+      if(info_flags & CHANNEL_CODING_FHSS)
+         chan_flags |= RADIOTAP_CHAN_GFSK;
+      if(info_flags & CHANNEL_CODING_DYNAMIC)
+         chan_flags |= RADIOTAP_CHAN_DYN;
+      if(info_flags & CHANNEL_RATE_QUARTER)
+         chan_flags |= RADIOTAP_CHAN_QUARTER_RATE;
+      if(info_flags & CHANNEL_RATE_HALF)
+         chan_flags |= RADIOTAP_CHAN_HALF_RATE;
+      cpu_to_le(freq_MHz, advance(p, 2));
+      cpu_to_le(chan_flags, advance(p, 2));
+   }
+   if(info->has(SIGNAL_dBm)) {      
+      int8_t signal_dBm = info->signal_dBm();
+      *(advance(p, 1)) = signal_dBm;
+   }
+   if(info->has(TX_FLAGS)) {
+      uint16_t tx_flags = 0;
+      if(info->tx_flags() & TX_FLAGS_FAIL)
+         tx_flags |=  RADIOTAP_TXFLAGS_FAIL;
+      cpu_to_le(tx_flags, advance(p,2));
+   }
+   if(info->has(RTS_RETRIES)) {
+      uint8_t rts_retries = info->rts_retries();
+      *(advance(p,1)) = rts_retries;
+   }
+   if(info->has(DATA_RETRIES)) {
+      uint8_t data_retries = info->data_retries();
+      *(advance(p,1)) = data_retries;
+   }
+
+   // now write the buffer content
+   p = copy(b.data(), b.data() + b.data_size(), p);
+   return p - frame;
 }
 
 const char*
@@ -121,7 +239,7 @@ radiotap_datalink::name() const
  * \param hdr_sz The size of the radiotap_header.
  * \param frame_sz The size of the frame (including radiotap_header).
  * \param frame A pointer to the frame.
- * \throws length_error When reading would ovaerflow the buffer.
+ * \throws length_error When reading would overflow the buffer.
  */
 template<typename T> void
 extract(size_t& ofs, T& field, size_t hdr_sz, size_t frame_sz, const uint8_t *frame)
@@ -219,10 +337,14 @@ radiotap_datalink::parse(size_t frame_sz, const uint8_t *frame)
             msg << hex << dump(frame_sz, frame) << endl;
             raise<runtime_error>(__PRETTY_FUNCTION__, __FILE__, __LINE__, msg.str());
          }
-         chan_flags |= (junk_u16 & RADIOTAP_CHAN_CCK)  ? CHANNEL_CODING_DSSS : 0;
-         chan_flags |= (junk_u16 & RADIOTAP_CHAN_OFDM) ? CHANNEL_CODING_OFDM : 0;
-         chan_flags |= (junk_u16 & RADIOTAP_CHAN_GFSK) ? CHANNEL_CODING_FHSS : 0;
-         chan_flags |= (junk_u16 & RADIOTAP_CHAN_DYN)  ? CHANNEL_CODING_DYNAMIC : 0;
+         if(junk_u16 & RADIOTAP_CHAN_CCK)
+            chan_flags |= CHANNEL_CODING_DSSS;
+         if(junk_u16 & RADIOTAP_CHAN_OFDM)
+            chan_flags |= CHANNEL_CODING_OFDM;
+         if(junk_u16 & RADIOTAP_CHAN_GFSK)
+            chan_flags |= CHANNEL_CODING_FHSS;
+         if(junk_u16 & RADIOTAP_CHAN_DYN)
+            chan_flags |= CHANNEL_CODING_DYNAMIC;
          if(junk_u16 & RADIOTAP_CHAN_QUARTER_RATE)
             chan_flags |= CHANNEL_RATE_QUARTER;
          else if(junk_u16 & RADIOTAP_CHAN_HALF_RATE)
@@ -262,7 +384,6 @@ radiotap_datalink::parse(size_t frame_sz, const uint8_t *frame)
          break;
       case RADIOTAP_DB_ANTSIGNAL:
          extract(ofs, junk_u8, hdr_sz, frame_sz, frame);
-         info->signal_dBm(junk_u8);
          break;
       case RADIOTAP_DB_ANTNOISE:
          extract(ofs, junk_u8, hdr_sz, frame_sz, frame);

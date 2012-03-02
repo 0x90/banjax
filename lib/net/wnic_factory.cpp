@@ -78,23 +78,18 @@ new_wnic(const string& dev_name)
 wnic_sptr
 wnic::open(string dev_name)
 {
-   wnic *dev = NULL;
-   if(check_ext(dev_name, ".pcap")) {
-      dev = new offline_wnic(dev_name);
+   wnic_sptr dev;
+   if(strip_ext(dev_name, "+r")) {
+      dev = wnic_sptr(new wnic_read_logger(open(dev_name)));
+   } else if(strip_ext(dev_name, "+w")) {
+      dev = wnic_sptr(new wnic_write_logger(open(dev_name)));
+   } else if(strip_ext(dev_name, "+rw")) {
+      dev = wnic_sptr(new wnic_read_logger(open(dev_name)));
+      dev = wnic_sptr(new wnic_write_logger(wnic_sptr(dev)));
+   } else if(check_ext(dev_name, ".pcap")) {
+      dev = wnic_sptr(new offline_wnic(dev_name));
    } else  {
-      if(strip_ext(dev_name, "+r")) {
-         dev = new_wnic(dev_name);
-         dev = new wnic_read_logger(wnic_sptr(dev));
-      } else if(strip_ext(dev_name, "+w")) {
-         dev = new_wnic(dev_name);
-         dev = new wnic_write_logger(wnic_sptr(dev));
-      } else if(strip_ext(dev_name, "+rw")) {
-         dev = new_wnic(dev_name);
-         dev = new wnic_read_logger(wnic_sptr(dev));
-         dev = new wnic_write_logger(wnic_sptr(dev));
-      } else {
-         dev = new_wnic(dev_name);
-      }
+      dev = wnic_sptr(new_wnic(dev_name));
    }
    return wnic_sptr(dev);
 }

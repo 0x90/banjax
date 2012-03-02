@@ -22,6 +22,8 @@
 
 #include <net/datalink.hpp>
 
+#include <stdint.h>
+
 namespace net {
 
    /**
@@ -78,6 +80,19 @@ namespace net {
        * \return An integer specifying the ARP type of this datalink.
        */
       virtual int type() const;
+
+   private:
+
+      /**
+       * Align the pointer p to the specified field_sz boundary and
+       * return that value. A side-effect is that p is advanced over
+       * the current entry.
+       *
+       * \param p The pointer value which, on return, is advanced to
+       * the next entry. 
+       * \return The value of p aligned to the next field_sz boundary.
+       */
+      uint8_t *advance(uint8_t *& p, uint8_t field_sz);
 
    private:
 
