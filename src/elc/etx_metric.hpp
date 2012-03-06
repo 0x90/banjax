@@ -107,6 +107,12 @@ namespace metrics {
        */
       double etx_;
 
+      /**
+       * The sequence number of the last packet received. Used only to
+       * eliminate duplicate transmissions of the same packet.
+       */
+      uint32_t seq_no_;
+
    };
 
 }

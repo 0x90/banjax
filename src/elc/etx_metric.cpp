@@ -24,14 +24,16 @@ using metrics::etx_metric;
 etx_metric::etx_metric(uint16_t probe_port, uint16_t window_sz) :
    probe_port_(probe_port),
    window_sz_(window_sz * 1000000),
-   rx_probes_()
+   rx_probes_(),
+   seq_no_(0)
 {
 }
 
 etx_metric::etx_metric(const etx_metric& other) :
    probe_port_(other.probe_port_),
    window_sz_(other.window_sz_),
-   rx_probes_(other.rx_probes_)
+   rx_probes_(other.rx_probes_),
+   seq_no_(other.seq_no_)
 {
 }
 
@@ -41,6 +43,7 @@ etx_metric::operator=(const etx_metric& other)
    if(&other != this) {
       probe_port_ = other.probe_port_;
       rx_probes_ = other.rx_probes_;
+      seq_no_ = other.seq_no_;
    }
    return *this;
 }
@@ -90,11 +93,11 @@ etx_metric::compute(uint64_t mactime, uint32_t delta_us)
 {
    double d_f = 1.0;
 
-   // drop all probes that arrived before probe window
+   // drop all probes that arrived before start of current probe window
    while(!rx_probes_.empty()) {
       buffer_sptr b(rx_probes_.front());
       buffer_info_sptr info(b->info());
-      if(window_sz_ <= (mactime - info->timestamp2())) {
+      if(window_sz_ <= (mactime - info->timestamp_wallclock())) {
          rx_probes_.pop_front();
       } else {
          break;
