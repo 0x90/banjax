@@ -27,7 +27,7 @@ abstract_metric::~abstract_metric()
 double
 abstract_metric::compute(uint64_t, uint32_t delta_us)
 {
-   compute(delta_us);
+   return compute(delta_us);
 }
 
 double
