@@ -18,7 +18,8 @@
 namespace metrics {
 
    /**
-    * fdr_metric reports the frame delivery ratio.
+    * fdr_metric reports the FDR and the component values from which
+    * it is computed.
     */
    class fdr_metric : public abstract_metric {
    public:
@@ -94,24 +95,34 @@ namespace metrics {
       double fdr_;
 
       /**
-       * The total number of packets.
+       * The total number of frames_delivered.
        */
-      uint_least32_t packets_;
+      uint_least32_t frames_delivered_;
 
       /**
-       * The stashed total number of packets.
+       * The stashed total number of frames_delivered.
        */
-      uint_least32_t packets_stash_;
+      uint_least32_t frames_delivered_stash_;
 
       /**
        * The total number of frame transmission attempts.
        */
-      uint_least32_t transmissions_;
+      uint_least32_t frame_transmissions_;
 
       /**
-       * The stasged total number of frame transmission attempts.
+       * The stashed total number of frame transmission attempts.
        */
-      uint_least32_t transmissions_stash_;
+      uint_least32_t frame_transmissions_stash_;
+
+      /**
+       * The maximum TXC.
+       */
+      uint_least32_t max_txc_;
+
+      /**
+       * The stashed maximum TXC.
+       */
+      uint_least32_t max_txc_stash_;
 
    };
 
