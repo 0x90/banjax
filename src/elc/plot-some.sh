@@ -3,17 +3,23 @@
 h=`dirname $0`
 
 if [ $# -lt 2 ]; then
-	 echo "usage: plot-some.sh file.pcap [field*]"  2>&1
-	 exit 1
+    echo "usage: plot-some.sh file.pcap [field*]"  2>&1
+    exit 1
 fi
 
 p="$1"
 shift
 fields=$*
 
-d="${p/.pcap/.data}"
-t="${p/.pcap/.extract}"
-o="${p/.pcap/.eps}"
+o="${p/test/results}"
+odir=`dirname "$o"`
+if [ ! -d "$odir" ]; then
+    mkdir -p "$odir"
+fi
+
+d="${o/.pcap/.data}"
+t="${o/.pcap/.extract}"
+o="${o/.pcap/.eps}"
 
 declare -A axis
 axis["Octets"]="axes x1y2"
@@ -25,7 +31,7 @@ axis["FDR"]="axes x1y2"
 # write the extract file
 [ "$BEACON" == "" ] && BEACON=0
 if [ "$p" -nt "$d" ]; then
-	 $h/elc -b ${BEACON} -m ${MPDU} -l ${RATE} -i "$p" | sed 's/,//g' | sed 's/nan/0/g' | awk -f "${h}/plot.awk" > "$d"
+	 $h/elc ${CW} -b ${BEACON} -m ${MPDU} -l ${RATE} -i "$p" | sed 's/,//g' | sed 's/nan/0/g' | awk -f "${h}/plot.awk" > "$d"
 fi
 $h/extract.scm Time $fields < "$d" > "$t"
 

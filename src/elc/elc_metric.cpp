@@ -158,7 +158,6 @@ elc_metric::frame_succ_time(buffer_sptr b) const
    const uint32_t T_ACK = enc->txtime(ACK_SZ, ACK_RATE, PREAMBLE);
 
    /* TODO: make this QoS-aware */
-   
    return enc->DIFS() + T_RTS_CTS + T_DATA + enc->SIFS() + T_ACK;
 }
 

@@ -95,6 +95,11 @@ namespace metrics {
       double fdr_;
 
       /**
+       * The packet count.
+       */
+      uint_least32_t n_;
+
+      /**
        * The total number of frames_delivered.
        */
       uint_least32_t frames_delivered_;
