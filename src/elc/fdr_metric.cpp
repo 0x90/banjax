@@ -24,6 +24,7 @@ using metrics::fdr_metric;
 fdr_metric::fdr_metric() :
    abstract_metric(),
    fdr_(0.0),
+   n_(0),
    frames_delivered_(0),
    frames_delivered_stash_(0),
    frame_transmissions_(0),
@@ -36,6 +37,7 @@ fdr_metric::fdr_metric() :
 fdr_metric::fdr_metric(const fdr_metric& other) :
    abstract_metric(other),
    fdr_(other.fdr_),
+   n_(other.n_),
    frames_delivered_(other.frames_delivered_),
    frames_delivered_stash_(other.frames_delivered_stash_),
    frame_transmissions_(other.frame_transmissions_),
@@ -51,6 +53,7 @@ fdr_metric::operator=(const fdr_metric& other)
    if(this != &other) {
       abstract_metric::operator=(other);
       fdr_ = other.fdr_;
+      n_ = other.n_;
       frames_delivered_ = other.frames_delivered_;
       frames_delivered_stash_ = other.frames_delivered_stash_;
       frame_transmissions_ = other.frame_transmissions_;
@@ -80,6 +83,7 @@ fdr_metric::add(buffer_sptr b)
       frame_transmissions_ += txc;
       max_txc_ = max(max_txc_, txc);
    }
+   ++n_;
 }
 
 fdr_metric*
@@ -101,6 +105,7 @@ fdr_metric::compute(uint32_t junk)
 void
 fdr_metric::reset()
 {
+   n_ = 0;
    frames_delivered_ = 0;
    frame_transmissions_ = 0;
    max_txc_ = 0;
@@ -109,8 +114,9 @@ fdr_metric::reset()
 void
 fdr_metric::write(ostream& os) const
 {
-   os << "max_TXC: " << max_txc_stash_ << ", ";
-   os << "frames_attempted: " << frame_transmissions_stash_ << ", ";
-   os << "frames_delivered: " << frames_delivered_stash_ << ", ";
+   os << "Max-TXC: " << max_txc_stash_ << ", ";
+   os << "Packets: " << n_ << ", ";
+   os << "Frames-Attempted: " << frame_transmissions_stash_ << ", ";
+   os << "Frames-Delivered: " << frames_delivered_stash_ << ", ";
    os << "FDR: " << fdr_;
 }

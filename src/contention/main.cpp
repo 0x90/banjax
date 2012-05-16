@@ -36,7 +36,7 @@ main(int ac, char **av)
          ("help,?", "produce this help message")
          ("encoding,e", value<string>(&enc_str)->default_value("OFDM"), "channel encoding")
          ("input,i", value<string>(&what)->default_value("mon0"), "input file/device name")
-         ("ta,a", value<string>(&ta_str)->default_value("00:0b:6b:0a:82:34"), "transmitter address")
+         ("ta,a", value<string>(&ta_str)->default_value("48:5d:60:7c:ce:68"), "transmitter address")
          ;
 
       variables_map vars;       

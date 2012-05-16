@@ -7,6 +7,13 @@
 
 using namespace std;
 
+struct ieee80211_radiotap_header {
+   u_int8_t it_version;         /* set to 0 */
+   u_int8_t it_pad;
+   u_int16_t it_len;            /* entire length */
+   u_int32_t it_present;        /* fields present */
+} __attribute__((__packed__));
+
 int
 main(int ac, char **av)
 {
@@ -40,8 +47,15 @@ main(int ac, char **av)
       bool writing = false;
       const uint8_t *octets;
       struct pcap_pkthdr hdr;
+      const uint16_t ANNOUNCE_SZ = 82;
       while(octets = pcap_next(in, &hdr)) {
-         if((110 == hdr.caplen || 112 == hdr.caplen) && 0xff == octets[58] && 0xff == octets[59]) {
+         struct ieee80211_radiotap_header *radiotap = (struct ieee80211_radiotap_header*) octets;
+         uint16_t frame_sz = hdr.len - radiotap->it_len;
+         if(0 != radiotap->it_version) {
+            fputs("error: can't find radiotap header\n", stderr);
+            break;
+         }
+         if((ANNOUNCE_SZ == frame_sz || ANNOUNCE_SZ == frame_sz - 4) && 0xff == octets[58] && 0xff == octets[59]) {
             writing = !writing;
          } else if(writing) {
             pcap_dump(reinterpret_cast<u_char*>(out), &hdr, octets);

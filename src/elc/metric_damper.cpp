@@ -69,8 +69,9 @@ metric_damper::compute(uint64_t mactime, uint32_t delta_us)
 {
    double m = metric_->compute(mactime, delta_us);
    queue_.push_back(m);
-   while(queue_sz_ < queue_.size())
+   while(queue_sz_ < queue_.size()) {
       queue_.pop_front();
+   }
    double x = 0.0;
    for(deque<double>::iterator i(queue_.begin()); i != queue_.end(); ++i) {
       x += *i;

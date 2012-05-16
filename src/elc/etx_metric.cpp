@@ -70,7 +70,10 @@ etx_metric::add(buffer_sptr b)
       if(!udp)
          return;
 
-      // add UDP probes to queue
+      // ToDo: find my forward ratio from this packet's content!
+      buffer_sptr udp_packet(udp->get_payload());
+
+      // add UDP probe to queue
       buffer_info_sptr info(b->info());
       if(udp->src_port() == probe_port_&& !info->has(TX_FLAGS)) {
          if(!rx_probes_.empty()) {

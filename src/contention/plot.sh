@@ -1,13 +1,24 @@
 #!/bin/bash
 
+[ "$TA" != "" ] && TA="--ta ${TA}"
+
 for p in $*; do
 
-	c="${p/.pcap/.cw}"
-	d="${p/.pcap/.data}"
-	e="${p/.pcap/.eps}"
-	./analyse -i "$p" 2> "$c" | awk '{ print $3; }' | sort -n | uniq -c > "$d"
+	 o="${p/test/results}"
+	 if [ -d "$p" ]; then
+		  odir="$o"
+	 else
+		  odir=`dirname "$o"`
+	 fi
+	 [ ! -d "$odir" ] && mkdir -p "$odir"
 
-	gnuplot <<EOF
+	 c="${o/.pcap/.cw}"
+	 d="${o/.pcap/.data}"
+	 e="${o/.pcap/.eps}"
+
+	 ./analyse ${TA} -i "$p" 2> "$c" | awk '{ print $3; }' | sort -n | uniq -c > "$d"
+
+	 gnuplot <<EOF
 #!/usr/bin/gnuplot
 
 set term postscript color enhanced eps
@@ -25,3 +36,4 @@ plot "$d" using 2:1 with boxes title "frequency"
 EOF
 
 done
+exit 0

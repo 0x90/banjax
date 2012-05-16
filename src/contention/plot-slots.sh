@@ -1,12 +1,21 @@
 #!/bin/bash
 
-p="$1"
-c="${p/.pcap/.cw}"
-d="${p/.pcap/.data}"
-e="${p/.pcap/.slots.eps}"
-./analyse -i "$p" 2> "$c" | awk '{ print int(($3 - 34)/9); }' | sort -n | uniq -c | awk '{ print $2, $1; }' > "$d"
+for p in $*; do
 
-gnuplot <<EOF
+	 o="${p/test/results}"
+	 if [ -d "$p" ]; then
+		  odir="$o"
+	 else
+		  odir=`dirname "$o"`
+	 fi
+	 [ ! -d "$odir" ] && mkdir -p "$odir"
+
+	 c="${o/.pcap/.cw}"
+	 d="${o/.pcap/.data}"
+	 e="${o/.pcap/.slots.eps}"
+	 ./analyse -i "$p" 2> "$c" | awk '{ print int(($3 - 34)/9); }' | sort -n | uniq -c > "$d"
+
+	 gnuplot <<EOF
 #!/usr/bin/gnuplot
 
 set term postscript color enhanced eps
@@ -21,6 +30,9 @@ set ylabel "frequency"
 
 set xrange [:256]
 
-plot "$d" using 1:2 with impulses title "frequency"
+plot "$d" using 2:1 with impulses title "frequency"
 
 EOF
+
+done
+exit 0
