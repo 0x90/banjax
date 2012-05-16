@@ -28,7 +28,6 @@ elc_metric::elc_metric(uint16_t cw_time_us, uint16_t rts_cts_threshold, uint16_t
    t_pkt_succ_(0.0),
    t_pkt_fail_(0.0),
    packet_octets_(0),
-   packet_count_(0),
    elc_(0)
 {
 }
@@ -42,7 +41,6 @@ elc_metric::elc_metric(const elc_metric& other) :
    t_pkt_succ_(other.t_pkt_succ_),
    t_pkt_fail_(other.t_pkt_fail_),
    packet_octets_(other.packet_octets_),
-   packet_count_(other.packet_count_),
    elc_(other.elc_)
 {
 }
@@ -59,7 +57,6 @@ elc_metric::operator=(const elc_metric& other)
       t_pkt_succ_ = other.t_pkt_succ_;
       t_pkt_fail_ = other.t_pkt_fail_;
       packet_octets_ = other.packet_octets_;
-      packet_count_ = other.packet_count_;
       elc_ = other.elc_;
    }
    return *this;
@@ -84,7 +81,6 @@ elc_metric::add(buffer_sptr b)
          t_pkt_succ_ += packet_succ_time(b);
          const uint32_t CRC_SZ = 4;
          packet_octets_ += b->data_size() + CRC_SZ;
-         ++packet_count_;
       }
    }
 }
@@ -111,7 +107,6 @@ elc_metric::reset()
    t_pkt_succ_ = 0;
    t_pkt_fail_ = 0;
    packet_octets_ = 0;
-   packet_count_ = 0;
 }
 
 void

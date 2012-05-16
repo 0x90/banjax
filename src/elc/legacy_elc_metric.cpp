@@ -181,3 +181,5 @@ legacy_elc_metric::successful_tx_time(uint32_t rate_kbs, uint16_t frame_sz) cons
     */
    return /* AIFS[BE] */ 9 + enc_->DIFS() /* AIFS[BE] */ + T_CW + T_RTS_CTS + T_DATA + enc_->SIFS() + T_ACK;
 }
+
+// ToDo: interpolate the TXC!? Provide both results?

@@ -156,14 +156,9 @@ namespace metrics {
       double t_pkt_fail_;
 
       /**
-       * The cumulative size for packets sent on this elc_metric.
+       * The total number of octets successfully delivered.
        */
       uint32_t packet_octets_;
-
-      /**
-       * The number of packets sent on this elc_metric.
-       */
-      uint32_t packet_count_;
 
       /**
        * Stashed value of this metric.
