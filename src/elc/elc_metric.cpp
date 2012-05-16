@@ -28,7 +28,10 @@ elc_metric::elc_metric(uint16_t cw_time_us, uint16_t rts_cts_threshold, uint16_t
    t_pkt_succ_(0.0),
    t_pkt_fail_(0.0),
    packet_octets_(0),
-   elc_(0)
+   elc_(0),
+   stash_packet_octets_(0),
+   stash_t_pkt_succ_(0.0),
+   stash_t_pkt_fail_(0.0)
 {
 }
 
@@ -41,7 +44,10 @@ elc_metric::elc_metric(const elc_metric& other) :
    t_pkt_succ_(other.t_pkt_succ_),
    t_pkt_fail_(other.t_pkt_fail_),
    packet_octets_(other.packet_octets_),
-   elc_(other.elc_)
+   elc_(other.elc_),
+   stash_packet_octets_(other.stash_packet_octets_),
+   stash_t_pkt_succ_(other.stash_t_pkt_succ_),
+   stash_t_pkt_fail_(other.stash_t_pkt_fail_)
 {
 }
 
@@ -58,6 +64,9 @@ elc_metric::operator=(const elc_metric& other)
       t_pkt_fail_ = other.t_pkt_fail_;
       packet_octets_ = other.packet_octets_;
       elc_ = other.elc_;
+      stash_packet_octets_ = other.stash_packet_octets_;
+      stash_t_pkt_succ_ = other.stash_t_pkt_succ_;
+      stash_t_pkt_fail_ = other.stash_t_pkt_fail_;
    }
    return *this;
 }
@@ -97,6 +106,9 @@ elc_metric::compute(uint32_t delta_us)
    const double N_BEACONS = (delta_us / 102400.0);
    const double T_DEAD =  N_BEACONS * beacon_time_;
    elc_ = packet_octets_ / (t_pkt_succ_ + t_pkt_fail_ + T_DEAD);
+   stash_packet_octets_ += packet_octets_;
+   stash_t_pkt_succ_ += t_pkt_succ_;
+   stash_t_pkt_fail_ += t_pkt_fail_;
    return elc_;
 }
 
@@ -112,6 +124,9 @@ elc_metric::reset()
 void
 elc_metric::write(ostream& os) const
 {
+   os << "packet-octets: " << stash_packet_octets_ << " ";
+   os << "t-pkt-succ: " << stash_t_pkt_succ_ << " ";
+   os << "t-pkt-fail: " << stash_t_pkt_fail_ << " ";
    os << "ELC: " << elc_;
 }
 

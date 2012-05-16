@@ -59,6 +59,7 @@ main(int ac, char **av)
       uint16_t rts_cts_threshold;
       uint32_t rate_Mbs;
       size_t window_sz;
+      uint64_t tick_time;
 
       options_description options("program options");
       options.add_options()
@@ -73,6 +74,7 @@ main(int ac, char **av)
          ("port,p", value<uint16_t>(&port_no)->default_value(50000), "port number used for ETX probes")
          ("rts-threshold,r", value<uint16_t>(&rts_cts_threshold)->default_value(UINT16_MAX), "RTS threshold level")
          ("window,w", value<size_t>(&window_sz)->default_value(10), "ETX probe windows")
+         ("tick,t", value<uint64_t>(&tick_time)->default_value(UINT64_MAX), "ticks per time bucket")
          ;
 
       variables_map vars;       
@@ -94,12 +96,10 @@ main(int ac, char **av)
 //      proto->push_back(metric_sptr(new elc_mrr_metric(cw, rts_cts_threshold)));
       proto->push_back(metric_sptr(new legacy_elc_metric(enc, rate_Mbs * 1000, mpdu_sz, rts_cts_threshold)));
       proto->push_back(metric_sptr(new airtime_metric(enc, rts_cts_threshold)));
-//      proto->push_back(metric_sptr(new airtime_metric_linux(enc)));
+      proto->push_back(metric_sptr(new airtime_metric_linux(enc)));
 //      proto->push_back(metric_sptr(new etx_metric(port_no, window_sz)));
       proto->push_back(metric_sptr(new fdr_metric));
       proto->push_back(metric_sptr(new txc_metric));
-//      proto->push_back(metric_sptr(new residual(metric_sptr(new goodput_metric), "Residual")));
-//      proto->push_back(metric_sptr(new residual(metric_sptr(new legacy_elc_metric(enc, rate_Mbs * 1000, mpdu_sz, rts_cts_threshold)), "RELC")));
       metric_sptr m(new iperf_metric_wrapper(metric_sptr(new metric_demux(proto))));
 
       wnic_sptr w(wnic::open(what));
@@ -109,23 +109,26 @@ main(int ac, char **av)
       } else if("DSSS" == enc_str) {
          w = wnic_sptr(new wnic_encoding_fix(w, CHANNEL_CODING_DSSS | CHANNEL_PREAMBLE_LONG));
       }
+
       buffer_sptr b(w->read());
       buffer_info_sptr info(b->info());
-      const uint64_t uS_PER_TICK = UINT64_C(1000000);
-      uint64_t tick = info->timestamp_wallclock() + uS_PER_TICK;
+      uint64_t tick = info->timestamp_wallclock() + tick_time;
       for(b; b = w->read();){
          // is it time to print results yet?
          info = b->info();
          uint64_t timestamp = info->timestamp_wallclock();
-         for(; tick <= timestamp; tick += uS_PER_TICK) {
-            m->compute(tick, uS_PER_TICK);
-            cout << "Time: " << tick / uS_PER_TICK << endl;
+         for(; tick <= timestamp; tick += tick_time) {
+            m->compute(tick, tick_time);
+            cout << "Time: " << tick / tick_time << endl;
             cout << *m << endl;
             m->reset();
          }
          // update metric with frame
          m->add(b);
       }
+      m->compute(tick, tick_time);
+      cout << "Time: " << tick / tick_time << endl;
+      cout << *m << endl;
    } catch(const error& x) {
       cerr << x.what() << endl;
    } catch(const std::exception& x) {

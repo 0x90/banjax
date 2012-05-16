@@ -165,6 +165,21 @@ namespace metrics {
        */
       double elc_;
 
+      /**
+       * The stashed number of successful octets delivered.
+       */
+      uint32_t stash_packet_octets_;
+
+      /**
+       * The stashed cumulative airtime for successful packet deliveries.
+       */
+      double stash_t_pkt_succ_;
+
+      /**
+       * The stashed cumulative airtime for failed packet deliveries.
+       */
+      double stash_t_pkt_fail_;
+
    };
 
 }
