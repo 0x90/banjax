@@ -124,9 +124,9 @@ elc_metric::reset()
 void
 elc_metric::write(ostream& os) const
 {
-   os << "packet-octets: " << stash_packet_octets_ << " ";
-   os << "t-pkt-succ: " << stash_t_pkt_succ_ << " ";
-   os << "t-pkt-fail: " << stash_t_pkt_fail_ << " ";
+   os << "packet-octets: " << stash_packet_octets_ << ", ";
+   os << "t-pkt-succ: " << stash_t_pkt_succ_ << ", ";
+   os << "t-pkt-fail: " << stash_t_pkt_fail_ << ", ";
    os << "ELC: " << elc_;
 }
 

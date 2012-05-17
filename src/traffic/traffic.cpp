@@ -40,7 +40,7 @@ frame_type_as_string(frame_control fc)
          s = "MGMT_BEACON";
          break;
       default:
-         s = "MGMT";
+         s = "MGMT_OTHER";
          break;
       }
       break;
@@ -57,7 +57,7 @@ frame_type_as_string(frame_control fc)
          s = "CTRL_RTS";
          break;
       default:
-         s = "CTRL";
+         s = "CTRL_OTHER";
          break;
       }
       break;
@@ -76,12 +76,14 @@ main(int ac, char **av)
    try {
 
       string what;
+      uint32_t cw;
       bool use_sexprs = false, verbose = false;
       options_description options("program options");
       options.add_options()
          ("help,?", "produce this help message")
+         ("cw,c", value<uint32_t>(&cw)->default_value(0), "fixed CW in microseconds")
          ("input,i", value<string>(&what)->default_value("mon0"), "input file/device name")
-         ("scheme,s", value<bool>(&use_sexprs)->zero_tokens(), "write output as scheme definitions")
+         ("sexpr,s", value<bool>(&use_sexprs)->zero_tokens(), "write output as s-expressions")
          ("verbose,v", value<bool>(&verbose)->zero_tokens(), "write verbose output")
          ;
 
@@ -99,42 +101,50 @@ main(int ac, char **av)
       w = wnic_sptr(new wnic_timestamp_swizzle(w));
       w = wnic_sptr(new wnic_timestamp_fix(w));
 
-      uint_least32_t n_ctrl = 0, t_ctrl = 0, t_ctrl_ifs = 0, t_ctrl_delta = 0;
+
+      uint_least32_t n_ctrl = 0, t_ctrl = 0, t_ctrl_ifs = 0;
       uint_least32_t n_data = 0, t_data = 0, t_data_ifs = 0, t_data_cw = 0;
       uint_least32_t n_mgmt = 0, t_mgmt = 0, t_mgmt_ifs = 0, t_mgmt_cw = 0;
+      int_least32_t t_ctrl_delta = 0, t_data_delta = 0, t_mgmt_delta = 0;
       uint_least32_t t_bad = 0, n_bad = 0;
       uint_least32_t t_iperf = 0, n_iperf = 0, sz_iperf = 0;
       uint_least32_t sz_data = 0;
 
       const uint32_t CRC_SZ = 4;
-      map<eui_48, uint16_t> seq_nos;
-      map<eui_48, uint16_t>::iterator seq_no;
       buffer_sptr b(w->read());
       frame_control prev_fc;
       if(b) {
          // Note: The measurement begins from the end of the first frame.
          uint64_t t1 = b->info()->timestamp2(), t2 = t1;
-         for(uint32_t n = 2; b = w->read(); ++n){
+         for(uint32_t n = 2; b = w->read(); ++n) {
             frame f(b);
             data_frame_sptr df;
             frame_control fc(f.fc());
             buffer_info_sptr info(b->info()); 
             uint16_t txtime = info->timestamp2() - info->timestamp1();
+            const int16_t IFS = static_cast<int16_t>(info->timestamp1() - t2);
+            const int16_t DIFS =  static_cast<int16_t>(info->channel_encoding()->DIFS());
+            const int16_t SIFS =  static_cast<int16_t>(info->channel_encoding()->SIFS());
             switch(fc.type()) {
             case CTRL_FRAME:
                ++n_ctrl;
                t_ctrl += txtime;
-               t_ctrl_ifs += info->channel_encoding()->SIFS();
-               t_ctrl_delta += info->timestamp1() - t2 - info->channel_encoding()->SIFS();
+               t_ctrl_ifs += SIFS;
+               t_ctrl_delta += IFS - SIFS;
                break;
             case DATA_FRAME:
                ++n_data;
                t_data += txtime;
                sz_data += b->data_size() + CRC_SZ;
-               t_data_ifs += info->channel_encoding()->DIFS();
-               t_data_cw += info->timestamp1() - t2 - info->channel_encoding()->DIFS();
+               t_data_ifs += DIFS;
+               if(cw) {
+                  t_data_cw += cw;
+                  t_data_delta += IFS - DIFS - static_cast<int16_t>(cw);
+               } else {
+                  t_data_cw += IFS - DIFS;
+               }
                if(verbose) {
-                  cout << n << " " << info->timestamp1() << " " << info->timestamp1() - t2 << " ";
+                  cout << n << " " << info->timestamp1() << " " << IFS << " ";
                   cout << frame_type_as_string(prev_fc) << " " << frame_type_as_string(fc) << endl;
                }
                if(df = f.as_data_frame()) {
@@ -153,14 +163,19 @@ main(int ac, char **av)
                   // increment iperf counts
                   ++n_iperf;
                   t_iperf += txtime;
-                  sz_iperf += b->data_size() + CRC_SZ;
+                  sz_iperf += b->data_size() + CRC_SZ /* ToDo: adjust for UDP hdr*/;
                }
                break;
             case MGMT_FRAME:
                ++n_mgmt;
                t_mgmt += txtime;
-               t_mgmt_ifs += info->channel_encoding()->DIFS();
-               t_mgmt_cw += info->timestamp1() - t2 - info->channel_encoding()->DIFS();
+               t_mgmt_ifs += DIFS;
+               if(cw) {
+                  t_mgmt_cw += cw;
+                  t_mgmt_delta += IFS - DIFS - static_cast<int16_t>(cw);
+               } else {
+                  t_mgmt_cw += IFS - DIFS;
+               }
                break;
             default:
                ++n_bad;
