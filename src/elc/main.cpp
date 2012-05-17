@@ -59,11 +59,11 @@ main(int ac, char **av)
       uint16_t rts_cts_threshold;
       uint32_t rate_Mbs;
       size_t window_sz;
-      uint64_t tick_time;
+      bool show_ticks;
 
       options_description options("program options");
       options.add_options()
-         ("beacon,b", value(&beacon_time)->default_value(0), "time (in microseconds) lost sending own beacon")
+         ("beacon,b", value(&beacon_time)->default_value(0), "time (in microseconds) lost sending own beacons")
          ("cw,c", value(&cw)->default_value(0), "size of contention window in microseconds (0 = compute average)")
          ("damping,d", value(&damp)->default_value(5), "size of damping window in seconds")
          ("encoding,e", value<string>(&enc_str)->default_value("OFDM"), "channel encoding")
@@ -74,7 +74,7 @@ main(int ac, char **av)
          ("port,p", value<uint16_t>(&port_no)->default_value(50000), "port number used for ETX probes")
          ("rts-threshold,r", value<uint16_t>(&rts_cts_threshold)->default_value(UINT16_MAX), "RTS threshold level")
          ("window,w", value<size_t>(&window_sz)->default_value(10), "ETX probe windows")
-         ("tick,t", value<uint64_t>(&tick_time)->default_value(UINT64_MAX), "ticks per time bucket")
+         ("ticks,t", value<bool>(&show_ticks)->default_value(false)->zero_tokens(), "show results for each second")
          ;
 
       variables_map vars;       
@@ -92,11 +92,11 @@ main(int ac, char **av)
       proto->push_back(metric_sptr(new elc_metric(cw, rts_cts_threshold, beacon_time)));
 //      proto->push_back(metric_sptr(new metric_decimator("ELC-1PC", metric_sptr(new elc_metric(cw, rts_cts_threshold)), 100)));
 //      proto->push_back(metric_sptr(new metric_decimator("ELC-10PC", metric_sptr(new elc_metric(cw, rts_cts_threshold)), 10)));
-      proto->push_back(metric_sptr(new metric_damper("Damped-ELC", metric_sptr(new elc_metric(cw, rts_cts_threshold, beacon_time)), damp)));
+//      proto->push_back(metric_sptr(new metric_damper("Damped-ELC", metric_sptr(new elc_metric(cw, rts_cts_threshold, beacon_time)), damp)));
 //      proto->push_back(metric_sptr(new elc_mrr_metric(cw, rts_cts_threshold)));
       proto->push_back(metric_sptr(new legacy_elc_metric(enc, rate_Mbs * 1000, mpdu_sz, rts_cts_threshold)));
-      proto->push_back(metric_sptr(new airtime_metric(enc, rts_cts_threshold)));
-      proto->push_back(metric_sptr(new airtime_metric_linux(enc)));
+//      proto->push_back(metric_sptr(new airtime_metric(enc, rts_cts_threshold)));
+//      proto->push_back(metric_sptr(new airtime_metric_linux(enc)));
 //      proto->push_back(metric_sptr(new etx_metric(port_no, window_sz)));
       proto->push_back(metric_sptr(new fdr_metric));
       proto->push_back(metric_sptr(new txc_metric));
@@ -110,9 +110,10 @@ main(int ac, char **av)
          w = wnic_sptr(new wnic_encoding_fix(w, CHANNEL_CODING_DSSS | CHANNEL_PREAMBLE_LONG));
       }
 
-      buffer_sptr b(w->read());
+      buffer_sptr first(w->read()), b(first), last;
       buffer_info_sptr info(b->info());
-      uint64_t tick = info->timestamp_wallclock() + tick_time;
+      uint64_t tick_time = UINT64_C(1000000);
+      uint64_t tick = show_ticks ? info->timestamp_wallclock() + tick_time : UINT64_MAX;
       for(b; b = w->read();){
          // is it time to print results yet?
          info = b->info();
@@ -125,10 +126,22 @@ main(int ac, char **av)
          }
          // update metric with frame
          m->add(b);
+         last = b;
       }
-      m->compute(tick, tick_time);
-      cout << "Time: " << tick / tick_time << endl;
-      cout << *m << endl;
+
+      if(show_ticks) {
+         m->compute(tick, tick_time);
+         cout << "Time: " << static_cast<double>(tick) / tick_time << endl;
+         cout << *m << endl;
+      } else if(first && last) {
+
+         uint32_t elapsed = last->info()->timestamp_wallclock() - first->info()->timestamp_wallclock();
+
+         m->compute(tick, elapsed);
+         cout << "Time: " << static_cast<double>(elapsed) / tick_time << endl;
+         cout << *m << endl;
+      }
+
    } catch(const error& x) {
       cerr << x.what() << endl;
    } catch(const std::exception& x) {
