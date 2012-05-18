@@ -106,9 +106,9 @@ elc_metric::compute(uint32_t delta_us)
    const double N_BEACONS = (delta_us / 102400.0);
    const double T_DEAD =  N_BEACONS * beacon_time_;
    elc_ = packet_octets_ / (t_pkt_succ_ + t_pkt_fail_ + T_DEAD);
-   stash_packet_octets_ += packet_octets_;
-   stash_t_pkt_succ_ += t_pkt_succ_;
-   stash_t_pkt_fail_ += t_pkt_fail_;
+   stash_packet_octets_ = packet_octets_;
+   stash_t_pkt_succ_ = t_pkt_succ_;
+   stash_t_pkt_fail_ = t_pkt_fail_;
    return elc_;
 }
 
