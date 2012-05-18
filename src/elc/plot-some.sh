@@ -31,7 +31,7 @@ axis["FDR"]="axes x1y2"
 # write the extract file
 [ "$BEACON" == "" ] && BEACON=0
 if [ "$p" -nt "$d" ]; then
-	 $h/elc ${CW} -b ${BEACON} -m ${MPDU} -l ${RATE} -i "$p" | sed 's/,//g' | sed 's/nan/0/g' | awk -f "${h}/plot.awk" > "$d"
+	 $h/elc -t ${CW} -b ${BEACON} -m ${MPDU} -l ${RATE} -i "$p" | sed 's/,//g' | sed 's/nan/0/g' | awk -f "${h}/plot.awk" > "$d"
 fi
 $h/extract.scm Time $fields < "$d" > "$t"
 

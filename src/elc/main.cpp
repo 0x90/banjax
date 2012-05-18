@@ -58,6 +58,7 @@ main(int ac, char **av)
       uint16_t port_no;
       uint16_t rts_cts_threshold;
       uint32_t rate_Mbs;
+      uint64_t runtime;
       size_t window_sz;
       bool show_ticks;
 
@@ -75,6 +76,7 @@ main(int ac, char **av)
          ("rts-threshold,r", value<uint16_t>(&rts_cts_threshold)->default_value(UINT16_MAX), "RTS threshold level")
          ("window,w", value<size_t>(&window_sz)->default_value(10), "ETX probe windows")
          ("ticks,t", value<bool>(&show_ticks)->default_value(false)->zero_tokens(), "show results for each second")
+         ("runtime,u", value<uint64_t>(&runtime)->default_value(UINT64_MAX), "produce results after n seconds")
          ;
 
       variables_map vars;       
@@ -113,8 +115,9 @@ main(int ac, char **av)
       buffer_sptr first(w->read()), b(first), last;
       buffer_info_sptr info(b->info());
       uint64_t tick_time = UINT64_C(1000000);
+      uint64_t end_time = info->timestamp_wallclock() + (runtime * tick_time);
       uint64_t tick = show_ticks ? info->timestamp_wallclock() + tick_time : UINT64_MAX;
-      for(b; b = w->read();){
+      for(b; (b = w->read()) && (info->timestamp_wallclock() <= end_time);){
          // is it time to print results yet?
          info = b->info();
          uint64_t timestamp = info->timestamp_wallclock();
@@ -124,7 +127,7 @@ main(int ac, char **av)
             cout << *m << endl;
             m->reset();
          }
-         // update metric with frame
+         // update metric
          m->add(b);
          last = b;
       }
@@ -134,9 +137,7 @@ main(int ac, char **av)
          cout << "Time: " << static_cast<double>(tick) / tick_time << endl;
          cout << *m << endl;
       } else if(first && last) {
-
          uint32_t elapsed = last->info()->timestamp_wallclock() - first->info()->timestamp_wallclock();
-
          m->compute(tick, elapsed);
          cout << "Time: " << static_cast<double>(elapsed) / tick_time << endl;
          cout << *m << endl;
