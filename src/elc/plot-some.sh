@@ -2,14 +2,14 @@
 
 h=`dirname $0`
 
-if [ $# -lt 2 ]; then
-    echo "usage: plot-some.sh file.pcap [field*]"  2>&1
+if [ $# -lt 3 ]; then
+    echo "usage: plot-some.sh file.pcap field [field*]"  2>&1
     exit 1
 fi
 
 p="$1"
-shift
-fields=$*
+shift 1
+fields="$*"
 
 o="${p/test/results}"
 odir=`dirname "$o"`
@@ -31,7 +31,7 @@ axis["FDR"]="axes x1y2"
 # write the extract file
 [ "$BEACON" == "" ] && BEACON=0
 if [ "$p" -nt "$d" ]; then
-	 $h/elc ${CW} -b ${BEACON} -m ${MPDU} -l ${RATE} -i "$p" | sed 's/,//g' | sed 's/nan/0/g' | awk -f "${h}/plot.awk" > "$d"
+	 $h/elc ${CW} -t -b ${BEACON} -m ${MPDU} -l ${RATE} -i "$p" | sed 's/,//g' | sed 's/nan/0/g' | awk -f "${h}/plot.awk" > "$d"
 fi
 $h/extract.scm Time $fields < "$d" > "$t"
 
