@@ -77,6 +77,7 @@ main(int ac, char **av)
 
       string what;
       uint16_t cw;
+      uint64_t runtime;
       bool use_sexprs = false, verbose = false;
       options_description options("program options");
       options.add_options()
@@ -84,6 +85,7 @@ main(int ac, char **av)
          ("cw,c", value<uint16_t>(&cw)->default_value(0), "fixed CW in microseconds")
          ("input,i", value<string>(&what)->default_value("mon0"), "input file/device name")
          ("sexpr,s", value<bool>(&use_sexprs)->zero_tokens(), "write output as s-expressions")
+         ("runtime,u", value<uint64_t>(&runtime)->default_value(UINT64_MAX), "produce results after n seconds")
          ("verbose,v", value<bool>(&verbose)->zero_tokens(), "write verbose output")
          ;
 
@@ -116,24 +118,25 @@ main(int ac, char **av)
       if(b) {
          uint64_t t1 = b->info()->timestamp1();
          uint64_t t2 = b->info()->timestamp2();
+         uint64_t end_time = runtime ? t1 + (runtime * UINT64_C(1000000)) : UINT64_MAX;
 
          t_total = t2 - t1;
          t_tx = t2 - t1;
          t_data = t2 - t1;
 
-         for(uint32_t n = 2; b = w->read(); ++n) {
+         for(uint32_t n = 2; (b = w->read()) && (b->info()->timestamp1() < end_time); ++n) {
             frame f(b);
             data_frame_sptr df;
             frame_control fc(f.fc());
             buffer_info_sptr info(b->info()); 
             uint16_t txtime = info->timestamp2() - info->timestamp1();
-            const int16_t IFS = static_cast<int16_t>(info->timestamp1() - t2);
+            const int32_t IFS = static_cast<int32_t>(info->timestamp1() - t2);
             const int16_t DIFS =  static_cast<int16_t>(info->channel_encoding()->DIFS());
             const int16_t SIFS =  static_cast<int16_t>(info->channel_encoding()->SIFS());
 
             t_total += info->timestamp2() - t2;
             t_tx += txtime;
-            t_ifs += IFS;
+            t_ifs += IFS;          
 
             switch(fc.type()) {
             case CTRL_FRAME:
@@ -185,6 +188,10 @@ main(int ac, char **av)
                   t_mgmt_delta += IFS - DIFS - static_cast<int16_t>(cw);
                } else {
                   t_mgmt_cw += IFS - DIFS;
+               }
+               if(verbose) {
+                  cout << n << " " << info->timestamp1() << " " << IFS << " ";
+                  cout << frame_type_as_string(prev_fc) << " " << frame_type_as_string(fc) << endl;
                }
                break;
             default:
