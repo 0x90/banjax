@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash
 
 
 h=`dirname $0`
