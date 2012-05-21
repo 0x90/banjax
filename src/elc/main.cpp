@@ -70,13 +70,13 @@ main(int ac, char **av)
          ("encoding,e", value<string>(&enc_str)->default_value("OFDM"), "channel encoding")
          ("help,?", value(&help)->default_value(false)->zero_tokens(), "produce this help message")
          ("input,i", value<string>(&what)->default_value("mon0"), "input file/device name")
-         ("link-rate,l", value<uint32_t>(&rate_Mbs)->default_value(54), "Maximum link rate in Mb/s")
+         ("linkrate,l", value<uint32_t>(&rate_Mbs)->default_value(54), "Maximum link rate in Mb/s")
          ("mpdu,m", value<uint16_t>(&mpdu_sz)->default_value(1536), "MPDU size used metric calculation")
          ("port,p", value<uint16_t>(&port_no)->default_value(50000), "port number used for ETX probes")
          ("rts-threshold,r", value<uint16_t>(&rts_cts_threshold)->default_value(UINT16_MAX), "RTS threshold level")
-         ("window,w", value<size_t>(&window_sz)->default_value(10), "ETX probe windows")
          ("ticks,t", value<bool>(&show_ticks)->default_value(false)->zero_tokens(), "show results for each second")
-         ("runtime,u", value<uint64_t>(&runtime)->default_value(UINT64_MAX), "produce results after n seconds")
+         ("runtime,u", value<uint64_t>(&runtime)->default_value(0), "produce results after n sxeconds")
+         ("window,w", value<size_t>(&window_sz)->default_value(10), "ETX probe windows")
          ;
 
       variables_map vars;       
@@ -115,7 +115,7 @@ main(int ac, char **av)
       buffer_sptr first(w->read()), b(first), last;
       buffer_info_sptr info(b->info());
       uint64_t tick_time = UINT64_C(1000000);
-      uint64_t end_time = info->timestamp_wallclock() + (runtime * tick_time);
+      uint64_t end_time = runtime ? info->timestamp_wallclock() + (runtime * tick_time) : UINT64_MAX;
       uint64_t tick = show_ticks ? info->timestamp_wallclock() + tick_time : UINT64_MAX;
       for(b; (b = w->read()) && (info->timestamp_wallclock() <= end_time);){
          // is it time to print results yet?
@@ -131,18 +131,12 @@ main(int ac, char **av)
          m->add(b);
          last = b;
       }
-
-      if(show_ticks) {
-         m->compute(tick, tick_time);
-         cout << "Time: " << static_cast<double>(tick) / tick_time << endl;
-         cout << *m << endl;
-      } else if(first && last) {
+      if(!show_ticks) {
          uint32_t elapsed = last->info()->timestamp_wallclock() - first->info()->timestamp_wallclock();
          m->compute(tick, elapsed);
          cout << "Time: " << static_cast<double>(elapsed) / tick_time << endl;
          cout << *m << endl;
       }
-
    } catch(const error& x) {
       cerr << x.what() << endl;
    } catch(const std::exception& x) {

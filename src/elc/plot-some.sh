@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/bin/bash -x
+
 
 h=`dirname $0`
 
@@ -9,7 +10,7 @@ fi
 
 p="$1"
 shift
-fields=$*
+fields="$*"
 
 o="${p/test/results}"
 odir=`dirname "$o"`
@@ -29,10 +30,16 @@ axis["TXC"]="axes x1y2"
 axis["FDR"]="axes x1y2"
 
 # write the extract file
-[ "$BEACON" == "" ] && BEACON=0
-if [ "$p" -nt "$d" ]; then
-	 $h/elc -t ${CW} -b ${BEACON} -m ${MPDU} -l ${RATE} -i "$p" | sed 's/,//g' | sed 's/nan/0/g' | awk -f "${h}/plot.awk" > "$d"
+OPTS=""
+if [[ ! -e $d || "$p" -nt "$d" ]]; then
+	 [ "$BEACON" != "" ] && OPTS+="--beacon ${BEACON} "
+	 [ "$CW" != "" ] && OPTS+="--cw $CW "
+	 [ "RATE" != "" ] && OPTS+="--linkrate ${RATE} "
+	 [ "$MPDU" != "" ] && OPTS+="--mpdu ${MPDU} "
+	 [ "$RUNTIME" != "" ] && OPTS+="--runtime ${RUNTIME} "
+	 $h/elc --ticks ${OPTS} --input "$p" | sed 's/,//g' | sed 's/nan/0/g' | awk -f "${h}/plot.awk" > "$d"
 fi
+
 $h/extract.scm Time $fields < "$d" > "$t"
 
 # prepare the plot string
