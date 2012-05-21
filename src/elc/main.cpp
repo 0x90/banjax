@@ -51,7 +51,7 @@ main(int ac, char **av)
 
       bool help;
       string enc_str, what;
-      uint16_t beacon_time;
+      uint32_t beacon_time;
       uint16_t cw; 
       uint16_t damp;
       uint16_t mpdu_sz;
