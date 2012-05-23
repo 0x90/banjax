@@ -102,5 +102,5 @@ goodput_metric::reset()
 void
 goodput_metric::write(ostream& os) const
 {
-   os << "Packet-Octets: " << packet_octets_ << ", iperf: " << iperf_goodput_ << ", Frame-Octets: " << frame_octets_ << ", Goodput: " << mac_goodput_;
+   os << "packet-octets: " << packet_octets_ << ", iperf: " << iperf_goodput_ << ", frame-octets: " << frame_octets_ << ", Goodput: " << mac_goodput_;
 }

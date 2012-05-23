@@ -85,7 +85,7 @@ main(int ac, char **av)
          ("cw,c", value<uint16_t>(&cw)->default_value(0), "fixed CW in microseconds")
          ("input,i", value<string>(&what)->default_value("mon0"), "input file/device name")
          ("sexpr,s", value<bool>(&use_sexprs)->zero_tokens(), "write output as s-expressions")
-         ("runtime,u", value<uint64_t>(&runtime)->default_value(UINT64_MAX), "produce results after n seconds")
+         ("runtime,u", value<uint64_t>(&runtime)->default_value(0), "produce results after n seconds")
          ("verbose,v", value<bool>(&verbose)->zero_tokens(), "write verbose output")
          ;
 

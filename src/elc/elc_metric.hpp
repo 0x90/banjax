@@ -23,9 +23,9 @@ namespace metrics {
        *
        * \param cw_time_us The measured contention window size.
        * \param rts_cts_threshold Use RTS/CTS when rts_cts_threshold <= frame size
-       * \param beacon_time The dead time (in microseconds) due to (own) beacons.
+       * \param t_dead The dead time (in microseconds).
        */
-      elc_metric(uint16_t cw_time_us, uint16_t rts_cts_threshold, uint16_t beacon_time);
+      elc_metric(uint16_t cw_time_us, uint16_t rts_cts_threshold, uint32_t t_dead);
 
       /**
        * elc_metric copy constuctor.
@@ -126,9 +126,9 @@ namespace metrics {
    private:
 
       /**
-       * The time (in microseconds) lost to each self-generated beacon.
+       * The dead time (in microseconds).
        */
-      uint16_t beacon_time_;
+      uint32_t t_dead_;
 
       /**
        * The measured contention window time (in microseconds).
