@@ -237,32 +237,18 @@ main(int ac, char **av)
                cout << "(define n-bad " << n_bad << ")" << endl;
             }
          } else {
-            cout << "T_TX: " << t_tx << ", ";
-            cout << "T_IFS: " << t_ifs << ", ";
-            cout << "T_DUR: " << t2 - t1 << ", ";
-            cout << "N_CTRL: " << n_ctrl << ", ";
-            cout << "T_CTRL: " << t_ctrl  <<  ", ";
-            cout << "T_CTRL_IFS: " << t_ctrl_ifs << ", ";
-            if(t_ctrl_delta)
-               cout << "T_CTRL_DELTA: " << t_ctrl_delta << ", ";
-            cout << "N_DATA: " << n_data << ", ";
-            cout << "T_DATA: " << t_data  << ", ";
-            cout << "T_DATA_IFS: " << t_data_ifs << ", ";
-            cout << "T_DATA_CW: " << t_data_cw << ", ";
-            if(t_data_delta)
-               cout << "T_DATA_DELTA: " << t_data_delta << ", ";
-            cout << "N_MGMT: " << n_mgmt  << ", ";
-            cout << "T_MGMT: " << t_mgmt  << ", ";
-            cout << "T_MGMT_IFS: " << t_mgmt_ifs << ", ";
-            cout << "T_MGMT_CW: " << t_mgmt_cw << ", ";
-            if(t_mgmt_delta)
-               cout << "T_MGMT_DELTA: " << t_mgmt_delta << ", ";
-            if(n_bad) {
-               cout << "T_BAD: "  <<  t_bad << ", ";
-               cout << "T_BAD_IFS: " << t_bad_ifs << ", ";
-               cout << "N_BAD: "  <<  n_bad << ", ";
-            }
-            cout << "T_TOTAL: " << t_ctrl + t_bad + t_ctrl_ifs + t_ctrl_delta +  + t_mgmt + t_mgmt_ifs + t_mgmt_cw + t_data + t_data_ifs + t_data_cw << ", N_TOTAL: " << n_ctrl + n_data + n_mgmt + n_bad << endl;
+            cout << ", Mgmt, Data, Control, Bad" << endl;
+            cout << "#frames,    " << n_mgmt         << ", " << n_data        << ", " << n_ctrl       << ", " << n_bad << endl;
+            cout << "contention, " << t_mgmt_cw      << ", " << t_data_cw     << ", " << endl;
+            cout << "txtime,     " << t_mgmt         << ", " << t_data        << ", " << t_ctrl       << ", " << t_bad << endl;
+            cout << "IFS,        " << t_mgmt_ifs     << ", " << t_data_ifs    << ", " << t_ctrl_ifs   << ", " << t_bad_ifs  << endl;
+            cout << "delta,      " << t_mgmt_delta   << ", " << t_data_delta  << ", " << t_ctrl_delta << endl;
+            cout << endl;
+            cout << "T_TX,    " << t_tx << endl;
+            cout << "T_IFS,   " << t_ifs << endl;
+            cout << "T_DUR,   " << t2 - t1 << endl;
+            cout << "T_TOTAL, " << t_ctrl + t_bad + t_ctrl_ifs + t_ctrl_delta + t_mgmt + t_mgmt_ifs + t_mgmt_cw + t_data + t_data_ifs + t_data_cw << endl;
+            cout << "N_TOTAL: " << n_ctrl + n_data + n_mgmt + n_bad << endl;
          }
       }
 
