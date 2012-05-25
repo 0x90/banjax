@@ -23,17 +23,21 @@ using metrics::txc_metric;
 
 txc_metric::txc_metric() :
    abstract_metric(),
-   n_(0),
-   transmissions_(0),
-   txc_(0.0)
+   txc_(0.0),
+   frames_delivered_(0),
+   frame_transmissions_(0),
+   max_txc_(0),
+   max_txc_stash_(0)
 {
 }
 
 txc_metric::txc_metric(const txc_metric& other) :
    abstract_metric(other),
-   n_(other.n_),
-   transmissions_(other.transmissions_),
-   txc_(other.txc_)
+   txc_(other.txc_),
+   frames_delivered_(other.frames_delivered_),
+   frame_transmissions_(other.frame_transmissions_),
+   max_txc_(other.max_txc_),
+   max_txc_stash_(other.max_txc_stash_)
 {
 }
 
@@ -42,9 +46,11 @@ txc_metric::operator=(const txc_metric& other)
 {
    if(this != &other) {
       abstract_metric::operator=(other);
-      n_ = other.n_;
-      transmissions_ = other.transmissions_;
       txc_ = other.txc_;
+      frames_delivered_ = other.frames_delivered_;
+      frame_transmissions_ = other.frame_transmissions_;
+      max_txc_ = other.max_txc_;
+      max_txc_stash_ = other.max_txc_stash_;
    }
    return *this;
 }
@@ -62,8 +68,10 @@ txc_metric::add(buffer_sptr b)
    if(DATA_FRAME == fc.type() && info->has(TX_FLAGS)) {
       bool tx_success = !(info->tx_flags() & TX_FLAGS_FAIL);
       if(tx_success) {
-         ++n_;
-         transmissions_ += info->has(DATA_RETRIES) ? 1 + info->data_retries() : 1;
+         uint8_t txc = info->has(DATA_RETRIES) ? 1 + info->data_retries() : 1;
+         max_txc_ = max(max_txc_, txc);
+         ++frames_delivered_;
+         frame_transmissions_ += txc;
       }
    }
 }
@@ -77,19 +85,22 @@ txc_metric::clone() const
 double
 txc_metric::compute(uint32_t junk)
 {
-   txc_ = transmissions_ / static_cast<double>(n_);
+   txc_ = frame_transmissions_ / static_cast<double>(frames_delivered_);
+   max_txc_stash_ = max_txc_;
    return txc_;
 }
 
 void
 txc_metric::reset()
 {
-   n_ = 0;
-   transmissions_ = 0;
+   frames_delivered_ = 0;
+   frame_transmissions_ = 0;
+   max_txc_ = 0;
 }
 
 void
 txc_metric::write(ostream& os) const
 {
+   os << "Max-TXC: " << max_txc_stash_ << ", ";
    os << "TXC: " << txc_;
 }

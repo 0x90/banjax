@@ -31,7 +31,8 @@ elc_metric::elc_metric(uint16_t cw_time_us, uint16_t rts_cts_threshold, uint32_t
    elc_(0),
    stash_packet_octets_(0),
    stash_t_pkt_succ_(0.0),
-   stash_t_pkt_fail_(0.0)
+   stash_t_pkt_fail_(0.0),
+   stash_delta_(0)
 {
 }
 
@@ -47,7 +48,8 @@ elc_metric::elc_metric(const elc_metric& other) :
    elc_(other.elc_),
    stash_packet_octets_(other.stash_packet_octets_),
    stash_t_pkt_succ_(other.stash_t_pkt_succ_),
-   stash_t_pkt_fail_(other.stash_t_pkt_fail_)
+   stash_t_pkt_fail_(other.stash_t_pkt_fail_),
+   stash_delta_(0)
 {
 }
 
@@ -67,6 +69,7 @@ elc_metric::operator=(const elc_metric& other)
       stash_packet_octets_ = other.stash_packet_octets_;
       stash_t_pkt_succ_ = other.stash_t_pkt_succ_;
       stash_t_pkt_fail_ = other.stash_t_pkt_fail_;
+      stash_delta_ = 0;
    }
    return *this;
 }
@@ -107,6 +110,7 @@ elc_metric::compute(uint32_t delta_us)
    stash_packet_octets_ = packet_octets_;
    stash_t_pkt_succ_ = t_pkt_succ_;
    stash_t_pkt_fail_ = t_pkt_fail_;
+   stash_delta_ = delta_us;
    return elc_;
 }
 
@@ -122,9 +126,11 @@ elc_metric::reset()
 void
 elc_metric::write(ostream& os) const
 {
+   os << "packet-octets: " << stash_packet_octets_ << ", ";
    os << "t-pkt-succ: " << stash_t_pkt_succ_ << ", ";
    os << "t-pkt-fail: " << stash_t_pkt_fail_ << ", ";
    os << "t-dead: " << t_dead_ << ", ";
+   os << "t_delta: " << stash_delta_ << ", ";
    os << "ELC: " << elc_;
 }
 
@@ -170,7 +176,7 @@ elc_metric::frame_succ_time(buffer_sptr b) const
    const uint32_t ACK_RATE = enc->response_rate(DATA_RATE);
    const uint32_t T_ACK = enc->txtime(ACK_SZ, ACK_RATE, PREAMBLE);
 
-   /* TODO: make this QoS-aware */
+   /* TODO: make this QoS-aware? */
    return enc->DIFS() + T_RTS_CTS + T_DATA + enc->SIFS() + T_ACK;
 }
 
@@ -187,6 +193,7 @@ elc_metric::frame_fail_time(buffer_sptr b) const
    const uint32_t DATA_RATE = info->rate_Kbs();
    const uint32_t T_DATA = enc->txtime(FRAME_SZ, DATA_RATE, PREAMBLE);
 
-   /* TODO: make this QoS-aware */
-   return enc->DIFS() + T_RTS_CTS + T_DATA + enc->ACKTimeout();
+   /* TODO: make this QoS-aware? */
+//   return enc->DIFS() + T_RTS_CTS + T_DATA + enc->ACKTimeout();
+   return enc->DIFS() + T_RTS_CTS + T_DATA;
 }

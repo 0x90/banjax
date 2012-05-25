@@ -180,6 +180,11 @@ namespace metrics {
        */
       double stash_t_pkt_fail_;
 
+      /**
+       * The stashed delta.
+       */
+      uint_least32_t stash_delta_;
+
    };
 
 }

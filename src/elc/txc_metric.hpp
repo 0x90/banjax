@@ -89,19 +89,29 @@ namespace metrics {
    private:
 
       /**
-       * The total number of packets.
+       * The average TXC value.
        */
-      uint_least32_t n_;
+      double txc_;
+
+      /**
+       * The total number of frames_delivered.
+       */
+      uint_least32_t frames_delivered_;
 
       /**
        * The total number of frame transmission attempts.
        */
-      uint_least32_t transmissions_;
+      uint_least32_t frame_transmissions_;
 
       /**
-       * The average TXC value.
+       * The maximum TXC.
        */
-      double txc_;
+      uint8_t max_txc_;
+
+      /**
+       * The stashed maximum TXC.
+       */
+      uint_least32_t max_txc_stash_;
 
    };
 

@@ -95,11 +95,6 @@ namespace metrics {
       double fdr_;
 
       /**
-       * The packet count.
-       */
-      uint_least32_t n_;
-
-      /**
        * The total number of frames_delivered.
        */
       uint_least32_t frames_delivered_;
@@ -118,16 +113,6 @@ namespace metrics {
        * The stashed total number of frame transmission attempts.
        */
       uint_least32_t frame_transmissions_stash_;
-
-      /**
-       * The maximum TXC.
-       */
-      uint_least32_t max_txc_;
-
-      /**
-       * The stashed maximum TXC.
-       */
-      uint_least32_t max_txc_stash_;
 
    };
 

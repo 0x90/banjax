@@ -208,7 +208,7 @@ main(int ac, char **av)
          }
 
          double dur = t2 - t1;
-         if(use_sexprs) {
+         if(!verbose && use_sexprs) {
 
             cout << "(define t-total " << t_total << ")" << endl;
             cout << "(define t-tx " << t_tx << ")" << endl;
@@ -236,13 +236,15 @@ main(int ac, char **av)
                cout << "(define t-bad " << t_bad_ifs  << ")" << endl;
                cout << "(define n-bad " << n_bad << ")" << endl;
             }
-         } else {
+         } else if (!verbose) {
             cout << ", Mgmt, Data, Control, Bad" << endl;
-            cout << "#frames,    " << n_mgmt         << ", " << n_data        << ", " << n_ctrl       << ", " << n_bad << endl;
             cout << "contention, " << t_mgmt_cw      << ", " << t_data_cw     << ", " << endl;
             cout << "txtime,     " << t_mgmt         << ", " << t_data        << ", " << t_ctrl       << ", " << t_bad << endl;
             cout << "IFS,        " << t_mgmt_ifs     << ", " << t_data_ifs    << ", " << t_ctrl_ifs   << ", " << t_bad_ifs  << endl;
             cout << "delta,      " << t_mgmt_delta   << ", " << t_data_delta  << ", " << t_ctrl_delta << endl;
+            cout << endl;
+            cout << endl;
+            cout << "#frames,    " << n_mgmt         << ", " << n_data        << ", " << n_ctrl       << ", " << n_bad << endl;
             cout << endl;
             cout << "T_TX,    " << t_tx << endl;
             cout << "T_IFS,   " << t_ifs << endl;
