@@ -21,8 +21,9 @@ using namespace net;
 using namespace std;
 using metrics::txc_metric;
 
-txc_metric::txc_metric() :
+txc_metric::txc_metric(bool use_all_packets) :
    abstract_metric(),
+   use_all_packets_(use_all_packets),
    txc_(0.0),
    frames_delivered_(0),
    frame_transmissions_(0),
@@ -33,6 +34,7 @@ txc_metric::txc_metric() :
 
 txc_metric::txc_metric(const txc_metric& other) :
    abstract_metric(other),
+   use_all_packets_(other.use_all_packets_),
    txc_(other.txc_),
    frames_delivered_(other.frames_delivered_),
    frame_transmissions_(other.frame_transmissions_),
@@ -46,6 +48,7 @@ txc_metric::operator=(const txc_metric& other)
 {
    if(this != &other) {
       abstract_metric::operator=(other);
+      use_all_packets_ = other.use_all_packets_;
       txc_ = other.txc_;
       frames_delivered_ = other.frames_delivered_;
       frame_transmissions_ = other.frame_transmissions_;
@@ -67,7 +70,7 @@ txc_metric::add(buffer_sptr b)
    buffer_info_sptr info(b->info());
    if(DATA_FRAME == fc.type() && info->has(TX_FLAGS)) {
       bool tx_success = !(info->tx_flags() & TX_FLAGS_FAIL);
-      if(tx_success) {
+      if(tx_success || use_all_packets_) {
          uint8_t txc = info->has(DATA_RETRIES) ? 1 + info->data_retries() : 1;
          max_txc_ = max(max_txc_, txc);
          ++frames_delivered_;

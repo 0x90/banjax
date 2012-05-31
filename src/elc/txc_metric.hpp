@@ -24,11 +24,12 @@ namespace metrics {
    public:
 
       /**
-       * txc_metric default constructor.
+       * txc_metric default constructor. This computes the average TXC
+       * for packets sent but, by default, excludes failed packets.
        *
-       * \param enc The encoding used.
+       * \param use_all_packets Compute metric using good+bad packets.
        */
-      txc_metric();
+      txc_metric(bool use_all_packets=false);
 
       /**
        * txc_metric copy constuctor.
@@ -87,6 +88,11 @@ namespace metrics {
       virtual void write(std::ostream& os) const;
 
    private:
+
+      /**
+       * Use all frames (i.e. not just good packets) to compute TXC.
+       */
+      bool use_all_packets_;
 
       /**
        * The average TXC value.
