@@ -50,7 +50,6 @@ main(int ac, char **av)
    try {
 
       bool help;
-      bool use_all_packets;
       string enc_str, what;
       uint32_t dead_time;
       uint16_t cw; 
@@ -65,7 +64,6 @@ main(int ac, char **av)
 
       options_description options("program options");
       options.add_options()
-         ("use-all-packets,a", value(&use_all_packets)->default_value(false)->zero_tokens(), "use all packets (not just success) to compute TXC")        
          ("dead,e", value(&dead_time)->default_value(0), "time (in microseconds) lost sending own deads")
          ("cw,c", value(&cw)->default_value(0), "size of contention window in microseconds (0 = compute average)")
          ("damping,d", value(&damp)->default_value(5), "size of damping window in seconds")
@@ -103,7 +101,8 @@ main(int ac, char **av)
 //      proto->push_back(metric_sptr(new airtime_metric_linux(enc)));
 //      proto->push_back(metric_sptr(new etx_metric(port_no, window_sz)));
       proto->push_back(metric_sptr(new fdr_metric));
-      proto->push_back(metric_sptr(new txc_metric(use_all_packets)));
+      proto->push_back(metric_sptr(new txc_metric("TXC")));
+      proto->push_back(metric_sptr(new txc_metric("Alt-TXC", true)));
       metric_sptr m(new iperf_metric_wrapper(metric_sptr(new metric_demux(proto))));
 
       wnic_sptr w(wnic::open(what));

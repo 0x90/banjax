@@ -14,6 +14,7 @@
 #include <net/buffer.hpp>
 
 #include <boost/shared_ptr.hpp>
+#include <string>
 
 namespace metrics {
 
@@ -24,12 +25,13 @@ namespace metrics {
    public:
 
       /**
-       * txc_metric default constructor. This computes the average TXC
+       * txc_metric constructor. This computes the average TXC
        * for packets sent but, by default, excludes failed packets.
        *
+       * \param name Label used to report metric.
        * \param use_all_packets Compute metric using good+bad packets.
        */
-      txc_metric(bool use_all_packets=false);
+      txc_metric(const std::string name = "TXC", bool use_all_packets=false);
 
       /**
        * txc_metric copy constuctor.
@@ -88,6 +90,11 @@ namespace metrics {
       virtual void write(std::ostream& os) const;
 
    private:
+
+      /**
+       * The label used for this metric.
+       */
+      std::string name_;
 
       /**
        * Use all frames (i.e. not just good packets) to compute TXC.

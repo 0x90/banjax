@@ -21,8 +21,9 @@ using namespace net;
 using namespace std;
 using metrics::txc_metric;
 
-txc_metric::txc_metric(bool use_all_packets) :
+txc_metric::txc_metric(string name, bool use_all_packets) :
    abstract_metric(),
+   name_(name),
    use_all_packets_(use_all_packets),
    txc_(0.0),
    frames_delivered_(0),
@@ -34,6 +35,7 @@ txc_metric::txc_metric(bool use_all_packets) :
 
 txc_metric::txc_metric(const txc_metric& other) :
    abstract_metric(other),
+   name_(other.name_),
    use_all_packets_(other.use_all_packets_),
    txc_(other.txc_),
    frames_delivered_(other.frames_delivered_),
@@ -48,6 +50,7 @@ txc_metric::operator=(const txc_metric& other)
 {
    if(this != &other) {
       abstract_metric::operator=(other);
+      name_ = other.name_;
       use_all_packets_ = other.use_all_packets_;
       txc_ = other.txc_;
       frames_delivered_ = other.frames_delivered_;
@@ -104,6 +107,6 @@ txc_metric::reset()
 void
 txc_metric::write(ostream& os) const
 {
-   os << "Max-TXC: " << max_txc_stash_ << ", ";
-   os << "TXC: " << txc_;
+   os << "Max-" << name_ << ": " << max_txc_stash_ << ", ";
+   os << name_ << ": " << txc_;
 }
