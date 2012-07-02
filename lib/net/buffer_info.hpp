@@ -40,15 +40,16 @@ namespace net {
    const property_t CHANNEL_FLAGS         = 0x0001;
    const property_t DATA_RETRIES          = 0x0002;
    const property_t FREQ_MHz              = 0x0004;
-   const property_t RATE_Kbs              = 0x0008;
-   const property_t RATES_Kbs             = 0x0010;
-   const property_t RTS_RETRIES           = 0x0020;
-   const property_t RX_FLAGS              = 0x0040;
-   const property_t SIGNAL_dBm            = 0x0080;
-   const property_t TIMESTAMP1            = 0x0100;
-   const property_t TIMESTAMP2            = 0x0200;
-   const property_t TIMESTAMP_WALLCLOCK   = 0x0400;
-   const property_t TX_FLAGS              = 0x0800;
+   const property_t PACKET_TIME           = 0x0008;
+   const property_t RATE_Kbs              = 0x0010;
+   const property_t RATES_Kbs             = 0x0020;
+   const property_t RTS_RETRIES           = 0x0040;
+   const property_t RX_FLAGS              = 0x0080;
+   const property_t SIGNAL_dBm            = 0x0100;
+   const property_t TIMESTAMP1            = 0x0200;
+   const property_t TIMESTAMP2            = 0x0400;
+   const property_t TIMESTAMP_WALLCLOCK   = 0x0800;
+   const property_t TX_FLAGS              = 0x1000;
 
    /**
     * Property value type.
@@ -305,6 +306,20 @@ namespace net {
        */
       void rates(const std::vector<uint32_t>& rates);
 
+      /**
+       * Return the elapsed time taken to transmit this packet.
+       *
+       * \return The time (in microseconds) used to send this packet.
+       */
+      uint16_t packet_time() const;
+
+      /**
+       * Set the elapsed time used to transmit this packet.
+       *
+       * \param t The elapsed time (in microseconds).
+       */
+      void packet_time(uint16_t t);
+
    private:
 
       /**
@@ -383,6 +398,11 @@ namespace net {
        * Rates.
        */
       std::vector<uint32_t> rates_;
+
+      /**
+       * The packet transmission time (in microseconds).
+       */
+      uint16_t packet_time_;
 
    };
 

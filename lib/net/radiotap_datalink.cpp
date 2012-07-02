@@ -55,6 +55,7 @@ const uint32_t RADIOTAP_TXFLAGS           = 0x8000;
 const uint32_t RADIOTAP_RTS_RETRIES       = 0x10000;
 const uint32_t RADIOTAP_DATA_RETRIES      = 0x20000;
 const uint32_t RADIOTAP_RATE_TUPLES       = 0x10000000;
+const uint32_t RADIOTAP_PACKET_TIME       = 0x20000000;
 const uint32_t RADIOTAP_EXT               = 0x80000000;
 
 const uint8_t  RADIOTAP_FLAGS_CFP         = 0x01;
@@ -404,7 +405,7 @@ radiotap_datalink::parse(size_t frame_sz, const uint8_t *frame)
          extract(ofs, junk_u8, hdr_sz, frame_sz, frame);
          info->data_retries(junk_u8);
          break;
-         //  Warning: proprietary extension!
+         //  Warning: proprietary extensions!
       case RADIOTAP_RATE_TUPLES:
 	      {
             vector<uint32_t> rates;
@@ -419,6 +420,10 @@ radiotap_datalink::parse(size_t frame_sz, const uint8_t *frame)
             }
             info->rates(rates);
          }
+         break;
+      case RADIOTAP_PACKET_TIME:
+         extract(ofs, junk_u16, hdr_sz, frame_sz, frame);
+         info->packet_time(junk_u16);
          break;
       default:
          break;
