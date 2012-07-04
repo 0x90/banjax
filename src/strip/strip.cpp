@@ -52,11 +52,12 @@ main(int ac, char **av)
       while(octets = pcap_next(in, &hdr)) {
          struct ieee80211_radiotap_header *radiotap = (struct ieee80211_radiotap_header*) octets;
          uint16_t frame_sz = hdr.len - radiotap->it_len;
+         const uint8_t *frame = octets + radiotap->it_len;
          if(0 != radiotap->it_version) {
             fputs("error: can't find radiotap header\n", stderr);
             break;
          }
-         if((ANNOUNCE_SZ == frame_sz || ANNOUNCE_SZ == frame_sz - 4) && 0xff == octets[58] && 0xff == octets[59]) {
+         if((ANNOUNCE_SZ == frame_sz || ANNOUNCE_SZ == frame_sz - 4) && 0xaa == frame[24] && 0xaa == frame[25] && 0xff == frame[30] && 0xff == frame[31]) {
             writing = !writing;
          } else if(writing) {
             pcap_dump(reinterpret_cast<u_char*>(out), &hdr, octets);
