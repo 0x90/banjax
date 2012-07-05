@@ -101,11 +101,11 @@ main(int ac, char **av)
       proto->push_back(metric_sptr(new airtime_metric(enc, rts_cts_threshold)));
       proto->push_back(metric_sptr(new airtime_metric_linux(enc)));
 //      proto->push_back(metric_sptr(new etx_metric(port_no, window_sz)));
-//      proto->push_back(metric_sptr(new simple_elc_metric));
       proto->push_back(metric_sptr(new fdr_metric));
       proto->push_back(metric_sptr(new txc_metric("TXC")));
       proto->push_back(metric_sptr(new txc_metric("Alt-TXC", true)));
       proto->push_back(metric_sptr(new pktsz_metric));
+      proto->push_back(metric_sptr(new simple_elc_metric));
       metric_sptr m(new iperf_metric_wrapper(metric_sptr(new metric_demux(proto))));
 
       wnic_sptr w(wnic::open(what));

@@ -1,13 +1,13 @@
 #!/bin/bash
 
 if [[ $# != 1 && ! -d $1 ]]; then
-	 echo "usage: 3dplot.sh path" 1>&2
+	 echo "usage: summary.sh path" 1>&2
 	 exit 1
 fi
 
 t=$1
 r=${t/test\//results\/}
-[ -d "${r}" ] && mkdir -p "${r}"
+[ ! -d "${r}" ] && mkdir -p "${r}"
 s="${r}/summary.txt"
 
 OPTS=""
@@ -20,7 +20,7 @@ echo > "$s"
 for r in 6 9 12 18 24 36 48 54; do
 	 for f in ${t}/*load${r}*; do
 		  echo -n "File: $f, " >> "$s"
-		  echo -n "$f" | sed 's/.*att\([0-9]*\)_load\([0-9]*\).*/Att: \1, Load \2, /' >> "$s"
+		  echo -n "$f" | sed 's/.*att\([0-9]*\)_load\([0-9]*\).*/Att: \1, Load: \2, /' >> "$s"
 		  ./elc --linkrate $r $OPTS --input "$f" >> "$s"
 	 done
 done
