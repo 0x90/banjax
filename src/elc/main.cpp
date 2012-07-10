@@ -23,6 +23,7 @@
 #include <pdr_metric.hpp>
 #include <pktsz_metric.hpp>
 #include <residual.hpp>
+#include <simple_elc_metric.hpp>
 #include <txc_metric.hpp>
 
 #include <net/buffer_info.hpp>
@@ -97,12 +98,14 @@ main(int ac, char **av)
 //      proto->push_back(metric_sptr(new metric_damper("Damped-ELC", metric_sptr(new elc_metric(cw, rts_cts_threshold, dead_time)), damp)));
 //      proto->push_back(metric_sptr(new elc_mrr_metric(cw, rts_cts_threshold)));
       proto->push_back(metric_sptr(new legacy_elc_metric(enc, rate_Mbs * 1000, mpdu_sz, rts_cts_threshold)));
-//      proto->push_back(metric_sptr(new airtime_metric(enc, rts_cts_threshold)));
-//      proto->push_back(metric_sptr(new airtime_metric_linux(enc)));
+      proto->push_back(metric_sptr(new airtime_metric(enc, rts_cts_threshold)));
+      proto->push_back(metric_sptr(new airtime_metric_linux(enc)));
 //      proto->push_back(metric_sptr(new etx_metric(port_no, window_sz)));
       proto->push_back(metric_sptr(new fdr_metric));
       proto->push_back(metric_sptr(new txc_metric("TXC")));
       proto->push_back(metric_sptr(new txc_metric("Alt-TXC", true)));
+      proto->push_back(metric_sptr(new pktsz_metric));
+      proto->push_back(metric_sptr(new simple_elc_metric));
       metric_sptr m(new iperf_metric_wrapper(metric_sptr(new metric_demux(proto))));
 
       wnic_sptr w(wnic::open(what));

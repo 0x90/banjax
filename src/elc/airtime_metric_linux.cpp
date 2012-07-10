@@ -108,5 +108,5 @@ airtime_metric_linux::reset()
 void
 airtime_metric_linux::write(ostream& os) const
 {
-   os << "Airtime(Linux): " << airtime_;
+   os << "Airtime-Linux: " << airtime_;
 }

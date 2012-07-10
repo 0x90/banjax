@@ -339,6 +339,21 @@ buffer_info::rates(const vector<uint32_t>& rates)
    present_ |= RATES_Kbs;
 }
 
+uint16_t
+buffer_info::packet_time() const
+{
+   PRECONDITION(has(PACKET_TIME));
+   return packet_time_;
+}
+
+void
+buffer_info::packet_time(uint16_t t)
+{
+   packet_time_ = t;
+   present_ |= PACKET_TIME;
+}
+
+
 ostream&
 net::operator<<(ostream& os, const buffer_info& info)
 {
