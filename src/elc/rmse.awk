@@ -1,4 +1,4 @@
-#!/bin/awk
+#!/bin/gawk
 
 BEGIN{ x=0; n=0; }
 { x+=(($1-$2)**2); ++n; }
