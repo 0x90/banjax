@@ -17,7 +17,7 @@ case "$#" in
 		  m="$3"
 		  ;;
 	 *)
-		  echo "usage: summary-stats path [fn] [metric]" 2>&1
+		  echo "usage: summary-compare path [fn] [metric]" 2>&1
 		  exit 1
 		  ;;
 esac
