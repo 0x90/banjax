@@ -33,11 +33,12 @@ main(int ac, char **av)
    try {
 
       string what;
-      bool use_sexprs;
+      bool use_sexprs, verbose;
       options_description options("program options");
       options.add_options()
          ("help,?", "produce this help message")
          ("input,i", value<string>(&what)->default_value("mon0"), "input file/device name")
+         ("verbose,v", value<bool>(&verbose)->default_value(false)->zero_tokens(), "show TXC per packet")
          ;
 
       variables_map vars;       
@@ -50,8 +51,12 @@ main(int ac, char **av)
       }
 
       wnic_sptr w(wnic::open(what));
+#if 0
+      double w[W_MAX];
+      fill(&w[0], &w[W_MAX], 0.0);
+#endif
       buffer_sptr b;
-      uint_least32_t frms = 0, txs = 0, max_txc = 0, min_txc = UINT32_MAX;
+      uint_least32_t packets = 0, txs = 0, max_txc = 0, min_txc = UINT32_MAX;
       for(uint32_t n = 1; b = w->read(); ++n){
          frame f(b);
          buffer_info_sptr info(b->info());
@@ -60,12 +65,21 @@ main(int ac, char **av)
             max_txc = max(max_txc, txc);
             min_txc = min(min_txc, txc);
             txs += txc;
-            ++frms;
+            ++packets;
+            
+#if 0
+            for(uint16_t i = 0; i < txc; ++i) {
+               w[i] += 1 / static_cast<double>(1 << (txc - i));
+            }
+#endif
+            if(verbose)
+               cout << n << " " << txc << endl;
          }
       }
-      cout << "txc: " << txs / static_cast<double>(frms) << ", ";
-      cout << "min: " << min_txc << ", ";
-      cout << "max: " << max_txc << endl;
+
+      cerr << "txc: " << txs / static_cast<double>(packets) << ", ";
+      cerr << "min txc: " << min_txc << ", ";
+      cerr << "max txc: " << max_txc << endl;
 
    } catch(const error& x) {
       cerr << x.what() << endl;
