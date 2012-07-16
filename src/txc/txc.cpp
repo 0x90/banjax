@@ -30,14 +30,14 @@ using namespace std;
 
 
 void
-update(uint16_t n, uint16_t txc, double v, vector<double>& cw)
+update(uint16_t n, uint16_t txc, vector<double>& cw)
 {
-   if(n <= txc) {
-      float x = (1 / static_cast<double>(n)) * v;
+   if(n < txc) {
+      double x = 1.0 / (1 << n);
       for(size_t i = 0; i < n; ++i) {
          cw[i] += x;
       }
-      update(1 + n, txc, v, cw);
+      update(1 + n, txc, cw);
    }
 }
 
@@ -80,13 +80,13 @@ main(int ac, char **av)
             min_txc = min(min_txc, txc);
             nof_txs += txc;
             ++nof_pkts;
-            update(0, txc, 1.0, cw);
+            update(0, txc, cw);
             if(verbose)
                cout << n << " " << txc << endl;
          }
       }
       if(dist) {
-         for(size_t i = 0; i < max_txc; ++i) {
+         for(size_t i = min_txc; i < max_txc; ++i) {
             cout << cw[i] << endl;
          }
       }
