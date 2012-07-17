@@ -30,14 +30,14 @@ using namespace std;
 
 
 void
-update(uint16_t n, uint16_t txc, vector<double>& cw)
+update(uint16_t n, double v, vector<double>& cw)
 {
-   if(n < txc) {
-      double x = 1.0 / (1 << n);
-      for(size_t i = 0; i < n; ++i) {
-         cw[i] += x;
-      }
-      update(1 + n, txc, cw);
+   if(0 == n) {
+      cw[n] += v;
+   } else {
+      v /= 2.0;
+      cw[n] += v;
+      update(n - 1, v, cw);
    }
 }
 
@@ -47,13 +47,14 @@ main(int ac, char **av)
 {
    try {
 
-      string what;
+      string what, enc_str;
       bool dist, stats, use_sexprs, verbose;
       options_description options("program options");
       options.add_options()
          ("help,?", "produce this help message")
-         ("input,i", value<string>(&what)->default_value("mon0"), "input file/device name")
          ("dist,d", value<bool>(&dist)->default_value(false)->zero_tokens(), "show tx distribution")
+         ("encoding,e", value<string>(&enc_str)->default_value("OFDM"), "channel encoding")
+         ("input,i", value<string>(&what)->default_value("mon0"), "input file/device name")
          ("stats,s", value<bool>(&stats)->default_value(false)->zero_tokens(), "show txc stats")
          ("verbose,v", value<bool>(&verbose)->default_value(false)->zero_tokens(), "show TXC per packet")
          ;
@@ -80,7 +81,7 @@ main(int ac, char **av)
             min_txc = min(min_txc, txc);
             nof_txs += txc;
             ++nof_pkts;
-            update(0, txc, cw);
+            update(txc - 1, 1.0, cw);
             if(verbose)
                cout << n << " " << txc << endl;
          }
