@@ -94,7 +94,7 @@ main(int ac, char **av)
       if(dist) {
          for(size_t i = min_txc; i < max_txc; ++i) {
             cout << cw[i] << endl;
-         }c
+         }
       }
       if(stats) {
          cout << "txc: " << nof_txs / static_cast<double>(nof_pkts) << ", ";
