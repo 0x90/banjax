@@ -119,8 +119,8 @@ main(int ac, char **av)
       buffer_sptr first(w->read()), b(first), last;
       buffer_info_sptr info(b->info());
       uint64_t tick_time = UINT64_C(1000000);
-      uint64_t end_time = runtime ? info->timestamp_wallclock() + (runtime * tick_time) : UINT64_MAX;
-      uint64_t tick = show_ticks ? info->timestamp_wallclock() + tick_time : UINT64_MAX;
+      uint64_t end_time = b && runtime ? info->timestamp_wallclock() + (runtime * tick_time) : UINT64_MAX;
+      uint64_t tick = b && show_ticks ? info->timestamp_wallclock() + tick_time : UINT64_MAX;
       for(b; (b = w->read()) && (info->timestamp_wallclock() <= end_time);){
          // is it time to print results yet?
          info = b->info();

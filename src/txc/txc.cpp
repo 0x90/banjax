@@ -49,6 +49,7 @@ main(int ac, char **av)
 {
    try {
 
+      uint64_t runtime;
       string what, enc_str;
       bool debug, dist, stats, use_sexprs, verbose;
       options_description options("program options");
@@ -72,10 +73,12 @@ main(int ac, char **av)
       }
 
       wnic_sptr w(wnic::open(what));
-      buffer_sptr b;
       vector<double> cw(10);
+      buffer_sptr b(w->read());
+      uint64_t tick_time = UINT64_C(1000000);
+      uint64_t end_time = b && runtime ? b->info()->timestamp_wallclock() + (runtime * tick_time) : UINT64_MAX;
       uint_least32_t nof_txs = 0, nof_pkts = 0, max_txc = 0, min_txc = UINT32_MAX;
-      for(uint32_t n = 1; b = w->read(); ++n) {
+      for(uint32_t n = 1; b; ++n) {
          frame f(b);
          buffer_info_sptr info(b->info());
          if(/*info->has(TX_FLAGS) &&*/ info->has(DATA_RETRIES)) {
@@ -91,6 +94,7 @@ main(int ac, char **av)
          }
          if(debug)
             cout << n << " " << *info << endl;
+         b = w->read();
       }
       if(dist) {
          uint16_t lo = 0;

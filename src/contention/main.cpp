@@ -30,12 +30,14 @@ main(int ac, char **av)
 {
    try {
 
+      uint64_t runtime;
       string enc_str, ta_str, what;
       options_description options("program options");
       options.add_options()
          ("help,?", "produce this help message")
          ("encoding,e", value<string>(&enc_str)->default_value("OFDM"), "channel encoding")
          ("input,i", value<string>(&what)->default_value("mon0"), "input file/device name")
+         ("runtime,u", value<uint64_t>(&runtime)->default_value(0), "finish after n seconds")
          ("ta,a", value<string>(&ta_str)->default_value("48:5d:60:7c:ce:68"), "transmitter address")
          ;
 
@@ -58,7 +60,9 @@ main(int ac, char **av)
       uint16_t txc = 0, seq_no = 0;
       uint_least32_t n_cw = 0, t_cw = 0;
       buffer_sptr b(w->read()), p, null;
-      for(uint32_t n = 1; b; ++n){
+      uint64_t tick_time = UINT64_C(1000000);
+      uint64_t end_time = b && runtime ? b->info()->timestamp_wallclock() + (runtime * tick_time) : UINT64_MAX;
+      for(uint32_t n = 1; b && (info->timestamp_wallclock() <= end_time); ++n) {
          frame f(b);
          frame_control fc(f.fc());
          if(p && DATA_FRAME == fc.type() && f.address2() == ta) {
