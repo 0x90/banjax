@@ -60,30 +60,32 @@ main(int ac, char **av)
       uint16_t txc = 0, seq_no = 0;
       uint_least32_t n_cw = 0, t_cw = 0;
       buffer_sptr b(w->read()), p, null;
-      uint64_t tick_time = UINT64_C(1000000);
-      uint64_t end_time = b && runtime ? b->info()->timestamp_wallclock() + (runtime * tick_time) : UINT64_MAX;
-      for(uint32_t n = 1; b && (info->timestamp_wallclock() <= end_time); ++n) {
-         frame f(b);
-         frame_control fc(f.fc());
-         if(p && DATA_FRAME == fc.type() && f.address2() == ta) {
-            uint16_t ifs;
-            if(!fc.retry()) {
-               txc = 0;
-               seq_no = f.sc().sequence_no();
-               ifs = b->info()->timestamp1() - p->info()->timestamp2();
-               ++n_cw;
-               t_cw += ifs;
-               cout << n << " " << b->info()->timestamp1() << " " << ifs << " " << txc << endl;
-            } else if(fc.retry() && f.sc().sequence_no() == seq_no) {
-               ++txc;
-               ifs = b->info()->timestamp1() - p->info()->timestamp2();
-               ++n_cw;
-               t_cw += ifs;
-               cout << n << " " << b->info()->timestamp1() << " " << ifs << " " << txc << endl;
+      if(b) {
+         uint64_t tick_time = UINT64_C(1000000);
+         uint64_t end_time = runtime ? b->info()->timestamp_wallclock() + (runtime * tick_time) : UINT64_MAX;
+         for(uint32_t n = 1; b && (b->info()->timestamp_wallclock() <= end_time); ++n) {
+            frame f(b);
+            frame_control fc(f.fc());
+            if(p && DATA_FRAME == fc.type() && f.address2() == ta) {
+               uint16_t ifs;
+               if(!fc.retry()) {
+                  txc = 0;
+                  seq_no = f.sc().sequence_no();
+                  ifs = b->info()->timestamp1() - p->info()->timestamp2();
+                  ++n_cw;
+                  t_cw += ifs;
+                  cout << n << " " << b->info()->timestamp1() << " " << ifs << " " << txc << endl;
+               } else if(fc.retry() && f.sc().sequence_no() == seq_no) {
+                  ++txc;
+                  ifs = b->info()->timestamp1() - p->info()->timestamp2();
+                  ++n_cw;
+                  t_cw += ifs;
+                  cout << n << " " << b->info()->timestamp1() << " " << ifs << " " << txc << endl;
+               }
             }
+            p = b;
+            b = w->read();
          }
-         p = b;
-         b = w->read();
       }
       cerr << "AVG CONTENTION TIME = " << (t_cw / static_cast<double>(n_cw)) - enc->DIFS() << endl;
 

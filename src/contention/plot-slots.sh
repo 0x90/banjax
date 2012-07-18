@@ -13,7 +13,7 @@ for p in $*; do
 	 c="${o/.pcap/.cw}"
 	 d="${o/.pcap/.data}"
 	 e="${o/.pcap/.slots.eps}"
-	 ./analyse -i "$p" --ta $TA 2> "$c" | awk '{ print int(($3 - 34)/9); }' | sort -n | uniq -c > "$d"
+	 ./analyse -i "$p" --ta $TA --runtime $RUNTIME 2> "$c" | awk '{ print int(($3 - 34)/9); }' | sort -n | uniq -c > "$d"
 
 	 gnuplot <<EOF
 #!/usr/bin/gnuplot
@@ -21,16 +21,17 @@ for p in $*; do
 set term postscript color enhanced eps
 set out "$e"
 
+set key off
 set style fill solid
 set style histogram
 set style data histograms
 
-set xlabel "slot"
-set ylabel "frequency"
+set xlabel "Slot"
+set ylabel "Count"
 
-set xrange [:256]
+set xrange [0:256]
 
-plot "$d" using 2:1 with impulses title "frequency"
+plot "$d" using 2:1 with impulses
 
 EOF
 
