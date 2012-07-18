@@ -34,8 +34,8 @@ update(uint16_t n, double v, vector<double>& cw)
 {
    if(0 == n) {
       cw[n] += v;
-   } else if(cw.size() <= n) {
-      update(n - 1, v, cw);     
+   } else if(cw.size() - 1 < n) {
+      update(n - 1, v, cw);  
    } else {
       v /= 2.0;
       cw[n] += v;
@@ -50,10 +50,11 @@ main(int ac, char **av)
    try {
 
       string what, enc_str;
-      bool dist, stats, use_sexprs, verbose;
+      bool debug, dist, stats, use_sexprs, verbose;
       options_description options("program options");
       options.add_options()
          ("help,?", "produce this help message")
+         ("debug,g", value<bool>(&debug)->default_value(false)->zero_tokens(), "enable debug")
          ("dist,d", value<bool>(&dist)->default_value(false)->zero_tokens(), "show tx distribution")
          ("encoding,e", value<string>(&enc_str)->default_value("OFDM"), "channel encoding")
          ("input,i", value<string>(&what)->default_value("mon0"), "input file/device name")
@@ -77,23 +78,28 @@ main(int ac, char **av)
       for(uint32_t n = 1; b = w->read(); ++n) {
          frame f(b);
          buffer_info_sptr info(b->info());
-         if(info->has(TX_FLAGS) && info->has(DATA_RETRIES)) {
+         if(/*info->has(TX_FLAGS) &&*/ info->has(DATA_RETRIES)) {
             uint txc = 1 + info->data_retries();
             max_txc = max(max_txc, txc);
             min_txc = min(min_txc, txc);
             nof_txs += txc;
             ++nof_pkts;
-
-            // ToDo: loop to txc!
-            update(txc - 1, 1.0, cw);
-
+            for(size_t i = 0; i < txc; ++i)
+               update(i, 1.0, cw);
             if(verbose)
                cout << n << " " << txc << endl;
          }
+         if(debug)
+            cout << n << " " << *info << endl;
       }
       if(dist) {
-         for(size_t i = min_txc; i < max_txc; ++i) {
-            cout << cw[i] << endl;
+         uint16_t lo = 0;
+         uint16_t hi = 0;
+         for(size_t i = min_txc; i < min(static_cast<uint_least32_t>(cw.size()), max_txc); ++i) {
+            lo = hi;
+            hi = (1 << (3 + i));
+            cout << lo << " " << cw[i] << endl;
+            cout << hi - 1 << " " << cw[i] << endl;
          }
       }
       if(stats) {
