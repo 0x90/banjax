@@ -50,7 +50,7 @@ main(int ac, char **av)
 {
    try {
 
-      bool help;
+      bool debug, help;
       string enc_str, what;
       uint32_t dead_time;
       uint16_t cw; 
@@ -69,6 +69,7 @@ main(int ac, char **av)
          ("cw,c", value(&cw)->default_value(0), "size of contention window in microseconds (0 = compute average)")
          ("damping,d", value(&damp)->default_value(5), "size of damping window in seconds")
          ("encoding,e", value<string>(&enc_str)->default_value("OFDM"), "channel encoding")
+         ("debug,g", value<bool>(&debug)->default_value(false)->zero_tokens(), "enable debug")
          ("help,?", value(&help)->default_value(false)->zero_tokens(), "produce this help message")
          ("input,i", value<string>(&what)->default_value("mon0"), "input file/device name")
          ("linkrate,l", value<uint32_t>(&rate_Mbs)->default_value(54), "Maximum link rate in Mb/s")
@@ -117,29 +118,33 @@ main(int ac, char **av)
       }
 
       buffer_sptr first(w->read()), b(first), last;
-      buffer_info_sptr info(b->info());
-      uint64_t tick_time = UINT64_C(1000000);
-      uint64_t end_time = b && runtime ? info->timestamp_wallclock() + (runtime * tick_time) : UINT64_MAX;
-      uint64_t tick = b && show_ticks ? info->timestamp_wallclock() + tick_time : UINT64_MAX;
-      for(b; (b = w->read()) && (info->timestamp_wallclock() <= end_time);){
-         // is it time to print results yet?
-         info = b->info();
-         uint64_t timestamp = info->timestamp_wallclock();
-         for(; tick <= timestamp; tick += tick_time) {
-            m->compute(tick, tick_time);
-            cout << "Time: " << tick / tick_time << endl;
-            cout << *m << endl;
-            m->reset();
+      if(b) {
+         buffer_info_sptr info(b->info());
+         uint64_t tick_time = UINT64_C(1000000);
+         uint64_t end_time = runtime ? info->timestamp_wallclock() + (runtime * tick_time) : UINT64_MAX;
+         uint64_t tick = show_ticks ? info->timestamp_wallclock() + tick_time : UINT64_MAX;
+         for(uint32_t n = 0; b && (info->timestamp_wallclock() <= end_time); ++n) {
+            // is it time to print results yet?
+            info = b->info();
+            uint64_t timestamp = info->timestamp_wallclock();
+            for(; tick <= timestamp; tick += tick_time) {
+               m->compute(tick, tick_time);
+               cout << "Time: " << tick / tick_time << endl;
+               cout << *m << endl;
+               m->reset();
+            }
+            m->add(b);
+            if(debug)
+               cout << n << " " << *info << endl;
+            last = b;
+            b = w->read();
          }
-         // update metric
-         m->add(b);
-         last = b;
-      }
-      if(!show_ticks) {
-         uint32_t elapsed = last->info()->timestamp_wallclock() - first->info()->timestamp_wallclock();
-         m->compute(tick, elapsed);
-         cout << "Time: " << static_cast<double>(elapsed) / tick_time << endl;
-         cout << *m << endl;
+         if(!show_ticks) {
+            uint32_t elapsed = last->info()->timestamp_wallclock() - first->info()->timestamp_wallclock();
+            m->compute(tick, elapsed);
+            cout << "Time: " << static_cast<double>(elapsed) / tick_time << endl;
+            cout << *m << endl;
+         }
       }
    } catch(const error& x) {
       cerr << x.what() << endl;

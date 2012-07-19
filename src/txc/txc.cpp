@@ -5,14 +5,16 @@
  */
 
 #define __STDC_LIMIT_MACROS
+#include <dot11/data_frame.hpp>
+#include <dot11/frame.hpp>
+#include <dot11/ip_hdr.hpp>
+#include <dot11/llc_hdr.hpp>
+#include <dot11/udp_hdr.hpp>
 #include <net/buffer_info.hpp>
 #include <net/wnic.hpp>
 #include <net/wnic_encoding_fix.hpp>
 #include <net/wnic_timestamp_fix.hpp>
 #include <net/wnic_timestamp_swizzle.hpp>
-#include <dot11/data_frame.hpp>
-#include <dot11/frame.hpp>
-#include <dot11/ip_hdr.hpp>
 
 #include <boost/program_options.hpp>
 #include <cstdlib>
@@ -77,10 +79,31 @@ main(int ac, char **av)
          uint64_t tick_time = UINT64_C(1000000);
          uint64_t end_time = runtime ? b->info()->timestamp_wallclock() + (runtime * tick_time) : UINT64_MAX;
          uint_least32_t nof_txs = 0, nof_pkts = 0, max_txc = 0, min_txc = UINT32_MAX;
-         for(uint32_t n = 1; b; ++n) {
+         for(uint32_t n = 1; b && (b->info()->timestamp_wallclock() <= end_time); b = w->read(), ++n) {
             frame f(b);
             buffer_info_sptr info(b->info());
-            if(/*info->has(TX_FLAGS) &&*/ info->has(DATA_RETRIES)) {
+
+            // use only iperf traffic!
+            data_frame_sptr df(f.as_data_frame());
+            if(!df)
+               continue;
+
+            llc_hdr_sptr llc(df->get_llc_hdr());
+            if(!llc)
+               continue;
+
+            ip_hdr_sptr ip(llc->get_ip_hdr());
+            if(!ip)
+               continue;
+
+            udp_hdr_sptr udp(ip->get_udp_hdr());
+            if(!udp)
+               continue;
+
+            if(udp->dst_port() != 5001)
+               continue;
+
+            if(info->has(TX_FLAGS) && info->has(DATA_RETRIES)) {
                uint txc = 1 + info->data_retries();
                max_txc = max(max_txc, txc);
                min_txc = min(min_txc, txc);
@@ -88,12 +111,9 @@ main(int ac, char **av)
                ++nof_pkts;
                for(size_t i = 0; i < txc; ++i)
                   update(i, 1.0, cw);
-               if(verbose)
-                  cout << n << " " << txc << endl;
             }
             if(debug)
                cout << n << " " << *info << endl;
-            b = w->read();
          }
          if(dist) {
             uint16_t lo = 0;
