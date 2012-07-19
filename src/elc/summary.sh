@@ -18,11 +18,13 @@ OPTS=""
 
 echo > "$s"
 for r in 6 9 12 18 24 36 48 54; do
-	 for f in ${t}/*load${r}*; do
+	 for f in ${t}/*load${r}*.pcap; do
 		  echo -n "File: $f, " >> "$s"
 		  echo -n "$f" | sed 's/.*att\([0-9]*\)_load\([0-9]*\).*/Att: \1, Load: \2, /' >> "$s"
 		  ./elc --linkrate $r $OPTS --input "$f" >> "$s"
 	 done
 done
+
+overwrite "$s" awk -f process.awk < "$s"
 
 exit 0
