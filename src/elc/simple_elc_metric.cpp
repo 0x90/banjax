@@ -57,7 +57,7 @@ simple_elc_metric::add(buffer_sptr b)
    frame f(b);
    buffer_info_sptr info(b->info());
    data_frame_sptr df(f.as_data_frame());
-   if(info->has(TX_FLAGS) && df) {
+   if(info->has(TX_FLAGS) && info->has(PACKET_TIME) && df && info->packet_time() != 0) {
       uint32_t tx_flags = info->tx_flags();
       if(!(tx_flags & TX_FLAGS_FAIL)) {
          const uint16_t CRC_SZ = 4;

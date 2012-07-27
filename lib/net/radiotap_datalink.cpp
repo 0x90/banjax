@@ -306,6 +306,7 @@ radiotap_datalink::parse(size_t frame_sz, const uint8_t *frame)
       int8_t junk_s8;
       uint8_t junk_u8;
       uint16_t junk_u16;
+      uint16_t junk_u32;
       uint64_t junk_u64;
       uint32_t bit = bitmap & i;
       switch(bit) {
