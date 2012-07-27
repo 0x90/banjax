@@ -4,6 +4,7 @@
  * Copyright NICTA, 2011
  */
 
+#define __STDC_CONSTANT_MACROS
 #define __STDC_LIMIT_MACROS
 #include <net/buffer_info.hpp>
 #include <net/wnic.hpp>
