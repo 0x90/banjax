@@ -324,8 +324,11 @@ buffer_info::write(ostream& os) const
       os << ", ";
    }
 
-   if(has(PACKET_TIME))
+   if(has(PACKET_TIME)) {
+      os << "PKT-START: " << start_ts_ << ", ";
+      os << "PKT-END: " << end_ts_ << ", ";
       os << "PKT-TIME: " << packet_time() << ", ";
+   }
 
 }
 
@@ -347,16 +350,16 @@ uint32_t
 buffer_info::packet_time() const
 {
    PRECONDITION(has(PACKET_TIME));
-   return packet_time_;
+   return end_ts_ - start_ts_;
 }
 
 void
-buffer_info::packet_time(uint32_t t)
+buffer_info::packet_time(uint32_t start_ts, uint32_t end_ts)
 {
-   packet_time_ = t;
+   start_ts_ = start_ts;
+   end_ts_ = end_ts;
    present_ |= PACKET_TIME;
 }
-
 
 ostream&
 net::operator<<(ostream& os, const buffer_info& info)

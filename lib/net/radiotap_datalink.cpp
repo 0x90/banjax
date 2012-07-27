@@ -306,7 +306,7 @@ radiotap_datalink::parse(size_t frame_sz, const uint8_t *frame)
       int8_t junk_s8;
       uint8_t junk_u8;
       uint16_t junk_u16;
-      uint16_t junk_u32;
+      uint16_t start_ts, end_ts;
       uint64_t junk_u64;
       uint32_t bit = bitmap & i;
       switch(bit) {
@@ -423,8 +423,9 @@ radiotap_datalink::parse(size_t frame_sz, const uint8_t *frame)
          }
          break;
       case RADIOTAP_PACKET_TIME:
-         extract(ofs, junk_u32, hdr_sz, frame_sz, frame);
-         info->packet_time(junk_u32);
+         extract(ofs, start_ts, hdr_sz, frame_sz, frame);
+         extract(ofs, end_ts, hdr_sz, frame_sz, frame);
+         info->packet_time(start_ts, end_ts);
          break;
       default:
          break;

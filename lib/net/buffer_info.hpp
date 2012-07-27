@@ -316,9 +316,10 @@ namespace net {
       /**
        * Set the elapsed time used to transmit this packet.
        *
-       * \param t The elapsed time (in microseconds).
+       * \param start_ts The packet start time (in microseconds).
+       * \param end_ts The packet end time (in microseconds).
        */
-      void packet_time(uint32_t t);
+      void packet_time(uint32_t start_ts, uint32_t end_ts);
 
    private:
 
@@ -400,9 +401,14 @@ namespace net {
       std::vector<uint32_t> rates_;
 
       /**
-       * The packet transmission time (in microseconds).
+       * The packet transmission start time (in microseconds).
        */
-      uint32_t packet_time_;
+      uint32_t start_ts_;
+
+      /**
+       * The packet transmission end time (in microseconds).
+       */
+      uint32_t end_ts_;
 
    };
 
