@@ -323,6 +323,10 @@ buffer_info::write(ostream& os) const
       }
       os << ", ";
    }
+
+   if(has(PACKET_TIME))
+      os << "PKT-TIME: " << packet_time() << ", ";
+
 }
 
 vector<uint32_t>
@@ -339,7 +343,7 @@ buffer_info::rates(const vector<uint32_t>& rates)
    present_ |= RATES_Kbs;
 }
 
-uint16_t
+uint32_t
 buffer_info::packet_time() const
 {
    PRECONDITION(has(PACKET_TIME));
@@ -347,7 +351,7 @@ buffer_info::packet_time() const
 }
 
 void
-buffer_info::packet_time(uint16_t t)
+buffer_info::packet_time(uint32_t t)
 {
    packet_time_ = t;
    present_ |= PACKET_TIME;

@@ -133,9 +133,10 @@ main(int ac, char **av)
                cout << *m << endl;
                m->reset();
             }
-            m->add(b);
-            if(debug)
+            if(debug) { 
                cout << n << " " << *info << endl;
+            }
+            m->add(b);
             last = b;
             b = w->read();
          }

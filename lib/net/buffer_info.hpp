@@ -311,14 +311,14 @@ namespace net {
        *
        * \return The time (in microseconds) used to send this packet.
        */
-      uint16_t packet_time() const;
+      uint32_t packet_time() const;
 
       /**
        * Set the elapsed time used to transmit this packet.
        *
        * \param t The elapsed time (in microseconds).
        */
-      void packet_time(uint16_t t);
+      void packet_time(uint32_t t);
 
    private:
 
@@ -402,7 +402,7 @@ namespace net {
       /**
        * The packet transmission time (in microseconds).
        */
-      uint16_t packet_time_;
+      uint32_t packet_time_;
 
    };
 
