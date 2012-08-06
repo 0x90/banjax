@@ -112,6 +112,8 @@ main(int ac, char **av)
                ++nof_pkts;
                for(size_t i = 0; i < txc; ++i)
                   update(i, 1.0, cw);
+               if(verbose)
+                  cout << n << " " << txc << endl;
             }
             if(debug)
                cout << n << " " << *info << endl;
