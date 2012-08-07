@@ -10,6 +10,7 @@ for p in $*; do
 	 fi
 	 [ ! -d "$odir" ] && mkdir -p "$odir"
 
+	 o="${o/test\//results\/}"
 	 c="${o/.pcap/.cw}"
 	 d="${o/.pcap/.data}"
 	 e="${o/.pcap/.slots.eps}"

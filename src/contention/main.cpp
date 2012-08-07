@@ -70,7 +70,7 @@ main(int ac, char **av)
       if(b) {
          uint64_t tick_time = UINT64_C(1000000);
          uint64_t end_time = runtime ? b->info()->timestamp_wallclock() + (runtime * tick_time) : UINT64_MAX;
-         for(uint32_t n = 1; b && (b->info()->timestamp_wallclock() <= end_time); b =  w->read(), ++n) {
+         for(uint32_t n = 1; b && (b->info()->timestamp_wallclock() <= end_time); p = b, b =  w->read(), ++n) {
             frame f(b);
             frame_control fc(f.fc());
 
@@ -111,7 +111,6 @@ main(int ac, char **av)
                   cout << n << " " << b->info()->timestamp1() << " " << ifs << " " << txc << endl;
                }
             }
-            p = b;
          }
       }
       cerr << "AVG CONTENTION TIME = " << (t_cw / static_cast<double>(n_cw)) - enc->DIFS() << endl;
