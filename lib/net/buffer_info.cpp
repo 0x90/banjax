@@ -350,7 +350,7 @@ uint32_t
 buffer_info::packet_time() const
 {
    PRECONDITION(has(PACKET_TIME));
-   return end_ts_ - start_ts_;
+   return end_ts_ ? end_ts_ - start_ts_ : 0;
 }
 
 void

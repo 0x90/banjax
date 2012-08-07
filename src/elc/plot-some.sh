@@ -4,8 +4,8 @@
 h=`dirname $0`
 
 if [ $# -lt 3 ]; then
-    echo "usage: plot-some.sh file.pcap field [field*]"  2>&1
-    exit 1
+	 echo "usage: plot-some.sh file.pcap field [field*]"	2>&1
+	 exit 1
 fi
 
 p="$1"
@@ -15,7 +15,7 @@ fields="$*"
 o="${p/test/results}"
 odir=`dirname "$o"`
 if [ ! -d "$odir" ]; then
-    mkdir -p "$odir"
+	 mkdir -p "$odir"
 fi
 
 d="${o/.pcap/.data}"
@@ -45,17 +45,20 @@ $h/extract.scm Time $fields < "$d" > "$t"
 # prepare the plot string
 if [ -s "$t" ]; then
 	 s=""
-    d=""
+	 d=""
+	 axis2=""
 	 let n=2
 	 for f in $*; do
 		  if [ "${axis[$f]}" == "" ]; then
 				s="${s}${d}\"${t}\" using 1:(Mb(\$${n})) with lp title \"${f}\""
 		  else
 				s="${s}${d}\"${t}\" using 1:${n} with lp title \"${f}\" ${axis[$f]}"
+				axis2='set y2label "Count"'
+				# Add this? set y2tics
 		  fi
 		  d=", "
 		  let n=n+1
-    done
+	 done
 	 [ "$XRANGE" != "" ] && XRANGE="set xrange [$XRANGE]"
 	 [ "$YRANGE" != "" ] && YRANGE="set yrange [$YRANGE]"
 	 [ "$Y2RANGE" != "" ] && Y2RANGE="set y2range [$Y2RANGE]"
@@ -66,14 +69,13 @@ set out "$o"
 # function to convert MB/s -> Mb/s
 Mb(x)=x * 8
 
-set key box outside
+set key below
 set grid xtics ytics
 set ytics nomirror
-set y2tics
 
 set xlabel "Time (s)"
 set ylabel "Traffic (Mb)"
-set y2label "Count"
+$axis2
 
 $XRANGE
 $YRANGE
@@ -82,7 +84,7 @@ $Y2RANGE
 plot $s 
 EOF
 	 # if [ -f "${t}" ]; then
-	 # 	  rm "$t"
+	 #		  rm "$t"
 	 # fi
 
 	 if [[ -f "${o}" && ! -s "${o}" ]]; then
