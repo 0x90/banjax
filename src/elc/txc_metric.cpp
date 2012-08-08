@@ -107,6 +107,6 @@ txc_metric::reset()
 void
 txc_metric::write(ostream& os) const
 {
-   os << "Max-" << name_ << ": " << max_txc_stash_ << ", ";
+   os << name_ << "-Max" << ": " << max_txc_stash_ << ", ";
    os << name_ << ": " << txc_;
 }
