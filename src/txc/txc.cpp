@@ -37,12 +37,12 @@ update(uint16_t n, double v, vector<double>& cw)
 {
    if(0 == n) {
       cw[n] += v;
-   } else if(cw.size() - 1 < n) {
-      update(n - 1, v, cw);  
-   } else {
+   } else if(n < cw.size()) {
       v /= 2.0;
       cw[n] += v;
       update(n - 1, v, cw);
+   } else {
+      update(n - 1, v, cw);  
    }
 }
 
@@ -110,8 +110,7 @@ main(int ac, char **av)
                min_txc = min(min_txc, txc);
                nof_txs += txc;
                ++nof_pkts;
-               for(size_t i = 0; i < txc; ++i)
-                  update(i, 1.0, cw);
+               update(txc - 1, txc, cw);
                if(verbose)
                   cout << n << " " << txc << endl;
             }
@@ -119,17 +118,20 @@ main(int ac, char **av)
                cout << n << " " << *info << endl;
          }
          if(dist) {
-            uint16_t lo = 0;
-            uint16_t hi = 0;
-            for(size_t i = min_txc; i < min(static_cast<uint_least32_t>(cw.size()), max_txc); ++i) {
+            uint16_t lo = 0, hi = 0;
+            for(size_t i = 0; i < min(static_cast<uint_least32_t>(cw.size()), max_txc); ++i) {
                lo = hi;
-               hi = (1 << (3 + i));
-               cout << lo << " " << cw[i] << endl;
-               cout << hi - 1 << " " << cw[i] << endl;
+               hi = (1 << (4 + i));
+               double v = cw[i] / (hi - lo);
+               for(uint16_t j = lo; j < hi; ++j) {
+                  cout << j << " " << v << endl;
+               }
             }
          }
          if(stats) {
             cout << "txc: " << nof_txs / static_cast<double>(nof_pkts) << ", ";
+            cout << "nof_pkts: " << nof_pkts << ", ";
+            cout << "nof_txs: " << nof_txs << ", ";
             cout << "min txc: " << min_txc << ", ";
             cout << "max txc: " << max_txc << endl;
          }

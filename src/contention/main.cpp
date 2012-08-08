@@ -70,7 +70,7 @@ main(int ac, char **av)
       if(b) {
          uint64_t tick_time = UINT64_C(1000000);
          uint64_t end_time = runtime ? b->info()->timestamp_wallclock() + (runtime * tick_time) : UINT64_MAX;
-         for(uint32_t n = 1; b && (b->info()->timestamp_wallclock() <= end_time); p = b, b =  w->read(), ++n) {
+         for(uint32_t n = 1; b && (b->info()->timestamp_wallclock() <= end_time); p = b, b = w->read(), ++n) {
             frame f(b);
             frame_control fc(f.fc());
 
@@ -94,7 +94,7 @@ main(int ac, char **av)
             if(udp->dst_port() != 5001)
                continue;
 
-            if(p && DATA_FRAME == fc.type() && f.address2() == ta) {
+            if(p && f.address2() == ta) {
                uint16_t ifs;
                if(!fc.retry()) {
                   txc = 0;

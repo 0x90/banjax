@@ -3,14 +3,13 @@
 for p in $*; do
 
 	 o="${p/test/results}"
-	 if [ -d "$p" ]; then
-		  odir="$o"
-	 else
-		  odir=`dirname "$o"`
+	 if [ ! -f "$p" ]; then
+        echo "$p is not a pcap file!" 2>&1 
+		  exit 1
 	 fi
+	 odir=`dirname "$o"`
 	 [ ! -d "$odir" ] && mkdir -p "$odir"
 
-	 o="${o/test\//results\/}"
 	 c="${o/.pcap/.cw}"
 	 d="${o/.pcap/.data}"
 	 e="${o/.pcap/.slots.eps}"
