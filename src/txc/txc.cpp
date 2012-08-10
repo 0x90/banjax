@@ -31,21 +31,17 @@ using namespace dot11;
 using namespace net;
 using namespace std;
 
-
 void
-update(uint16_t n, double v, vector<double>& cw)
+update(uint16_t txc, vector<double>& slots)
 {
-   if(0 == n) {
-      cw[n] += v;
-   } else if(n < cw.size()) {
-      v /= 2.0;
-      cw[n] += v;
-      update(n - 1, v, cw);
-   } else {
-      update(n - 1, v, cw);  
+   for(uint16_t i = 0; i < txc; ++i) {
+      uint16_t cw = min(1 << 4 + i, 1024);
+      double p = 1.0 / cw;
+      for(uint16_t j = 0; j < cw; ++j) {	
+         slots[j] += p;
+      }
    }
 }
-
 
 int
 main(int ac, char **av)
@@ -74,7 +70,7 @@ main(int ac, char **av)
       }
 
       wnic_sptr w(wnic::open(what));
-      vector<double> cw(6);
+      vector<double> slots(1024);
       buffer_sptr b(w->read());
       if(b) {
          uint64_t tick_time = UINT64_C(1000000);
@@ -110,7 +106,7 @@ main(int ac, char **av)
                min_txc = min(min_txc, txc);
                nof_txs += txc;
                ++nof_pkts;
-               update(txc - 1, txc, cw);
+               update(txc, slots);
                if(verbose)
                   cout << n << " " << txc << endl;
             }
@@ -118,14 +114,8 @@ main(int ac, char **av)
                cout << n << " " << *info << endl;
          }
          if(dist) {
-            uint16_t lo = 0, hi = 0;
-            for(size_t i = 0; i < min(static_cast<uint_least32_t>(cw.size()), max_txc); ++i) {
-               lo = hi;
-               hi = (1 << (4 + i));
-               double v = cw[i] / (hi - lo);
-               for(uint16_t j = lo; j < hi; ++j) {
-                  cout << j << " " << v << endl;
-               }
+            for(uint32_t i = 0; i < min(static_cast<uint32_t>(slots.size()), static_cast<uint32_t>(1 << 4 + max_txc - 1)); ++i) {
+               cout << i << " " << slots[i] << endl;
             }
          }
          if(stats) {
