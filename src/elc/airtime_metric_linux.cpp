@@ -88,12 +88,16 @@ airtime_metric_linux::compute(uint32_t ignored_delta_us)
    const uint32_t TEST_FRAME_SZ = 1024;
    const uint32_t S_UNIT = 1 << ARITH_SHIFT;
 	const int32_t DEVICE_CONSTANT = 1 << ARITH_SHIFT;
-   uint32_t err = (fail_avg_ << ARITH_SHIFT) / 100;
-	uint32_t rate = 100 * last_rate_Kbs_;
-	uint32_t tx_time = (DEVICE_CONSTANT + 1000 * TEST_FRAME_SZ / rate);
-	uint32_t estimated_retx = ((1 << (2 * ARITH_SHIFT)) / (S_UNIT - err));
-   airtime_ = /* TEST_FRAME_SZ / */ ((tx_time * estimated_retx) >> (2 * ARITH_SHIFT));
 
+   if(last_rate_Kbs_) {
+      uint32_t err = (fail_avg_ << ARITH_SHIFT) / 100;
+      uint32_t rate = 100 * last_rate_Kbs_;
+      uint32_t tx_time = (DEVICE_CONSTANT + 1000 * TEST_FRAME_SZ / rate);
+      uint32_t estimated_retx = ((1 << (2 * ARITH_SHIFT)) / (S_UNIT - err));
+      airtime_ = /* TEST_FRAME_SZ / */ ((tx_time * estimated_retx) >> (2 * ARITH_SHIFT));
+   } else {
+      airtime_ = 0;
+   }
    return airtime_;
 }
 
