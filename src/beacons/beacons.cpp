@@ -30,12 +30,16 @@ main(int ac, char **av)
 {
    try {
 
-      string what;
-      bool use_sexprs;
+      bool debug;
+      uint64_t runtime;
+      string what, ta_str;
       options_description options("program options");
       options.add_options()
          ("help,?", "produce this help message")
+         ("debug,g", value<bool>(&debug)->default_value(false)->zero_tokens(), "enable debug")
          ("input,i", value<string>(&what)->default_value("mon0"), "input file/device name")
+         ("runtime,u", value<uint64_t>(&runtime)->default_value(0), "finish after n seconds")
+         ("ta,a", value<string>(&ta_str)->default_value("00:0b:6b:0a:82:34"), "transmitter address")
          ;
 
       variables_map vars;       
@@ -52,19 +56,23 @@ main(int ac, char **av)
       w = wnic_sptr(new wnic_timestamp_swizzle(w));
       w = wnic_sptr(new wnic_timestamp_fix(w));
 
-      buffer_sptr b, null;
-      buffer_sptr p, beacon;
-      for(uint32_t n = 1; b = w->read(); ++n){
-         frame f(b);
-         frame_control fc(f.fc());
-         if(beacon && p) {
-            cout << n - 1 << " " << beacon->info()->timestamp1() << " " << b->info()->timestamp1() - p->info()->timestamp2() << endl;
-            beacon = null;
-         } else {
-            if(MGMT_BEACON == fc.subtype()) {
-               beacon = b;
-            } else {
-               p = b;
+      eui_48 ta(ta_str.data());
+      buffer_sptr b(w->read());
+      if(b) {
+         buffer_sptr p = b;
+         uint64_t tick_time = UINT64_C(1000000);
+         uint64_t end_time = runtime ? b->info()->timestamp_wallclock() + (runtime * tick_time) : UINT64_MAX;
+         for(uint32_t n = 2; (b = buffer_sptr(w->read())) && (b->info()->timestamp_wallclock() <= end_time); p = b, ++n){
+            frame curr(b);
+            frame prev(p);
+            if((curr.fc().subtype() == MGMT_BEACON) && (curr.address2() == ta)) {
+               cout << n << " B " << b->info()->timestamp1() - p->info()->timestamp2() << endl;
+            }
+            if((prev.fc().subtype() == MGMT_BEACON) && (prev.address2() == ta)) {
+               cout << n - 1 << " A " << b->info()->timestamp1() - p->info()->timestamp2() << endl;
+            }
+            if(debug) {
+               cout << n << " " << *(b->info()) << endl;
             }
          }
       }
