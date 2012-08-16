@@ -8,7 +8,7 @@ fi
 t=$1
 r=${t/test\//results\/}
 [ ! -d "${r}" ] && mkdir -p "${r}"
-s="${r}/summary.txt"
+s="${r}/summary.dat"
 
 OPTS=""
 [ "$BEACON" != "" ] && OPTS+="--beacon ${BEACON} "
@@ -16,7 +16,9 @@ OPTS=""
 [ "$MPDU" != "" ] && OPTS+="--mpdu ${MPDU} "
 [ "$RUNTIME" != "" ] && OPTS+="--runtime ${RUNTIME} "
 
-echo > "$s"
+echo "# Source: $t" > "$s"
+echo "# " >> "$s"
+echo >> "$s"
 for r in 6 9 12 18 24 36 48 54; do
 	 for f in ${t}/*load${r}*.pcap; do
 		  echo -n "File: $f, " >> "$s"
@@ -24,7 +26,5 @@ for r in 6 9 12 18 24 36 48 54; do
 		  ./elc --linkrate $r $OPTS --input "$f" >> "$s"
 	 done
 done
-
-overwrite "$s" awk -f process.awk < "$s"
 
 exit 0
