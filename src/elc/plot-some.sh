@@ -32,12 +32,7 @@ axis["FDR"]="axes x1y2"
 # write the extract file
 OPTS=""
 if [[ ! -e $d || "$p" -nt "$d" ]]; then
-	 [ "$BEACON" != "" ] && OPTS+="--beacon ${BEACON} "
-	 [ "$CW" != "" ] && OPTS+="--cw $CW "
-	 [ "RATE" != "" ] && OPTS+="--linkrate ${RATE} "
-	 [ "$MPDU" != "" ] && OPTS+="--mpdu ${MPDU} "
-	 [ "$RUNTIME" != "" ] && OPTS+="--runtime ${RUNTIME} "
-	 $h/elc --ticks ${OPTS} --input "$p" | sed 's/,//g' | sed 's/nan/0/g' | awk -f "${h}/plot.awk" > "$d"
+	 echo 1>&2 "error: $d out-of-date or missing!"
 fi
 
 $h/extract.scm Time $fields < "$d" > "$t"
