@@ -71,8 +71,8 @@ main(int ac, char **av)
          if(udp->dst_port() != port)
             continue;
          buffer_sptr pkt(udp->get_payload());
-         if(pkt->read_u8(0) == 0x2)
-            cout << n << " " << b->info()->timestamp_wallclock() - first->info()->timestamp_wallclock() << " " << pkt->read_u8(1) << endl;
+         if(pkt->read_u8(0) == 0x3)
+            cout << n << " " << b->info()->timestamp_wallclock() - first->info()->timestamp_wallclock() << " " << static_cast<uint16_t>(pkt->read_u8(1)) << endl;
       }
 
    } catch(const error& x) {
