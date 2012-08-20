@@ -4,7 +4,7 @@
 h=`dirname $0`
 
 if [ $# -lt 3 ]; then
-	 echo "usage: plot-some.sh file.data field [field*]"	2>&1
+	 echo "usage: plot-some.sh file.data field [field*]"	1>&2
 	 exit 1
 fi
 

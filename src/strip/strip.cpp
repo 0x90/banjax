@@ -8,6 +8,10 @@
 
 using namespace std;
 
+const uint8_t BEGIN_OR_END = 0x0;
+const uint8_t BEGIN  = 0x1;
+const uint8_t END    = 0x2;
+
 struct ieee80211_radiotap_header {
    u_int8_t it_version;         /* set to 0 */
    u_int8_t it_pad;
@@ -45,11 +49,12 @@ main(int ac, char **av)
          exit(EXIT_FAILURE);
       }
 
+      uint32_t n = 0;
       bool writing = false;
       const uint8_t *octets;
       struct pcap_pkthdr hdr;
       const uint16_t ANNOUNCE_SZ = 62;
-      while(octets = pcap_next(in, &hdr)) {
+      while(++n, octets = pcap_next(in, &hdr)) {
          struct ieee80211_radiotap_header *radiotap = (struct ieee80211_radiotap_header*) octets;
          uint16_t frame_sz = hdr.len - radiotap->it_len;
          const uint8_t *frame = octets + radiotap->it_len;
@@ -61,10 +66,11 @@ main(int ac, char **av)
             0xaa == frame[24] && 0xaa == frame[25] && /* SNAP */
             0x08 == frame[30] && 0x00 == frame[31] && /* IP */
             0x11 == frame[41] &&                      /* UDP */
-            0x17 == frame[54] && 0x47 == frame[55]) { /* UDP port 5959 */           
-            if(0x00 == frame[60] && !writing)
+            0x17 == frame[54] && 0x47 == frame[55]) { /* UDP port 5959 */ 
+
+            if((BEGIN_OR_END == frame[60] || BEGIN == frame[60]) && !writing)
                writing = true;
-            else if(0x01 == frame[60] && writing)
+            else if((BEGIN_OR_END == frame[60] || END == frame[60]) && writing)
                writing = false;
          }
          if(writing)

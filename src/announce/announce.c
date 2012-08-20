@@ -22,6 +22,7 @@ main(int ac, char **av)
 		{"begin",	no_argument,			0, 'b' },
 		{"end",		no_argument,			0, 'e' },
 		{"change",	required_argument,	0, 'c' },
+		{"port",	   required_argument,	0, 'p' },
 		{0,			0,							0, 0 }
 	};
 
@@ -29,11 +30,13 @@ main(int ac, char **av)
 	uint16_t port = 5959;
 	int c, opt_index, enable = 1;
 	struct __attribute__((__packed__)) pkt p;
+	bzero(&p, sizeof(p));
 	const size_t P_SZ = sizeof(p);
 	while((c = getopt_long(ac, av, "bc:ep:", opts, &opt_index)) != -1) {
 		switch(c) {
 		case 'b':
 			p.type = BEGIN;
+			p.val = 0;
 			break;
 		case 'c':
 			p.type = CHANGE;
@@ -41,6 +44,7 @@ main(int ac, char **av)
 			break;
 		case 'e':
 			p.type = END;
+			p.val = 0;
 			break;
 		case 'p':
 			port = strtoul(optarg, NULL, 10);
