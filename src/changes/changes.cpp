@@ -53,8 +53,8 @@ main(int ac, char **av)
 
       wnic_sptr w(wnic::open(what));
       w = wnic_sptr(new wnic_encoding_fix(w, CHANNEL_CODING_OFDM | CHANNEL_PREAMBLE_LONG));
-      buffer_sptr b;
-      for(uint32_t n = 1; b = w->read(); ++n){
+      buffer_sptr b(w->read()), first(b);
+      for(uint32_t n = 1; b; b = w->read(), ++n){
          frame f(b);
          data_frame_sptr df(f.as_data_frame());
          if(!df)
@@ -70,10 +70,9 @@ main(int ac, char **av)
             continue;
          if(udp->dst_port() != port)
             continue;
-
-         // ToDo: test UDP packet type - if 2 then we can print the change along with the timestamp!
-
-         cout << *(b->info()) << endl;
+         buffer_sptr pkt(udp->get_payload());
+         if(pkt->read_u8(0) == 0x2)
+            cout << n << " " << b->info()->timestamp_wallclock() - first->info()->timestamp_wallclock() << " " << pkt->read_u8(1) << endl;
       }
 
    } catch(const error& x) {
