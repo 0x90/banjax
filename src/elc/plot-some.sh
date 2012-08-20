@@ -4,23 +4,16 @@
 h=`dirname $0`
 
 if [ $# -lt 3 ]; then
-	 echo "usage: plot-some.sh file.pcap field [field*]"	2>&1
+	 echo "usage: plot-some.sh file.data field [field*]"	2>&1
 	 exit 1
 fi
 
-p="$1"
+d="$1"
 shift 1
 fields="$*"
 
-o="${p/test/results}"
-odir=`dirname "$o"`
-if [ ! -d "$odir" ]; then
-	 mkdir -p "$odir"
-fi
-
-d="${o/.pcap/.data}"
-t="${o/.pcap/.extract}"
-o="${o/.pcap/.eps}"
+o="${d/.data/.eps}"
+t="${d/.data/.extract}"
 
 declare -A axis
 axis["Octets"]="axes x1y2"
@@ -31,11 +24,16 @@ axis["FDR"]="axes x1y2"
 
 # write the extract file
 OPTS=""
-if [[ ! -e $d || "$p" -nt "$d" ]]; then
-	 echo 1>&2 "error: $d out-of-date or missing!"
+if [ ! -e $d ]; then
+	 echo 1>&2 "error: $d is missing!"
+	 exit 1
 fi
 
+# extract data to plot
 $h/extract.scm Time $fields < "$d" > "$t"
+
+# direct to gnuplot unless told otherwise
+[ "$OUT" == "" ] && OUT=`which gnuplot`
 
 # prepare the plot string
 if [ -s "$t" ]; then
@@ -57,7 +55,7 @@ if [ -s "$t" ]; then
 	 [ "$XRANGE" != "" ] && XRANGE="set xrange [$XRANGE]"
 	 [ "$YRANGE" != "" ] && YRANGE="set yrange [$YRANGE]"
 	 [ "$Y2RANGE" != "" ] && Y2RANGE="set y2range [$Y2RANGE]"
-	 gnuplot <<EOF
+	 ${OUT} <<EOF
 set term postscript color enhanced eps
 set out "$o"
 
@@ -78,9 +76,9 @@ $Y2RANGE
 
 plot $s 
 EOF
-	 # if [ -f "${t}" ]; then
-	 #		  rm "$t"
-	 # fi
+	 if [ -f "${t}" ]; then
+	 	  rm "$t"
+	 fi
 
 	 if [[ -f "${o}" && ! -s "${o}" ]]; then
 		  rm "$o"

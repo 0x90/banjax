@@ -3,6 +3,7 @@
 
 SUBDIRS = \
 	beacons \
+	changes \
 	contention \
 	elc \
 	icmp \

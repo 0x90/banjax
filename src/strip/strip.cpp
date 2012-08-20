@@ -48,7 +48,7 @@ main(int ac, char **av)
       bool writing = false;
       const uint8_t *octets;
       struct pcap_pkthdr hdr;
-      const uint16_t ANNOUNCE_SZ = 82;
+      const uint16_t ANNOUNCE_SZ = 62;
       while(octets = pcap_next(in, &hdr)) {
          struct ieee80211_radiotap_header *radiotap = (struct ieee80211_radiotap_header*) octets;
          uint16_t frame_sz = hdr.len - radiotap->it_len;
@@ -57,11 +57,18 @@ main(int ac, char **av)
             fputs("error: can't find radiotap header\n", stderr);
             break;
          }
-         if((ANNOUNCE_SZ == frame_sz || ANNOUNCE_SZ == frame_sz - 4) && 0xaa == frame[24] && 0xaa == frame[25] && 0xff == frame[30] && 0xff == frame[31]) {
-            writing = !writing;
-         } else if(writing) {
-            pcap_dump(reinterpret_cast<u_char*>(out), &hdr, octets);
+         if((ANNOUNCE_SZ == frame_sz || ANNOUNCE_SZ == frame_sz - 4) &&
+            0xaa == frame[24] && 0xaa == frame[25] && /* SNAP */
+            0x08 == frame[30] && 0x00 == frame[31] && /* IP */
+            0x11 == frame[41] &&                      /* UDP */
+            0x17 == frame[54] && 0x47 == frame[55]) { /* UDP port 5959 */           
+            if(0x00 == frame[60] && !writing)
+               writing = true;
+            else if(0x01 == frame[60] && writing)
+               writing = false;
          }
+         if(writing)
+            pcap_dump(reinterpret_cast<u_char*>(out), &hdr, octets);
       }
       pcap_dump_close(out);
       pcap_close(dead);
