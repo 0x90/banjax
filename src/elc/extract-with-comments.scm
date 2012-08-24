@@ -7,20 +7,21 @@
 
 
 ;;; apply fn to lines from port
-;;; ignores+preserves comments/blank lines from original file
+;;; preserves comments/blank lines from original file
 
 (define (filter-port in out fn)
   (let ((s (read-line in)))
-    (if (not (eof-object? s))
-        (begin
-          (cond ((= 0 (string-length s))
-                 (format out "~%"))
-                ((eqv? #\# (string-ref s 0))
-                 (format out "~a~&" s))
-                (else
-                 (fn s)))
-          (filter-port in out fn))
-        s)))
+    (cond ((eof-object? s)
+           s)
+          ((= 0 (string-length s))
+           (format out "~%")
+           (filter-port in out fn))
+          ((eqv? #\# (string-ref s 0))
+           (format out "~a" s)
+           (filter-port in out fn))
+          (else
+           (fn s)
+           (filter-port in out fn))))
 
 
 ;;; write named fields from specified file
