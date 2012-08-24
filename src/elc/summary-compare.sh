@@ -3,21 +3,21 @@
 case "$#" in
 	 1)
 		  p="$1"
-		  fn="rmse"
 		  m="ELC"
+		  fn="rmse"
 		  ;;
 	 2)
 		  p="$1"
-		  fn="$2"
-		  m="ELC"
+		  m="$2"
+		  fn="rmse"
 		  ;;
 	 3)
 		  p="$1"
-		  fn="$2"
-		  m="$3"
+		  m="$2"
+		  fn="$3"
 		  ;;
 	 *)
-		  echo "usage: summary-compare path [fn] [metric]" 2>&1
+		  echo "usage: summary-compare path [metric] [fn]" 2>&1
 		  exit 1
 		  ;;
 esac
@@ -33,5 +33,13 @@ echo "# Function: $fn"
 echo "# Metric: $m"
 echo "#"
 
-(for f in $p/*.data; do echo -n "$f "; ./extract.scm Goodput "${m}" < $f | awk '{ print $1 * 8, $2 * 8; }' | awk -f "${fn}.awk"; done) | sed 's/.*att//' | sed 's/\.00.*data//' | sed 's/_load/ /' | awk '{ print $2, $1, $3; }' | sort -k1n -k2n  | awk  -f block.awk
+for r in 6 9 12 18 24 36 48 54; do
+	files="${p}/*load${r}*.data"
+	for f in $files; do
+		a=`echo $f | sed 's/.*att//' | sed 's/_load.*//'`;
+		echo -n "$r $a ";
+		./extract.scm Goodput "${m}" < $f | awk '{ print $1 * 8, $2 * 8; }' | awk -f "${fn}.awk"
+	done
+done
 
+exit 0

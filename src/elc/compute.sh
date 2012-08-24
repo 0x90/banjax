@@ -25,7 +25,7 @@ for r in 6 9 12 18 24 36 48 54; do
 	for f in $files; do
 		t="${f/test\//results/}"
 		t="${t/.pcap/.data}"
-		./elc --ticks --linkrate $r --input "$f" ${OPTS} | sed 's/,//g' | sed 's/nan/0/g' | awk -f "plot.awk" > "$t"
+		./elc --ticks --linkrate $r --input "$f" ${OPTS} | sed 's/nan/0/g' | awk -f "plot.awk" > "$t"
 	done
 done
 
