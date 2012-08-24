@@ -21,7 +21,7 @@
            (filter-port in out fn))
           (else
            (fn s)
-           (filter-port in out fn))))
+           (filter-port in out fn)))))
 
 
 ;;; write named fields from specified file
