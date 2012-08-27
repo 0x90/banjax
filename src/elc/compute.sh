@@ -15,7 +15,6 @@ o="${p/test\//results/}"
 [ ! -d "$o" ] && mkdir -p "$o"
 
 OPTS=""
-[ "$BEACON" != "" ] && OPTS+="--beacon ${BEACON} "
 [ "$CW" != "" ] && OPTS+="--cw $CW "
 [ "$MPDU" != "" ] && OPTS+="--mpdu ${MPDU} "
 [ "$RUNTIME" != "" ] && OPTS+="--runtime ${RUNTIME} "

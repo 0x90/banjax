@@ -30,9 +30,9 @@ main(int ac, char **av)
 {
    try {
 
-      bool debug;
       uint64_t runtime;
       string what, ta_str;
+      bool debug, verbose;
       options_description options("program options");
       options.add_options()
          ("help,?", "produce this help message")
@@ -40,6 +40,7 @@ main(int ac, char **av)
          ("input,i", value<string>(&what)->default_value("mon0"), "input file/device name")
          ("runtime,u", value<uint64_t>(&runtime)->default_value(0), "finish after n seconds")
          ("ta,a", value<string>(&ta_str)->default_value("00:0b:6b:0a:82:34"), "transmitter address")
+         ("verbose,v", value<bool>(&verbose)->default_value(false)->zero_tokens(), "enable verbose output")
          ;
 
       variables_map vars;       
@@ -56,6 +57,9 @@ main(int ac, char **av)
       w = wnic_sptr(new wnic_timestamp_swizzle(w));
       w = wnic_sptr(new wnic_timestamp_fix(w));
 
+      const uint32_t AIFS = 43; // ToDo: recover me from encoding!
+      const uint32_t CW = 67.5; // ToDo: use encoding to compute me!
+      uint_least32_t dead_time = 0;
       eui_48 ta(ta_str.data());
       buffer_sptr b(w->read());
       if(b) {
@@ -66,18 +70,28 @@ main(int ac, char **av)
             frame curr(b);
             frame prev(p);
             if((curr.fc().subtype() == MGMT_BEACON) && (curr.address2() == ta)) {
-               cout << n << " B " << b->info()->timestamp1() - p->info()->timestamp2() << endl;
+               uint32_t ifs = b->info()->timestamp1() - p->info()->timestamp2();
+               uint32_t dead = ifs - AIFS - CW;
+               dead_time += dead;
+               if(verbose) {
+                  cout << n << " B " << ifs << endl;
+               }
             }
             if((prev.fc().subtype() == MGMT_BEACON) && (prev.address2() == ta)) {
-               cout << n - 1 << " A " << b->info()->timestamp1() - p->info()->timestamp2() << endl;
-            }
-            if(debug) {
-               cout << n << " " << *(b->info()) << endl;
+               uint32_t ifs = b->info()->timestamp1() - p->info()->timestamp2();
+               uint32_t dead = ifs - AIFS - CW;
+               dead_time += dead;
+               if(verbose) {
+                  cout << n - 1 << " A " << dead << endl;
+               }
+               if(debug && curr.fc().subtype() == MGMT_BEACON)
+                  cout << curr.address2() << endl;
             }
          }
       }
+      cout << dead_time << endl;
 
-   } catch(const error& x) {
+	} catch(const error& x) {
       cerr << x.what() << endl;
    } catch(const std::exception& x) {
       cerr << x.what() << endl;

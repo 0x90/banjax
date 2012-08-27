@@ -126,11 +126,10 @@ elc_metric::reset()
 void
 elc_metric::write(ostream& os) const
 {
-#if 0
+#if 1
    os << "packet-octets: " << stash_packet_octets_ << ", ";
    os << "t-pkt-succ: " << stash_t_pkt_succ_ << ", ";
    os << "t-pkt-fail: " << stash_t_pkt_fail_ << ", ";
-   os << "t-dead: " << t_dead_ << ", ";
    os << "t_delta: " << stash_delta_ << ", ";
 #endif
    os << "ELC: " << elc_;

@@ -12,8 +12,12 @@ if [ ! -d $p ]; then
 	 exit 1
 fi
 
+if [ "$RUNTIME" == "" ]; then
+	 echo No RUNTIME specified - assuming 15s! 2>&1
+	 export RUNTIME=15
+fi
+
 OPTS=""
-[ "$BEACON" != "" ] && OPTS+="--beacon ${BEACON} "
 [ "$CW" != "" ] && OPTS+="--cw $CW "
 [ "$MPDU" != "" ] && OPTS+="--mpdu ${MPDU} "
 [ "$RUNTIME" != "" ] && OPTS+="--runtime ${RUNTIME} "
@@ -26,15 +30,16 @@ for r in 6 9 12 18 24 36 48 54; do
 		  if [ -s "$f" ]; then
 				t="${f/test\//results/}"
 				d="${t/28/38}"
-				d="${d/.pcap/.dead}"
+				d="${d/.pcap/.dead}.${RUNTIME}"
 				t="${t/.pcap/.data}"
 				if [ -s "$d" ]; then
 					 x=`cat "$d"`
-					 let x=x/$RUNTIME
 					 [ "$x" != "\
 " ] && x="--dead $x"
+				else
+					 echo No dead time for ${f}! 2>&1
+					 exit 1
 				fi
-
 				a=${f/*att/}
 				a=${a/_load*/}
 				s=`./elc --input $f $OPTS --linkrate $r $x | awk -f plot.awk`
