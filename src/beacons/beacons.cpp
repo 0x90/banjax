@@ -30,12 +30,14 @@ main(int ac, char **av)
 {
    try {
 
+      uint16_t cw;
       uint64_t runtime;
       string what, ta_str;
       bool debug, verbose;
       options_description options("program options");
       options.add_options()
          ("help,?", "produce this help message")
+         ("cw,c", value<uint16_t>(&cw)->default_value(0), "CW size")
          ("debug,g", value<bool>(&debug)->default_value(false)->zero_tokens(), "enable debug")
          ("input,i", value<string>(&what)->default_value("mon0"), "input file/device name")
          ("runtime,u", value<uint64_t>(&runtime)->default_value(0), "finish after n seconds")
@@ -71,7 +73,7 @@ main(int ac, char **av)
             frame prev(p);
             if((curr.fc().subtype() == MGMT_BEACON) && (curr.address2() == ta)) {
                uint32_t ifs = b->info()->timestamp1() - p->info()->timestamp2();
-               uint32_t dead = ifs - AIFS - CW;
+               uint32_t dead = ifs - AIFS - CW; // NB beacon contention unaffected by CW clamping!
                dead_time += dead;
                if(verbose) {
                   cout << n << " B " << ifs << endl;
@@ -79,7 +81,7 @@ main(int ac, char **av)
             }
             if((prev.fc().subtype() == MGMT_BEACON) && (prev.address2() == ta)) {
                uint32_t ifs = b->info()->timestamp1() - p->info()->timestamp2();
-               uint32_t dead = ifs - AIFS - CW;
+               uint32_t dead = ifs - AIFS - (cw ? cw : CW);
                dead_time += dead;
                if(verbose) {
                   cout << n - 1 << " A " << dead << endl;

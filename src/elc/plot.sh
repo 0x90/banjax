@@ -2,7 +2,7 @@
 
 h=`dirname $0`
 for f in $*; do
-	 $h/plot-some.sh "${f}" Goodput Airtime Airtime-Linux Simple-ELC
+	 $h/plot-some.sh "${f}" Goodput Simple-ELC Airtime Airtime-Linux
 done
 
 exit 0

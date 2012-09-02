@@ -15,7 +15,7 @@ for r in 6 9 12 18 24 36 48 54; do
 	 files="${p}/*load${r}*.data"
 	 for f in $files; do
 		  e="${f/.data/.eps}"
-		  c="${f/.data/.computed.data}"
+		  c="${f/.data/.distrib}"
 		  c="${c/38/28}"
 		  if [[ -s "$f" && -s "$c" ]]; then
 				gnuplot <<EOF

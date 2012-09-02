@@ -21,7 +21,7 @@ for r in 6 9 12 18 24 36 48 54; do
 	files="${p}/*load${r}*.pcap"
 	for f in $files; do
 		t="${f/test\//results/}"
-		t="${t/.pcap/.computed.data}"
+		t="${t/.pcap/.distrib}"
 		./txc --input "$f" $OPTS --dist > "$t"
 	done
 done

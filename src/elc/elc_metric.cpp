@@ -31,8 +31,7 @@ elc_metric::elc_metric(uint16_t cw_time_us, uint16_t rts_cts_threshold, uint32_t
    elc_(0),
    stash_packet_octets_(0),
    stash_t_pkt_succ_(0.0),
-   stash_t_pkt_fail_(0.0),
-   stash_delta_(0)
+   stash_t_pkt_fail_(0.0)
 {
 }
 
@@ -48,8 +47,7 @@ elc_metric::elc_metric(const elc_metric& other) :
    elc_(other.elc_),
    stash_packet_octets_(other.stash_packet_octets_),
    stash_t_pkt_succ_(other.stash_t_pkt_succ_),
-   stash_t_pkt_fail_(other.stash_t_pkt_fail_),
-   stash_delta_(0)
+   stash_t_pkt_fail_(other.stash_t_pkt_fail_)
 {
 }
 
@@ -69,7 +67,6 @@ elc_metric::operator=(const elc_metric& other)
       stash_packet_octets_ = other.stash_packet_octets_;
       stash_t_pkt_succ_ = other.stash_t_pkt_succ_;
       stash_t_pkt_fail_ = other.stash_t_pkt_fail_;
-      stash_delta_ = 0;
    }
    return *this;
 }
@@ -110,7 +107,6 @@ elc_metric::compute(uint32_t delta_us)
    stash_packet_octets_ = packet_octets_;
    stash_t_pkt_succ_ = t_pkt_succ_;
    stash_t_pkt_fail_ = t_pkt_fail_;
-   stash_delta_ = delta_us;
    return elc_;
 }
 
@@ -127,10 +123,10 @@ void
 elc_metric::write(ostream& os) const
 {
 #if 1
-   os << "packet-octets: " << stash_packet_octets_ << ", ";
+   os << "n-octets: " << stash_packet_octets_ << ", ";
    os << "t-pkt-succ: " << stash_t_pkt_succ_ << ", ";
    os << "t-pkt-fail: " << stash_t_pkt_fail_ << ", ";
-   os << "t_delta: " << stash_delta_ << ", ";
+   os << "t-dead: " << t_dead_ << ", ";
 #endif
    os << "ELC: " << elc_;
 }

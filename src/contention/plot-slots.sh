@@ -1,5 +1,9 @@
 #!/bin/bash
 
+OPTS=""
+[ "$TA" != "" ] && OPTS+=" --ta ${TA}"
+[ "$RUNTIME" != "" ] && OPTS+=" --runtime ${RUNTIME}"
+
 for p in $*; do
 
 	 o="${p/test/results}"
@@ -13,7 +17,7 @@ for p in $*; do
 	 c="${o/.pcap/.cw}"
 	 d="${o/.pcap/.data}"
 	 e="${o/.pcap/.slots.eps}"
-	 ./analyse -i "$p" --ta $TA --runtime $RUNTIME 2> "$c" | awk '{ print int(($3 - 33)/9); }' | sort -n | uniq -c > "$d"
+	 ./analyse -i "$p" $OPTS 2> "$c" | awk '{ print int(($3 - 33)/9); }' | sort -n | uniq -c > "$d"
 
 	 gnuplot <<EOF
 #!/usr/bin/gnuplot

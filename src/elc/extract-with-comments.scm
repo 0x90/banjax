@@ -44,4 +44,5 @@
 ;;; extract named fields from file
 
 (let ((fields (cdr (command-line))))
+  (format (current-output-port) "# Generator: ~a~&" (command-line))
   (filter-named-fields (current-input-port) (current-output-port) fields))

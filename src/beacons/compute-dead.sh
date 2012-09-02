@@ -15,7 +15,8 @@ o="${p/test\//results/}"
 [ ! -d "$o" ] && mkdir -p "$o"
 
 if [ "$TA" == "" ]; then
-	 echo No TA specified - assuming 00:0b:6b:0a:82:34! 2>&1
+	 echo No TA specified! 2>&1
+	 exit 2
 fi
 
 OPTS=""
