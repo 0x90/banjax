@@ -3,14 +3,14 @@
 case "$#" in
 	 1)
 		  p="$1"
-		  sx="adj"
+		  sx="data"
 		  m="ELC"
 		  fn="rmse"
 		  ;;
 	 2)
 		  p="$1"
 		  sx="$2"
-		  m="adj"
+		  m="ELC"
 		  fn="rmse"
 		  ;;
 	 4)

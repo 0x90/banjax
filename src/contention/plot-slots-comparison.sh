@@ -1,8 +1,8 @@
 #!/bin/bash
 
 if [ $# != 1 ]; then
-		  echo "usage: $0 path-to-pcaps" 1>&2
-		  exit 1
+	 echo "usage: $0 path-to-distribs" 1>&2
+	 exit 1
 fi
 
 p="$1"
@@ -12,11 +12,11 @@ if [ ! -d $p ]; then
 fi
 
 for r in 6 9 12 18 24 36 48 54; do
-	 files="${p}/*load${r}*.data"
+	 files="${p}/*load${r}*.distrib"
 	 for f in $files; do
-		  e="${f/.data/.eps}"
-		  c="${f/.data/.distrib}"
-		  c="${c/38/28}"
+		  e="${f/.distrib/.eps}"
+		  c="${f/28/38}"
+		  c="${c/.distrib/.data}"
 		  if [[ -s "$f" && -s "$c" ]]; then
 				gnuplot <<EOF
 #!/usr/bin/gnuplot
@@ -24,7 +24,9 @@ for r in 6 9 12 18 24 36 48 54; do
 set term postscript color enhanced eps
 set out "$e"
 
-set key off
+set term postscript enhanced eps "Arial" 20
+
+set key below
 set style fill solid
 set style histogram
 set style data histograms
@@ -32,11 +34,13 @@ set style data histograms
 set xlabel "Slot"
 set ylabel "Count"
 
-# set xrange [0:256]
+set xrange [0:256]
 
-plot "$f" using 2:1 with impulses title "actual", \
-     "$c" using 1:2 with impulses title "theoretic"
+plot "$c" using 2:1 with impulses title "actual", \
+     "$f" using 1:2 with impulses title "theoretic"
 EOF
+		  else
+				echo "warning: failed to plot $f / $c" 2>&1
 		  fi
 	 done
 done

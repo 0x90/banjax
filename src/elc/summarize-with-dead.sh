@@ -23,6 +23,7 @@ OPTS=""
 [ "$RUNTIME" != "" ] && OPTS+="--runtime ${RUNTIME} "
 
 echo "# Source: $p"
+echo "# Genrator: $0 $*"
 echo
 for r in 6 9 12 18 24 36 48 54; do
 	 files="${p}/*load${r}*.pcap"
@@ -31,7 +32,6 @@ for r in 6 9 12 18 24 36 48 54; do
 				t="${f/test\//results/}"
 				d="${t/28/38}"
 				d="${d/.pcap/.dead}.${RUNTIME}"
-				t="${t/.pcap/.data}"
 				if [ -s "$d" ]; then
 					 x=`cat "$d"`
 					 [ "$x" != "\
