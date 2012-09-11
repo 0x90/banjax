@@ -73,7 +73,7 @@ main(int ac, char **av)
             frame prev(p);
             if((curr.fc().subtype() == MGMT_BEACON) && (curr.address2() == ta)) {
                uint32_t ifs = b->info()->timestamp1() - p->info()->timestamp2();
-               uint32_t dead = ifs - AIFS - CW; // NB beacon contention unaffected by CW clamping!
+               uint32_t dead = ifs - AIFS; // - CW; // NB beacon contention unaffected by CW clamping!
                dead_time += dead;
                if(verbose) {
                   cout << n << " B " << ifs << endl;
@@ -81,7 +81,7 @@ main(int ac, char **av)
             }
             if((prev.fc().subtype() == MGMT_BEACON) && (prev.address2() == ta)) {
                uint32_t ifs = b->info()->timestamp1() - p->info()->timestamp2();
-               uint32_t dead = ifs - AIFS - (cw ? cw : CW);
+               uint32_t dead = ifs - AIFS; // - (cw ? cw : CW);
                dead_time += dead;
                if(verbose) {
                   cout << n - 1 << " A " << dead << endl;
@@ -93,7 +93,7 @@ main(int ac, char **av)
       }
       cout << dead_time << endl;
 
-	} catch(const error& x) {
+   } catch(const error& x) {
       cerr << x.what() << endl;
    } catch(const std::exception& x) {
       cerr << x.what() << endl;
