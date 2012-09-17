@@ -27,17 +27,19 @@ set out "$e"
 set term postscript enhanced eps "Arial" 20
 
 set key below
-set style fill solid
-set style histogram
-set style data histograms
 
 set xlabel "Slot"
 set ylabel "Count"
 
 set xrange [0:256]
 
-plot "$c" using 2:1 with impulses title "actual", \
-     "$f" using 1:2 with impulses title "theoretic"
+plot "$f" using 1:2 with impulses title "theoretic"
+
+set style fill solid
+set style histogram
+set style data histograms
+plot "$c" using 2:1 with impulses title "actual"
+
 EOF
 		  else
 				echo "warning: failed to plot $f / $c" 2>&1

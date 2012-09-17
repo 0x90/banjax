@@ -92,17 +92,6 @@ namespace metrics {
    private:
 
       /**
-       * Scan the standard rateset of the default encoding and return
-       * the value which has the smallest difference to r.
-       *
-       * \param r The rate to find.
-       * \return The value in rates which is closest to r.
-       */
-      uint32_t closest_rate(uint32_t r) const;
-
-   private:
-
-      /**
        * Pointer to the default channel encoding.
        */
       net::encoding_sptr enc_;

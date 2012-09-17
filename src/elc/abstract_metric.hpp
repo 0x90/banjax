@@ -107,6 +107,16 @@ namespace metrics {
        */
       virtual double rts_cts_time(net::encoding_sptr enc, uint32_t frame_sz, bool short_preamble) const;
 
+      /**
+       * Scan the standard rateset of the default encoding and return
+       * the value which has the smallest difference to r.
+       *
+       * \param enc A non-NULL encoding_sptr.
+       * \param r The rate to find.
+       * \return The value in rates which is closest to r.
+       */
+      uint32_t closest_rate(net::encoding_sptr enc, uint32_t r) const;
+
    };
 
 }

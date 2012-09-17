@@ -173,11 +173,6 @@ elc_mrr_metric::frame_fail_time(buffer_sptr b, uint32_t rate_Kbs) const
    const uint32_t T_RTS_CTS = (rts_cts_threshold_ <= FRAME_SZ) ? rts_cts_time(enc, FRAME_SZ, PREAMBLE) : 0;
    const uint32_t T_DATA = enc->txtime(FRAME_SZ, rate_Kbs, PREAMBLE);
 
-#if 1
-   /* ATH5K? */
-   return T_RTS_CTS + T_DATA + enc->ACKTimeout();
-#else
-   /* 802.11 */
-   return T_RTS_CTS + T_DATA /* + enc->SIFS()? */ + enc->ACKTimeout() + enc->DIFS();
-#endif
+   /* TODO: use AIFS not slot + DIFS */
+   return /**/ enc->DIFS() + enc->slot_time() /**/ + T_RTS_CTS + T_DATA + enc->ACKTimeout();
 }

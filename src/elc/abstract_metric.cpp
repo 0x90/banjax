@@ -6,6 +6,7 @@
  */
 
 #define __STDC_CONSTANT_MACROS
+#define __STDC_LIMIT_MACROS
 #include <abstract_metric.hpp>
 #include <dot11/frame.hpp>
 #include <util/exceptions.hpp>
@@ -94,4 +95,20 @@ abstract_metric::rts_cts_time(encoding_sptr enc, uint32_t frame_sz, bool short_p
    const uint32_t T_SIFS = enc->SIFS();
    const uint32_t RATE = enc->default_rate();
    return enc->txtime(RTS_SZ, RATE, short_preamble) + T_SIFS + enc->txtime(CTS_SZ, RATE, short_preamble) + T_SIFS;
+}
+
+uint32_t
+abstract_metric::closest_rate(encoding_sptr enc, uint32_t r) const
+{
+   uint32_t rate = 0;
+   uint32_t d = UINT32_MAX;
+   rateset rates(enc->supported_rates());
+   for(rateset::const_iterator i(rates.begin()); i != rates.end(); ++i) {
+      uint32_t t = llabs(static_cast<int64_t>(*i) - static_cast<int64_t>(r));
+      if(t < d) {
+         d = t;
+         rate = *i;
+      }      
+   }
+   return rate;
 }

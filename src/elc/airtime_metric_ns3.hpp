@@ -91,17 +91,6 @@ namespace metrics {
    private:
 
       /**
-       * Scan the standard rateset of the default encoding and return
-       * the value which has the smallest difference to r.
-       *
-       * \param r The rate to find.
-       * \return The value in rates which is closest to r.
-       */
-      uint32_t closest_rate(uint32_t r) const;
-
-   private:
-
-      /**
        * Pointer to the default channel encoding.
        */
       net::encoding_sptr enc_;
@@ -112,34 +101,34 @@ namespace metrics {
       uint16_t rts_cts_threshold_;
 
       /**
-       * The total number of successfully delivered frames.
+       * Total number of TX packets.
        */
-      uint32_t frames_;
+      uint_least32_t packets_;
 
       /**
-       * The total number of successfully delivered packets.
-       */
-      uint32_t packets_;
-
-      /**
-       * The total number of IP payload octets successfully delivered.
+       * Tota number of TX octets.
        */
       uint_least32_t packet_octets_;
 
       /**
-       * Sum of the data rates used to send packets (used to compute average).
+       * Sum of TX rates.
        */
       uint_least32_t rates_Kbs_sum_;
 
       /**
-       * Total number of frames successfully delivered at a given rate.
+       * The time across which we compute the fail average.
        */
-      std::map<uint32_t, uint32_t> frames_rate_;
+      uint64_t memory_time_;
 
       /**
-       * Total number of packets successfully delivered at a given rate.
+       * Time of last update.
        */
-      std::map<uint32_t, uint32_t> packets_rate_;
+      uint64_t last_update_;
+      
+      /**
+       * Failure averaging mechanism.
+       */
+      double fail_avg_;
 
       /**
        * Stashed value of this metric.

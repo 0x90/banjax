@@ -190,7 +190,6 @@ elc_metric::frame_fail_time(buffer_sptr b) const
    const uint32_t DATA_RATE = info->rate_Kbs();
    const uint32_t T_DATA = enc->txtime(FRAME_SZ, DATA_RATE, PREAMBLE);
 
-   /* TODO: make this QoS-aware? */
-//   return enc->DIFS() + T_RTS_CTS + T_DATA + enc->ACKTimeout();
-   return /**/ 9 + /**/ enc->DIFS() + T_RTS_CTS + T_DATA;
+   /* TODO: use AIFS not slit + DIFS */
+   return /**/ enc->DIFS() + enc->slot_time() /**/ + T_RTS_CTS + T_DATA + enc->ACKTimeout();
 }

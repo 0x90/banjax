@@ -68,10 +68,7 @@ airtime_metric_linux::add(buffer_sptr b)
    if(DATA_FRAME == fc.type() && info->has(TX_FLAGS)) {
       vector<uint32_t> rates(info->rates());
       last_rate_Kbs_ = rates[info->data_retries()];
-      // ToDo: decide if we need to loop this for each frame re-transmission!
       fail_avg_ = (80 * fail_avg_ + 5) / 100 + ((info->tx_flags() & TX_FLAGS_FAIL) ? 20 : 0);
-   } else if (MGMT_FRAME == fc.type()) {
-      // ToDo: adjust for time lost to other's beacons
    }
 }
 
@@ -94,7 +91,7 @@ airtime_metric_linux::compute(uint32_t ignored_delta_us)
       uint32_t rate = 100 * last_rate_Kbs_;
       uint32_t tx_time = (DEVICE_CONSTANT + 1000 * TEST_FRAME_SZ / rate);
       uint32_t estimated_retx = ((1 << (2 * ARITH_SHIFT)) / (S_UNIT - err));
-      airtime_ = /* TEST_FRAME_SZ / */ ((tx_time * estimated_retx) >> (2 * ARITH_SHIFT));
+      airtime_ = TEST_FRAME_SZ / static_cast<double>((tx_time * estimated_retx) >> (2 * ARITH_SHIFT));
    } else {
       airtime_ = 0;
    }

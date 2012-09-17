@@ -100,19 +100,21 @@ airtime_metric::compute(uint32_t ignored_delta_us)
 {
    const double PKTS = packets_;
    const double AVG_PKT_RATE_Kbs = rates_Kbs_sum_ / PKTS;
-   const uint32_t rate_Kbs = closest_rate(AVG_PKT_RATE_Kbs);
+   const uint32_t rate_Kbs = closest_rate(enc_, AVG_PKT_RATE_Kbs);
    const double FDR = packets_ / static_cast<double>(frames_);
 
    const bool SHORT_PREAMBLE = false;
-   const uint32_t TEST_FRAME_SZ = 1024 + 62; // ToDo: what size? L2 or L4? Use given MTU_SZ?
+   const uint32_t UDP_SZ = 62;
+   const uint32_t CRC_SZ = 4;
+   const uint32_t TEST_FRAME_SZ = 1024 + UDP_SZ + CRC_SZ;
    const uint32_t T_RTS_CTS = (rts_cts_threshold_ <= TEST_FRAME_SZ) ? rts_cts_time(enc_, TEST_FRAME_SZ, SHORT_PREAMBLE) : 0;
    const uint32_t T_DATA = enc_->txtime(TEST_FRAME_SZ, rate_Kbs, SHORT_PREAMBLE);
    const uint32_t ACK_SZ = 14;
    const uint32_t ACK_RATE = enc_->response_rate(rate_Kbs);
    const uint32_t T_ACK = enc_->txtime(ACK_SZ, ACK_RATE, SHORT_PREAMBLE);
 
-   const double O = enc_->DIFS() + T_RTS_CTS + enc_->SIFS() + T_ACK;
-   // ToDo: no CW time - maybe interpolate based on FDR?
+   // ToDo: use enc->AIFS instead of DIFS + slot_time
+   const double O = /**/ enc_->DIFS() + enc_->slot_time() /**/ + T_RTS_CTS + enc_->SIFS() + T_ACK;
 
    airtime_ = TEST_FRAME_SZ / ((O + T_DATA) * (1.0 / FDR));
 
@@ -132,20 +134,4 @@ void
 airtime_metric::write(ostream& os) const
 {
    os << "Airtime: " << airtime_;
-}
-
-uint32_t
-airtime_metric::closest_rate(uint32_t r) const
-{
-   uint32_t rate = 0;
-   uint32_t d = UINT32_MAX;
-   rateset rates(enc_->supported_rates());
-   for(rateset::const_iterator i(rates.begin()); i != rates.end(); ++i) {
-      uint32_t t = llabs(static_cast<int64_t>(*i) - static_cast<int64_t>(r));
-      if(t < d) {
-         d = t;
-         rate = *i;
-      }      
-   }
-   return rate;
 }
