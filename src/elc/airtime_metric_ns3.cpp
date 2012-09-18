@@ -108,10 +108,10 @@ airtime_metric_ns3::compute(uint32_t ignored_delta_us)
    const uint32_t CRC_SZ = 4;
    const uint32_t TEST_FRAME_SZ = 1024 + IP_SZ + CRC_SZ;
    const uint32_t T_RTS_CTS = (rts_cts_threshold_ <= TEST_FRAME_SZ) ? rts_cts_time(enc_, TEST_FRAME_SZ, USE_SHORT_PREAMBLE) : 0;
-   const uint32_t T_DATA = enc_->txtime(TEST_FRAME_SZ, last_rate_Kbs_, SHORT_PREAMBLE);
+   const uint32_t T_DATA = enc_->txtime(TEST_FRAME_SZ, last_rate_Kbs_, USE_SHORT_PREAMBLE);
    const uint32_t ACK_SZ = 14;
    const uint32_t ACK_RATE = enc_->response_rate(last_rate_Kbs_);
-   const uint32_t T_ACK = enc_->txtime(ACK_SZ, ACK_RATE, SHORT_PREAMBLE);
+   const uint32_t T_ACK = enc_->txtime(ACK_SZ, ACK_RATE, USE_SHORT_PREAMBLE);
 
    // diagnostix
    if(1.0 <= fail_avg_) {
