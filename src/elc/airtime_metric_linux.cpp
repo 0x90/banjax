@@ -63,7 +63,6 @@ airtime_metric_linux::add(buffer_sptr b)
 {
    frame f(b);
    frame_control fc(f.fc());
-   const uint32_t CRC_SZ = 4;
    buffer_info_sptr info(b->info());
    if(DATA_FRAME == fc.type() && info->has(TX_FLAGS)) {
       bool tx_success = (0 == (info->tx_flags() & TX_FLAGS_FAIL));
@@ -92,7 +91,7 @@ airtime_metric_linux::compute(uint32_t ignored_delta_us)
 
    if(last_rate_Kbs_) {
       uint32_t err = (fail_avg_ << ARITH_SHIFT) / 100;
-      uint32_t rate = last_rate_Kbs_ / 10;
+      uint32_t rate = last_rate_Kbs_ / 100;
       uint32_t tx_time = (DEVICE_CONSTANT + 10 * TEST_FRAME_SZ / rate);
       uint32_t estimated_retx = ((1 << (2 * ARITH_SHIFT)) / (S_UNIT - err));
       airtime_ = TEST_FRAME_SZ / static_cast<double>((tx_time * estimated_retx) >> (2 * ARITH_SHIFT));
@@ -111,8 +110,5 @@ airtime_metric_linux::reset()
 void
 airtime_metric_linux::write(ostream& os) const
 {
-   os << "fail-avg: " << fail_avg_ << ", ";
-   os << "last-rate: " << last_rate_Kbs_ << ", ";
-
    os << "Airtime-Linux: " << airtime_;
 }

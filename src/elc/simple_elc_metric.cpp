@@ -90,5 +90,5 @@ simple_elc_metric::reset()
 void
 simple_elc_metric::write(ostream& os) const
 {
-   os << "Simple-ELC: " << elc_;
+   os << "ELC-Measured: " << elc_;
 }

@@ -23,8 +23,18 @@ for r in 6 9 12 18 24 36 48 54; do
 	files="${p}/*load${r}*.pcap"
 	for f in $files; do
 		t="${f/test\//results/}"
-		t="${t/.pcap/.data}"
-		./elc --ticks --linkrate $r --input "$f" ${OPTS} | sed 's/nan/0/g' | awk -f "plot.awk" > "$t"
+		d="${t/28/38}"
+		d="${d/.pcap/.dead}.${RUNTIME}"
+		t="${t/.pcap/.data.adj}"
+		if [ -s "$d" ]; then
+			 x=`cat "$d"`
+			 let x=x/$RUNTIME
+			 [ "$x" != "\
+" ] && x="--dead $x"
+		else
+			 echo "warning: can't find $d" 2>&1
+		fi
+		./elc --ticks --linkrate $r --input "$f" $x ${OPTS} | sed 's/nan/0/g' | awk -f "plot.awk" > "$t"
 	done
 done
 
