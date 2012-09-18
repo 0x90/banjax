@@ -120,6 +120,11 @@ airtime_metric_ns3::compute(uint32_t ignored_delta_us)
    const uint32_t ACK_RATE = enc_->response_rate(rate_Kbs);
    const uint32_t T_ACK = enc_->txtime(ACK_SZ, ACK_RATE, SHORT_PREAMBLE);
 
+   // diagnostix
+   if(1.0 <= fail_avg_) {
+      cerr << "eek! " << fail_avg_ << endl;
+   }
+
    // this is how NS-3 does it (but without conversion to TUs)
    airtime_ =  static_cast<double>(enc_->DIFS() + T_RTS_CTS + T_DATA + enc_->SIFS() + T_ACK) / (1.0 - fail_avg_);
 

@@ -21,11 +21,13 @@ namespace metrics {
       /**
        * elc_metric constructor.
        *
-       * \param cw_time_us The measured contention window size.
+       * \param name The name for this metric.
        * \param rts_cts_threshold Use RTS/CTS when rts_cts_threshold <= frame size
-       * \param t_dead The dead time (in microseconds).
+       * \param cw The contention window time to use (0 == compute the average CW).
+       * \param t_dead The dead time (in microseconds) per tick.
+       * \param acktimeout When UINT16_MAX use encoding to get ACKTimeout; otherwise use specified value.
        */
-      elc_metric(uint16_t cw_time_us, uint16_t rts_cts_threshold, uint32_t t_dead);
+      elc_metric(const std::string& name, uint16_t rts_cts_threshold, uint16_t cw_time_us, uint32_t t_dead, uint16_t acktimeout);
 
       /**
        * elc_metric copy constuctor.
@@ -126,19 +128,29 @@ namespace metrics {
    private:
 
       /**
-       * The dead time (in microseconds).
+       * Name for this metric.
        */
-      uint32_t t_dead_;
+      std::string name_;
 
+      /**
+       * The RTS/CTS threshold.
+       */
+      uint16_t rts_cts_threshold_;
+      
       /**
        * The measured contention window time (in microseconds).
        */
       uint16_t cw_time_us_;
 
       /**
-       * The RTS/CTS threshold.
+       * The value to use for the ACKTimeout (UINT16_max == use encoding).
        */
-      uint16_t rts_cts_threshold_;
+      uint16_t acktimeout_;
+
+      /**
+       * The dead time (in microseconds).
+       */
+      uint32_t t_dead_;
 
       /**
        * The number of successful packet deliveries.
@@ -164,21 +176,6 @@ namespace metrics {
        * Stashed value of this metric.
        */
       double elc_;
-
-      /**
-       * The stashed number of successful octets delivered.
-       */
-      uint32_t stash_packet_octets_;
-
-      /**
-       * The stashed cumulative airtime for successful packet deliveries.
-       */
-      double stash_t_pkt_succ_;
-
-      /**
-       * The stashed cumulative airtime for failed packet deliveries.
-       */
-      double stash_t_pkt_fail_;
 
    };
 
