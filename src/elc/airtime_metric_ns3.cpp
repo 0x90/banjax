@@ -27,12 +27,10 @@ airtime_metric_ns3::airtime_metric_ns3(encoding_sptr enc, uint16_t rts_cts_thres
    abstract_metric(),
    enc_(enc),
    rts_cts_threshold_(rts_cts_threshold),
-   packets_(0),
-   packet_octets_(0),
-   last_rate_Kbs_(0),
+   last_rate_Kbs_(enc_->default_rate()),
    memory_time_(1000000),
    last_update_(0),
-   fail_avg_(1.0),
+   fail_avg_(0.0),
    airtime_(0.0)
 {
 }
@@ -56,8 +54,6 @@ airtime_metric_ns3::operator=(const airtime_metric_ns3& other)
       abstract_metric::operator=(other);
       enc_ = other.enc_;
       rts_cts_threshold_ = other.rts_cts_threshold_;
-      packets_ = other.packets_;
-      packet_octets_ = other.packet_octets_;
       last_rate_Kbs_ = other.last_rate_Kbs_;
       memory_time_ = other.memory_time_;
       last_update_ = other.last_update_;
@@ -88,7 +84,7 @@ airtime_metric_ns3::add(buffer_sptr b)
          fail_avg_ = retries / (1.0 + retries) * (1.0 - avg_coeff) + (avg_coeff * fail_avg_);
          last_rate_Kbs_ = info->rate_Kbs();
       } else {
-         fail_avg_ = (1.0 - avg_coeff) + avg_coeff * fail_avg_;
+         fail_avg_ = (1.0 - avg_coeff) + (avg_coeff * fail_avg_);
       }
    }
 }
@@ -114,16 +110,13 @@ airtime_metric_ns3::compute(uint32_t ignored_delta_us)
    const uint32_t T_ACK = enc_->txtime(ACK_SZ, ACK_RATE, USE_SHORT_PREAMBLE);
 
    // diagnostix
-   if(1.0 <= fail_avg_) {
-      cerr << "eek! " << fail_avg_ << endl;
-   }
-
-   // this is how NS-3 does it (but without conversion to TUs)
-   airtime_ =  static_cast<double>(enc_->DIFS() + T_RTS_CTS + T_DATA + enc_->SIFS() + T_ACK) / (1.0 - fail_avg_);
-
-   // NOTE: we convert airtime to a channel rate in MB/s so we can compare
-   const double Bt = TEST_FRAME_SZ;
-   airtime_ = TEST_FRAME_SZ / airtime_; 
+   if(fail_avg_ < 1.0) {
+      // this is how NS-3 does it (but without conversion to TUs)
+      airtime_ =  static_cast<double>(enc_->DIFS() + T_RTS_CTS + T_DATA + enc_->SIFS() + T_ACK) / (1.0 - fail_avg_);
+      // NOTE: we convert airtime to a channel rate in MB/s so we can compare with ELC etc.
+      airtime_ = TEST_FRAME_SZ / airtime_; 
+   } else
+      airtime_ = 0.0;
 
    return airtime_;
 }
@@ -131,9 +124,7 @@ airtime_metric_ns3::compute(uint32_t ignored_delta_us)
 void
 airtime_metric_ns3::reset()
 {
-   packets_ = 0;
-   packet_octets_ = 0;
-   last_rate_Kbs_ = 0;
+   // do NOT reset last_rate_Kbs_!
 }
 
 void
