@@ -76,15 +76,15 @@ airtime_metric_ns3::add(buffer_sptr b)
    buffer_info_sptr info(b->info());
    const uint64_t NOW = info->timestamp_wallclock();
    if(DATA_FRAME == fc.type() && info->has(TX_FLAGS)) {
-      double avg_coeff = exp(static_cast<double>(-1.0 * (NOW - last_update_)) / memory_time_);
+      double avg_coeff = exp((-1.0 * static_cast<double>(NOW - last_update_)) / static_cast<double>(memory_time_));
       last_update_ = NOW;
       bool tx_success = (0 == (info->tx_flags() & TX_FLAGS_FAIL));
       if(tx_success) {
          const double retries = info->data_retries();
-         fail_avg_ = retries / (1.0 + retries) * (1.0 - avg_coeff) + (avg_coeff * fail_avg_);
+         fail_avg_ = retries / (1.0 + retries) * (1.0 - avg_coeff) + avg_coeff * fail_avg_;
          last_rate_Kbs_ = info->rate_Kbs();
       } else {
-         fail_avg_ = (1.0 - avg_coeff) + (avg_coeff * fail_avg_);
+         fail_avg_ = (1.0 - avg_coeff) + avg_coeff * fail_avg_;
       }
    }
 }
@@ -124,7 +124,7 @@ airtime_metric_ns3::compute(uint32_t ignored_delta_us)
 void
 airtime_metric_ns3::reset()
 {
-   // do NOT reset last_rate_Kbs_!
+   // do NOT reset last_rate_Kbs_ or fail_avg_!
 }
 
 void
