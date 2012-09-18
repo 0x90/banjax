@@ -84,8 +84,8 @@ airtime_metric_ns3::add(buffer_sptr b)
       last_update_ = NOW;
       bool tx_success = (0 == (info->tx_flags() & TX_FLAGS_FAIL));
       if(tx_success) {
-         const double TXC = 1.0 + info->data_retries();
-         fail_avg_ = TXC / (1.0 + TXC) * (1.0 - avg_coeff) + avg_coeff * fail_avg_;
+         const double retries = info->data_retries();
+         fail_avg_ = retries / (1.0 + retries) * (1.0 - avg_coeff) + (avg_coeff * fail_avg_);
          last_rate_Kbs_ = info->rate_Kbs();
       } else {
          fail_avg_ = (1.0 - avg_coeff) + avg_coeff * fail_avg_;
