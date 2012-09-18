@@ -113,7 +113,7 @@ namespace metrics {
       /**
        * Sum of TX rates.
        */
-      uint_least32_t rates_Kbs_sum_;
+      uint_least32_t last_rate_Kbs_;
 
       /**
        * The time across which we compute the fail average.
