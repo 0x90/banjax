@@ -20,7 +20,7 @@ if [ "$TA" == "" ]; then
 fi
 
 OPTS=""
-[ "$CW" != "" ] && OPTS+="--cw $CW "
+[ "$TA" != "" ] && OPTS+="--ta $TA "
 [ "$RUNTIME" != "" ] && OPTS+="--runtime ${RUNTIME} "
 
 for r in 6 9 12 18 24 36 48 54; do
