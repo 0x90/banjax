@@ -85,7 +85,7 @@ airtime_metric_linux::compute(uint32_t ignored_delta_us)
    const uint8_t ARITH_SHIFT = 8;
    const uint32_t UDP_SZ = 62;
    const uint32_t CRC_SZ = 4;
-   const uint32_t TEST_FRAME_SZ = (1024 + UDP_SZ + CRC_SZ);
+   const uint32_t TEST_FRAME_SZ = (8 *(1024 + UDP_SZ + CRC_SZ)) << ARITH_SHIFT;
    const uint32_t S_UNIT = 1 << ARITH_SHIFT;
 	const int32_t DEVICE_CONSTANT = 1 << ARITH_SHIFT;
 
@@ -95,17 +95,6 @@ airtime_metric_linux::compute(uint32_t ignored_delta_us)
       uint32_t tx_time = (DEVICE_CONSTANT + 10 * TEST_FRAME_SZ / rate);
       uint32_t estimated_retx = ((1 << (2 * ARITH_SHIFT)) / (S_UNIT - err));
       airtime_ = static_cast<double>((tx_time * estimated_retx) >> (2 * ARITH_SHIFT));
-#if 0
-      // lets show the workings!
-      clog << "# ";
-      clog << "last_rate_Kbs=" << last_rate_Kbs_ << ", ";
-      clog << "fail_avg=" << fail_avg_ << ", ";
-      clog << "err=" << err << ", ";
-      clog << "rate=" << rate << ", ";
-      clog << "tx_time=" << tx_time << ", ";
-      clog << "estimated_retx=" << estimated_retx << ", ";
-      clog << "airtime=" << airtime_ << endl;
-#endif
    } else {
       airtime_ = 0;
    }
