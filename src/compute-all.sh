@@ -13,7 +13,7 @@ r="${p/test\//results\/}"
 (cd beacons/; ./compute-dead.sh "$p/38")
 
 # compute actual contention distribution
-(cd contention/; ./compute.sh "$p/38/*.pcap")
+(cd contention/; ./compute.sh "$p/38")
 
 # compute theoretical contention distribution
 (cd txc/; ./compute.sh "$p/28")
