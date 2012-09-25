@@ -7,7 +7,7 @@ export TA=00:0b:6b:0a:82:34
 
 p=$1
 r=`basename "$p"`
-r="${p/test\//results\/}"
+r="${p/test\//results/}"
 
 # compute dead time
 (cd beacons/; ./compute-dead.sh "$p/38")

@@ -11,4 +11,5 @@ SUBDIRS = \
 	strip \
 	traffic \
 	tscal \
-	txc
+	txc \
+	verify

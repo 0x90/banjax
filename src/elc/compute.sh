@@ -25,7 +25,7 @@ for r in 6 9 12 18 24 36 48 54; do
 		t="${f/test\//results/}"
 		d="${t/28/38}"
 		d="${d/.pcap/.dead}.${RUNTIME}"
-		t="${t/.pcap/.data.adj}"
+		t="${t/.pcap/.data}"
 		if [ -s "$d" ]; then
 			 x=`cat "$d"`
 			 let x=x/$RUNTIME
