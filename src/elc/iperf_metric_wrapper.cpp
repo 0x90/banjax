@@ -51,21 +51,24 @@ void
 iperf_metric_wrapper::add(buffer_sptr b)
 {
    frame f(b);
-   data_frame_sptr df(f.as_data_frame());
-   if(df) {
-      llc_hdr_sptr llc(df->get_llc_hdr());
-      if(!llc)
-         return;
-      ip_hdr_sptr ip(llc->get_ip_hdr());
-      if(!ip)
-         return;
-      udp_hdr_sptr udp(ip->get_udp_hdr());
-      if(!udp)
-         return;
-      if(udp->dst_port() != 5001)
-         return;
+   buffer_info_sptr info(b->info());
+   if(info->has(TX_FLAGS)) {
+      data_frame_sptr df(f.as_data_frame());
+      if(df) {
+         llc_hdr_sptr llc(df->get_llc_hdr());
+         if(!llc)
+            return;
+         ip_hdr_sptr ip(llc->get_ip_hdr());
+         if(!ip)
+            return;
+         udp_hdr_sptr udp(ip->get_udp_hdr());
+         if(!udp)
+            return;
+         if(udp->dst_port() != 5001)
+            return;
 
-      wrapped_metric_->add(b);
+         wrapped_metric_->add(b);
+      }
    }
 }
 
