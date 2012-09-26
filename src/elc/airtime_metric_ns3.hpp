@@ -101,16 +101,6 @@ namespace metrics {
       uint16_t rts_cts_threshold_;
 
       /**
-       * Total number of TX packets.
-       */
-      uint_least32_t packets_;
-
-      /**
-       * Tota number of TX octets.
-       */
-      uint_least32_t packet_octets_;
-
-      /**
        * Sum of TX rates.
        */
       uint_least32_t last_rate_Kbs_;
@@ -134,6 +124,11 @@ namespace metrics {
        * Stashed value of this metric.
        */
       double airtime_;
+
+      /**
+       * Count of successfully delivered packets.
+       */
+      uint32_t packets_;
 
    };
 

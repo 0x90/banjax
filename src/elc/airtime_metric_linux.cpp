@@ -28,7 +28,8 @@ airtime_metric_linux::airtime_metric_linux(encoding_sptr enc) :
    enc_(enc),
    last_rate_Kbs_(enc_->default_rate()),
    fail_avg_(0),
-   airtime_(0.0)
+   airtime_(0.0),
+   packets_(0)
 {
 }
 
@@ -37,7 +38,8 @@ airtime_metric_linux::airtime_metric_linux(const airtime_metric_linux& other) :
    enc_(other.enc_),
    last_rate_Kbs_(other.last_rate_Kbs_),
    fail_avg_(other.fail_avg_),
-   airtime_(other.airtime_)
+   airtime_(other.airtime_),
+   packets_(other.packets_)
 {
 }
 
@@ -50,6 +52,7 @@ airtime_metric_linux::operator=(const airtime_metric_linux& other)
       last_rate_Kbs_ = other.last_rate_Kbs_;
       fail_avg_ = other.fail_avg_;
       airtime_ = other.airtime_;
+      packets_ = 0;
    }
    return *this;
 }
@@ -68,6 +71,7 @@ airtime_metric_linux::add(buffer_sptr b)
       bool tx_success = (0 == (info->tx_flags() & TX_FLAGS_FAIL));
       if(tx_success) {
          last_rate_Kbs_ = info->rate_Kbs();
+         ++packets_;
       }
       fail_avg_ = ((80 * fail_avg_ + 5) / 100) + ((!tx_success) ? 20 : 0);
    }
@@ -89,7 +93,7 @@ airtime_metric_linux::compute(uint32_t ignored_delta_us)
    const uint32_t S_UNIT = 1 << ARITH_SHIFT;
 	const int32_t DEVICE_CONSTANT = 1 << ARITH_SHIFT;
 
-   if(last_rate_Kbs_) {
+   if(packets_) {
       uint32_t err = (fail_avg_ << ARITH_SHIFT) / 100;
       uint32_t rate = last_rate_Kbs_ / 100;
       uint32_t tx_time = (DEVICE_CONSTANT + 10 * TEST_FRAME_SZ / rate);
@@ -105,6 +109,7 @@ void
 airtime_metric_linux::reset()
 {
    // do NOT reset fail_avg_ or last_rate_Kbs_
+   packets_ = 0;
 }
 
 void

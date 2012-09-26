@@ -121,6 +121,11 @@ namespace metrics {
        */
       double airtime_;
 
+      /**
+       * Count of packets successfully delivered.
+       */
+      uint32_t packets_;
+
    };
 
 }
