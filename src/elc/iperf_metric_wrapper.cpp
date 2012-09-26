@@ -29,9 +29,8 @@ iperf_metric_wrapper::iperf_metric_wrapper(metric_sptr wrapped_metric) :
 
 iperf_metric_wrapper::iperf_metric_wrapper(const iperf_metric_wrapper& other) :
    metric(other),
-   wrapped_metric_(other.wrapped_metric_)
+   wrapped_metric_(other.wrapped_metric_->clone())
 {
-
 }
 
 iperf_metric_wrapper&
@@ -39,7 +38,7 @@ iperf_metric_wrapper::operator=(const iperf_metric_wrapper& other)
 {
    if(this != &other) {
       metric::operator=(other);
-      wrapped_metric_ = other.wrapped_metric_;
+      wrapped_metric_ = metric_sptr(other.wrapped_metric_->clone());
    }
    return *this;
 }

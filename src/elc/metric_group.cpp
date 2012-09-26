@@ -15,20 +15,28 @@ using namespace std;
 using metrics::metric_group;
 using net::buffer_sptr;
 
-metric_group::metric_group()
+metric_group::metric_group() :
+   metric(),
+   metrics_()
 {
 }
 
 metric_group::metric_group(const metric_group& other) :
-   metrics_(other.metrics_)
+   metric(other),
+   metrics_()
 {
+   for(metric_list::const_iterator i(other.metrics_.begin()); i != other.metrics_.end(); ++i)
+      metrics_.push_back(metric_sptr((*i)->clone()));
 }
 
 metric_group&
 metric_group::operator=(const metric_group& other)
 {
    if(&other != this) {
-      metrics_ = other.metrics_;
+      metric::operator=(other);
+      metrics_.clear();
+      for(metric_list::const_iterator i(other.metrics_.begin()); i != other.metrics_.end(); ++i)
+         metrics_.push_back(metric_sptr((*i)->clone()));
    }
    return *this;
 }

@@ -20,22 +20,30 @@ using metrics::metric_demux;
 using metrics::metric_sptr;
 
 metric_demux::metric_demux(metric_sptr proto) :
-   proto_(proto)
+   metric(),
+   proto_(proto),
+   links_()
 {
 }
 
 metric_demux::metric_demux(const metric_demux& other) :
+   metric(),
    proto_(other.proto_),
-   links_(other.links_)
+   links_()
 {
+   for(linkmap::iterator i(links_.begin()); i != links_.end(); ++i)
+      links_[i->first] = metric_sptr(i->second->clone());
 }
 
 metric_demux& 
 metric_demux::operator=(const metric_demux& other)
 {
    if(&other != this) {
+      metric::operator=(other);
       proto_ = other.proto_;
-      links_ = other.links_;
+      links_.clear();
+      for(linkmap::iterator i(links_.begin()); i != links_.end(); ++i)
+         links_[i->first] = metric_sptr(i->second->clone());
    }
    return *this;
 }
