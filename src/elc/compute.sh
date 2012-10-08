@@ -15,9 +15,10 @@ o="${p/test\//results/}"
 [ ! -d "$o" ] && mkdir -p "$o"
 
 OPTS=""
-[ "$CW" != "" ] && OPTS+="--cw $CW "
+[ "$CW" != "" ] && OPTS+="--cw ${CW} "
 [ "$MPDU" != "" ] && OPTS+="--mpdu ${MPDU} "
 [ "$RUNTIME" != "" ] && OPTS+="--runtime ${RUNTIME} "
+[ "$ACKTIMEOUT" != "" ] && OPTS+="--acktimeout ${ACKTIMEOUT} "
 
 for r in 6 9 12 18 24 36 48 54; do
 	files="${p}/*load${r}*.pcap"

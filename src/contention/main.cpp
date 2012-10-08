@@ -37,15 +37,17 @@ main(int ac, char **av)
    try {
 
       bool debug;
+      bool all_traffic;
       uint64_t runtime;
       string enc_str, ta_str, what;
       options_description options("program options");
       options.add_options()
          ("help,?", "produce this help message")
+         ("all,a", value<bool>(&all_traffic)->default_value(false)->zero_tokens(), "report all traffic (i.e. not just iperf)")
          ("encoding,e", value<string>(&enc_str)->default_value("OFDM"), "channel encoding")
          ("input,i", value<string>(&what)->default_value("mon0"), "input file/device name")
          ("runtime,u", value<uint64_t>(&runtime)->default_value(0), "finish after n seconds")
-         ("ta,a", value<string>(&ta_str)->default_value("48:5d:60:7c:ce:68"), "transmitter address")
+         ("ta,t", value<string>(&ta_str)->default_value("48:5d:60:7c:ce:68"), "transmitter address")
          ;
 
       variables_map vars;       
@@ -79,20 +81,19 @@ main(int ac, char **av)
             if(!df)
                continue;
 
-            llc_hdr_sptr llc(df->get_llc_hdr());
-            if(!llc)
-               continue;
-
-            ip_hdr_sptr ip(llc->get_ip_hdr());
-            if(!ip)
-               continue;
-
-            udp_hdr_sptr udp(ip->get_udp_hdr());
-            if(!udp)
-               continue;
-
-            if(udp->dst_port() != 5001)
-               continue;
+            if(!all_traffic) {
+               llc_hdr_sptr llc(df->get_llc_hdr());
+               if(!llc)
+                  continue;
+               ip_hdr_sptr ip(llc->get_ip_hdr());
+               if(!ip)
+                  continue;
+               udp_hdr_sptr udp(ip->get_udp_hdr());
+               if(!udp)
+                  continue;
+               if(udp->dst_port() != 5001)
+                  continue;
+            }
 
             if(p && f.address2() == ta) {
                uint16_t ifs;

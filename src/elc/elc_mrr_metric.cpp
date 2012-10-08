@@ -1,11 +1,11 @@
 /* -*- mode: C++; tab-width: 3; -*- */
 
 /*
- * Copyright 2011 NICTA
+ * Copyright 2011-2012 NICTA
  * 
  */
 
-#define __STDC_CONSTANT_MACROS
+#define __STDC_LIMIT_MACROS
 #include <elc_mrr_metric.hpp>
 #include <dot11/frame.hpp>
 #include <dot11/data_frame.hpp>
@@ -19,28 +19,32 @@ using namespace net;
 using namespace std;
 using metrics::elc_mrr_metric;
 
-elc_mrr_metric::elc_mrr_metric(uint16_t cw_time_us, uint16_t rts_cts_threshold) :
+elc_mrr_metric::elc_mrr_metric(const string& name, uint16_t rts_cts_threshold, uint16_t cw_time_us, uint32_t dead_time, uint16_t acktimeout) :
    abstract_metric(),
-   cw_time_us_(cw_time_us),
+   name_(name),
    rts_cts_threshold_(rts_cts_threshold),
+   cw_time_us_(cw_time_us),
+   t_dead_(dead_time),
+   acktimeout_(acktimeout),
    n_pkt_succ_(0),
    t_pkt_succ_(0.0),
    t_pkt_fail_(0.0),
    packet_octets_(0),
-   packet_count_(0),
-   mrr_(0.0)
+   mrr_(0)
 {
 }
 
 elc_mrr_metric::elc_mrr_metric(const elc_mrr_metric& other) :
    abstract_metric(other),
-   cw_time_us_(other.cw_time_us_),
+   name_(other.name_),
    rts_cts_threshold_(other.rts_cts_threshold_),
+   cw_time_us_(other.cw_time_us_),
+   t_dead_(other.t_dead_),
+   acktimeout_(other.acktimeout_),
    n_pkt_succ_(other.n_pkt_succ_),
    t_pkt_succ_(other.t_pkt_succ_),
    t_pkt_fail_(other.t_pkt_fail_),
    packet_octets_(other.packet_octets_),
-   packet_count_(other.packet_count_),
    mrr_(other.mrr_)
 {
 }
@@ -50,13 +54,15 @@ elc_mrr_metric::operator=(const elc_mrr_metric& other)
 {
    if(&other != this) {
       abstract_metric::operator=(other);
-      cw_time_us_ = other.cw_time_us_;
+      name_ = other.name_;
       rts_cts_threshold_ = other.rts_cts_threshold_;
+      cw_time_us_ = other.cw_time_us_;
+      t_dead_ = other.t_dead_;
+      acktimeout_ = other.acktimeout_;
       n_pkt_succ_ = other.n_pkt_succ_;
       t_pkt_succ_ = other.t_pkt_succ_;
       t_pkt_fail_ = other.t_pkt_fail_;
       packet_octets_ = other.packet_octets_;
-      packet_count_ = other.packet_count_;
       mrr_ = other.mrr_;
    }
    return *this;
@@ -81,7 +87,7 @@ elc_mrr_metric::add(buffer_sptr b)
          t_pkt_succ_ += packet_succ_time(b);
          const uint32_t CRC_SZ = 4;
          packet_octets_ += b->data_size() + CRC_SZ;
-         ++packet_count_;      }
+      }
    }
 }
 
@@ -92,10 +98,9 @@ elc_mrr_metric::clone() const
 }
 
 double
-elc_mrr_metric::compute(uint32_t junk)
+elc_mrr_metric::compute(uint32_t delta_us)
 {
-   const double AVG_PKT_SZ = packet_octets_ / static_cast<double>(packet_count_);
-   mrr_ = (n_pkt_succ_ * AVG_PKT_SZ) / (t_pkt_succ_ + t_pkt_fail_);
+   mrr_ = packet_octets_ / (t_pkt_succ_ + t_pkt_fail_ + t_dead_);
    return mrr_;
 }
 
@@ -106,14 +111,12 @@ elc_mrr_metric::reset()
    t_pkt_succ_ = 0;
    t_pkt_fail_ = 0;
    packet_octets_ = 0;
-   packet_count_ = 0;
-   mrr_ = 0;
 }
 
 void
 elc_mrr_metric::write(ostream& os) const
 {
-   os << "ELC-MRR: " << mrr_;
+   os << name_ << ": " << mrr_;
 }
 
 double
@@ -125,9 +128,9 @@ elc_mrr_metric::packet_succ_time(buffer_sptr b) const
    encoding_sptr enc(info->channel_encoding());
    uint8_t retries = rates.size() - 1;
    for(uint8_t i = 0; i < retries; ++i) {
-      usecs += (cw_time_us_ ? cw_time_us_ : avg_contention_time(enc, i)) + frame_fail_time(b, rates[i]);
+      usecs += (UINT16_MAX == cw_time_us_ ? avg_contention_time(enc, i) :  cw_time_us_) + frame_fail_time(b, rates[i]);
    }
-   return usecs + (cw_time_us_ ? cw_time_us_ : avg_contention_time(enc, retries)) + frame_succ_time(b, rates[retries]);
+   return usecs +  (UINT16_MAX == cw_time_us_ ? avg_contention_time(enc, retries) : cw_time_us_) + frame_succ_time(b, rates[retries]);
 }
 
 double
@@ -139,7 +142,7 @@ elc_mrr_metric::packet_fail_time(buffer_sptr b) const
    encoding_sptr enc(info->channel_encoding());
    uint8_t retries = rates.size() - 1;
    for(uint8_t i = 0; i < retries + 1; ++i) {
-      usecs += (cw_time_us_ ? cw_time_us_ : avg_contention_time(enc, i)) + frame_fail_time(b, rates[i]);
+      usecs += (UINT16_MAX == cw_time_us_ ? avg_contention_time(enc, i) :  cw_time_us_) + frame_fail_time(b, rates[i]);
    }
    return usecs;
 }
@@ -158,7 +161,9 @@ elc_mrr_metric::frame_succ_time(buffer_sptr b, uint32_t rate_Kbs) const
    const uint32_t ACK_SZ = 14;
    const uint32_t ACK_RATE = enc->response_rate(rate_Kbs);
    const uint32_t T_ACK = enc->txtime(ACK_SZ, ACK_RATE, PREAMBLE);
-   return T_RTS_CTS + T_DATA + enc->SIFS() + T_ACK + enc->DIFS();
+
+   /* TODO: use AIFS not slot + DIFS */
+   return /**/ enc->DIFS() + enc->slot_time() /**/ + T_RTS_CTS + T_DATA + enc->SIFS() + T_ACK;
 }
 
 double
@@ -172,7 +177,8 @@ elc_mrr_metric::frame_fail_time(buffer_sptr b, uint32_t rate_Kbs) const
    const bool PREAMBLE =  info->has(CHANNEL_FLAGS) && (info->channel_flags() & CHANNEL_PREAMBLE_SHORT);
    const uint32_t T_RTS_CTS = (rts_cts_threshold_ <= FRAME_SZ) ? rts_cts_time(enc, FRAME_SZ, PREAMBLE) : 0;
    const uint32_t T_DATA = enc->txtime(FRAME_SZ, rate_Kbs, PREAMBLE);
+   const uint16_t T_ACKTIMEOUT = (UINT16_MAX == acktimeout_) ? enc->ACKTimeout() : acktimeout_;
 
    /* TODO: use AIFS not slot + DIFS */
-   return /**/ enc->DIFS() + enc->slot_time() /**/ + T_RTS_CTS + T_DATA + enc->ACKTimeout();
+   return /**/ enc->DIFS() + enc->slot_time() /**/ + T_RTS_CTS + T_DATA + T_ACKTIMEOUT;
 }

@@ -24,7 +24,7 @@ namespace metrics {
        * \param cw_time_us The measured contention window size.
        * \param rts_cts_threshold Use RTS/CTS when rts_cts_threshold <= frame size
        */
-      explicit elc_mrr_metric(uint16_t cw_time_us, uint16_t rts_cts_threshold);
+      elc_mrr_metric(const std::string& name, uint16_t rts_cts_threshold, uint16_t cw_time_us, uint32_t t_dead, uint16_t acktimeout);
 
       /**
        * elc_metric copy constuctor.
@@ -126,14 +126,29 @@ namespace metrics {
    private:
 
       /**
-       * The measured contention window time (in microseconds).
+       * Name for this metric.
        */
-      uint16_t cw_time_us_;
+      std::string name_;
 
       /**
        * The RTS/CTS threshold.
        */
       uint16_t rts_cts_threshold_;
+
+      /**
+       * The measured contention window time (in microseconds).
+       */
+      uint16_t cw_time_us_;
+
+      /**
+       * The value to use for the ACKTimeout (UINT16_max == use encoding).
+       */
+      uint16_t acktimeout_;
+
+      /**
+       * The dead time (in microseconds).
+       */
+      uint32_t t_dead_;
 
       /**
        * The number of successful packet deliveries.
@@ -154,11 +169,6 @@ namespace metrics {
        * The cumulative size for packets sent on this elc_mrr_metric.
        */
       uint32_t packet_octets_;
-
-      /**
-       * The number of packets sent on this elc_mrr_metric.
-       */
-      uint32_t packet_count_;
 
       /**
        * The value of the this ELC/MRR metric.

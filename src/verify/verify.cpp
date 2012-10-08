@@ -37,15 +37,21 @@ main(int ac, char **av)
    try {
 
       bool debug;
+      bool all_traffic;
+      bool verbose;
+      uint32_t dead;
       uint64_t runtime;
       string enc_str, ta_str, what;
       options_description options("program options");
       options.add_options()
          ("help,?", "produce this help message")
+         ("all,a", value<bool>(&all_traffic)->default_value(false)->zero_tokens(), "report all traffic (i.e. not just iperf)")
+         ("dead,d", value<uint32_t>(&dead)->default_value(0), "dead time")
          ("encoding,e", value<string>(&enc_str)->default_value("OFDM"), "channel encoding")
          ("input,i", value<string>(&what)->default_value("mon0"), "input file/device name")
          ("runtime,u", value<uint64_t>(&runtime)->default_value(0), "finish after n seconds")
-         ("ta,a", value<string>(&ta_str)->default_value("48:5d:60:7c:ce:68"), "transmitter address")
+         ("ta,t", value<string>(&ta_str)->default_value("48:5d:60:7c:ce:68"), "transmitter address")
+         ("verbose,v", value<bool>(&verbose)->default_value(false)->zero_tokens(), "enable verbose output")
          ;
 
       variables_map vars;       
@@ -65,32 +71,82 @@ main(int ac, char **av)
 
       eui_48 ta(ta_str.c_str());
       uint16_t txc = 0, seq_no = 0;
-      uint_least32_t n_cw = 0, t_cw = 0;
-      buffer_sptr b(w->read()), p, null;
+      buffer_sptr b(w->read()), f(b), p(b), null;
       if(b) {
+
+         const uint16_t SIFS = 16;
+         const uint16_t AIFS = 43;
+
          uint64_t tick_time = UINT64_C(1000000);
          uint64_t end_time = runtime ? b->info()->timestamp_wallclock() + (runtime * tick_time) : UINT64_MAX;
+
+         uint_least32_t t_mgmt = 0, t_mgmt_ifs_exp = 0, t_mgmt_ifs_act = 0;
+         uint_least32_t t_data = 0, t_data_ifs_exp = 0, t_data_ifs_act = 0;
+         uint_least32_t t_ctrl = 0, t_ctrl_ifs_exp = 0, t_ctrl_ifs_act = 0;
+
          for(uint32_t n = 1; b && (b->info()->timestamp_wallclock() <= end_time); p = b, b = w->read(), ++n) {
             
-/*
-  frame f(b);
-  frame_control fc(f.fc());
-  if(!fc.retry()) {
-  txc = 0;
-  seq_no = f.sc().sequence_no();
-  ifs = b->info()->timestamp1() - p->info()->timestamp2();
-  ++n_cw;
-  t_cw += ifs;
-  cout << n << " " << b->info()->timestamp1() << " " << ifs << " " << txc << endl;
-  } else if(fc.retry() && f.sc().sequence_no() == seq_no) {
-  ++txc;
-  ifs = b->info()->timestamp1() - p->info()->timestamp2();
-  ++n_cw;
-  t_cw += ifs;
-  cout << n << " " << b->info()->timestamp1() << " " << ifs << " " << txc << endl;
-  }
-*/
+            frame f(b);
+            frame_control fc(f.fc());
+
+            switch(fc.type()) {
+            case MGMT_FRAME:
+               t_mgmt_ifs_exp += AIFS;
+               t_mgmt_ifs_act += b->info()->timestamp1() - p->info()->timestamp2();
+               t_mgmt += b->info()->timestamp2() - b->info()->timestamp1();
+               break;
+
+            case DATA_FRAME:
+               if(!all_traffic) {
+                  data_frame_sptr df(f.as_data_frame());
+                  llc_hdr_sptr llc(df->get_llc_hdr());
+                  if(!llc)
+                     continue;
+                  ip_hdr_sptr ip(llc->get_ip_hdr());
+                  if(!ip)
+                     continue;
+                  udp_hdr_sptr udp(ip->get_udp_hdr());
+                  if(!udp)
+                     continue;
+                  if(udp->dst_port() != 5001)
+                     continue;
+               }
+               t_data_ifs_exp += AIFS;
+               t_data_ifs_act += b->info()->timestamp1() - p->info()->timestamp2();
+               t_data += b->info()->timestamp2() - b->info()->timestamp1();
+               break;
+
+            case CTRL_FRAME:
+               t_ctrl_ifs_exp += SIFS;
+               t_ctrl_ifs_act += b->info()->timestamp1() - p->info()->timestamp2();
+               t_ctrl += b->info()->timestamp2() - b->info()->timestamp1();
+               break;
+            }
+
          }
+
+         cout << "t_mgmt=" << t_mgmt << endl;
+         cout << "   ifs=" << t_mgmt_ifs_act << endl;
+         cout << "   exp=" << t_mgmt_ifs_exp << endl;
+         cout << endl;
+         cout << "t_data=" << t_data << endl;
+         cout << "   ifs=" << t_data_ifs_act << endl;
+         cout << "   exp=" << t_data_ifs_exp << endl;
+         cout << endl;
+         cout << " t_ctl=" << t_ctrl << endl;
+         cout << "   ifs=" << t_ctrl_ifs_act << endl;
+         cout << "   exp=" << t_ctrl_ifs_exp << endl;
+         cout << endl;
+
+         if(b)
+            cout << "elapsed=" << b->info()->timestamp2() - f->info()->timestamp1() << endl;
+         else
+            cout << "elapsed=" << p->info()->timestamp2() - f->info()->timestamp1() << endl;
+
+         cout << "total_act=" << t_mgmt + t_mgmt_ifs_act + t_data + t_data_ifs_act + t_ctrl + t_ctrl_ifs_act << endl;
+         cout << "total_exp=" << t_mgmt + t_mgmt_ifs_exp + t_data + t_data_ifs_exp + t_ctrl + t_ctrl_ifs_exp << endl;
+         cout << " total_us=" << t_data + t_data_ifs_exp + t_ctrl + t_ctrl_ifs_exp + dead << endl;
+
       }
    } catch(const error& x) {
       cerr << x.what() << endl;

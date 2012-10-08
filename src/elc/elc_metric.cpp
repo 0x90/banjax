@@ -116,6 +116,13 @@ elc_metric::reset()
 void
 elc_metric::write(ostream& os) const
 {
+   streamsize p = os.precision();
+   os << "n-pkts: " << n_pkt_succ_ << ", ";
+   os << "t-pkt-succ: " << setprecision(0) << fixed << t_pkt_succ_ << ", ";
+   os << "t-pkts-fail: " << setprecision(0) << fixed << t_pkt_fail_ << ", ";
+   os << setprecision(p);
+   os << "t-dead: " << t_dead_ << ", ";  
+
    os << name_ << ": " << elc_;
 }
 
@@ -127,9 +134,9 @@ elc_metric::packet_succ_time(buffer_sptr b) const
    encoding_sptr enc(info->channel_encoding());
    uint8_t retries = info->data_retries();
    for(uint8_t i = 0; i < retries; ++i) {
-      usecs += (cw_time_us_ ? cw_time_us_ : avg_contention_time(enc, i)) + frame_fail_time(b);
+      usecs += (UINT16_MAX == cw_time_us_ ? avg_contention_time(enc, i) : cw_time_us_) + frame_fail_time(b);
    }
-   return usecs + (cw_time_us_ ? cw_time_us_ : avg_contention_time(enc, retries)) + frame_succ_time(b);
+   return usecs + (UINT16_MAX == cw_time_us_ ? avg_contention_time(enc, retries) : cw_time_us_) + frame_succ_time(b);
 }
 
 double
@@ -140,8 +147,8 @@ elc_metric::packet_fail_time(buffer_sptr b) const
    encoding_sptr enc(info->channel_encoding());
    uint8_t retries = info->data_retries();
    for(uint8_t i = 0; i < retries + 1; ++i) {
-      usecs += (cw_time_us_ ? cw_time_us_ : avg_contention_time(enc, i)) + frame_fail_time(b);
-   }
+      usecs += (UINT16_MAX == cw_time_us_ ? avg_contention_time(enc, i) : cw_time_us_) + frame_fail_time(b);
+  }
    return usecs;
 }
 

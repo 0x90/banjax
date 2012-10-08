@@ -3,30 +3,21 @@
 case "$#" in
 	 1)
 		  p="$1"
-		  sx="data"
 		  m="ELC"
 		  fn="rmse"
 		  ;;
 	 2)
 		  p="$1"
-		  sx="$2"
-		  m="ELC"
+		  m="$2"
 		  fn="rmse"
 		  ;;
-	 4)
+	 3)
 		  p="$1"
-		  sx="$2"
-		  m="$3"
-		  fn="rmse"
-		  ;;
-	 5)
-		  p="$1"
-		  sx="$2"
-		  m="$3"
-		  fn="$4"
+		  m="$2"
+		  fn="$3"
 		  ;;
 	 *)
-		  echo "usage: summary-compare path [suffix] [metric] [fn]" 2>&1
+		  echo "usage: summary-compare path [metric [fn]]" 2>&1
 		  exit 1
 		  ;;
 esac
@@ -42,7 +33,7 @@ echo "# Generator: $0 $*"
 echo "#"
 
 for r in 6 9 12 18 24 36 48 54; do
-	files="${p}/*load${r}*.${sx}"
+	files="${p}/*load${r}*.data"
 	for f in $files; do
 		a=`echo $f | sed 's/.*att//' | sed 's/_load.*//'`;
 		echo -n "$r $a ";

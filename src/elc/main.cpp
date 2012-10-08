@@ -67,19 +67,17 @@ main(int ac, char **av)
       options.add_options()
          ("acktimeout,a", value(&acktimeout)->default_value(UINT16_MAX), "specify ACKTimeout value")
          ("dead,e", value(&dead_time)->default_value(0), "dead time (in microseconds) per tick")
-         ("cw,c", value(&cw)->default_value(0), "size of contention window in microseconds (0 = compute average)")
+         ("cw,c", value(&cw)->default_value(UINT16_MAX), "size of contention window in microseconds (default = compute average)")
          ("damping,d", value(&damp)->default_value(5), "size of damping window in seconds")
-         ("encoding,e", value<string>(&enc_str)->default_value("OFDM"), "channel encoding")
+         ("encoding", value<string>(&enc_str)->default_value("OFDM"), "channel encoding")
          ("debug,g", value<bool>(&debug)->default_value(false)->zero_tokens(), "enable debug")
          ("help,?", value(&help)->default_value(false)->zero_tokens(), "produce this help message")
          ("input,i", value<string>(&what)->default_value("mon0"), "input file/device name")
          ("linkrate,l", value<uint32_t>(&rate_Mbs)->default_value(54), "Maximum link rate in Mb/s")
          ("mpdu,m", value<uint16_t>(&mpdu_sz)->default_value(1536), "MPDU size used metric calculation")
-         ("port,p", value<uint16_t>(&port_no)->default_value(50000), "port number used for ETX probes")
          ("rts-threshold,r", value<uint16_t>(&rts_cts_threshold)->default_value(UINT16_MAX), "RTS threshold level")
          ("ticks,t", value<bool>(&show_ticks)->default_value(false)->zero_tokens(), "show results for each second")
          ("runtime,u", value<uint64_t>(&runtime)->default_value(0), "produce results after n seconds")
-         ("window,w", value<size_t>(&window_sz)->default_value(10), "ETX probe windows")
          ;
 
       variables_map vars;       
@@ -94,14 +92,13 @@ main(int ac, char **av)
       encoding_sptr enc(encoding::get(enc_str));
    	metric_group_sptr proto(new metric_group);
       proto->push_back(metric_sptr(new  goodput_metric));
-
       proto->push_back(metric_sptr(new elc_metric("ELC", rts_cts_threshold, cw, 0, acktimeout)));
       if(dead_time)
          proto->push_back(metric_sptr(new elc_metric("ELC-adj", rts_cts_threshold, cw, dead_time, acktimeout)));
-//      proto->push_back(metric_sptr(new metric_decimator("ELC-1PC", metric_sptr(new elc_metric("", rts_cts_threshold, cw, dead, acktimeout)), 100)));
-//      proto->push_back(metric_sptr(new metric_decimator("ELC-10PC", metric_sptr(new elc_metric("", rts_cts_threshold, cw, dead, acktimeout)), 10)));
-//      proto->push_back(metric_sptr(new metric_damper("ELC-Damped", metric_sptr(new elc_metric("", rts_cts_threshold, cw, dead, acktimeout)), damp)));
-//      proto->push_back(metric_sptr(new elc_mrr_metric(cw, rts_cts_threshold)));
+      proto->push_back(metric_sptr(new metric_decimator("ELC-1PC", metric_sptr(new elc_metric("", rts_cts_threshold, cw, 0, acktimeout)), 100)));
+      proto->push_back(metric_sptr(new metric_decimator("ELC-10PC", metric_sptr(new elc_metric("", rts_cts_threshold, cw, 0, acktimeout)), 10)));
+      proto->push_back(metric_sptr(new metric_damper("ELC-Damped", metric_sptr(new elc_metric("", rts_cts_threshold, cw, 0, acktimeout)), damp)));
+      proto->push_back(metric_sptr(new elc_mrr_metric("ELC-MRR", rts_cts_threshold, cw, 0, acktimeout)));
       proto->push_back(metric_sptr(new legacy_elc_metric(enc, rate_Mbs * 1000, mpdu_sz, rts_cts_threshold)));
       proto->push_back(metric_sptr(new airtime_metric_linux(enc)));
       proto->push_back(metric_sptr(new airtime_metric_ns3(enc, rts_cts_threshold)));
