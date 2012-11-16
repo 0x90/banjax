@@ -54,8 +54,8 @@ const uint32_t RADIOTAP_RXFLAGS           = 0x4000;
 const uint32_t RADIOTAP_TXFLAGS           = 0x8000;
 const uint32_t RADIOTAP_RTS_RETRIES       = 0x10000;
 const uint32_t RADIOTAP_DATA_RETRIES      = 0x20000;
-const uint32_t RADIOTAP_RATE_TUPLES       = 0x10000000;
-const uint32_t RADIOTAP_PACKET_TIME       = 0x20000000;
+const uint32_t RADIOTAP_NAMESPACE         = 0x20000000;
+const uint32_t RADIOTAP_VENDOR_NAMESPACE  = 0x40000000;
 const uint32_t RADIOTAP_EXT               = 0x80000000;
 
 const uint8_t  RADIOTAP_FLAGS_CFP         = 0x01;
@@ -87,6 +87,11 @@ const uint16_t RADIOTAP_TXFLAGS_NO_ACK    = 0x0008;
 
 const uint16_t RADIOTAP_RXFLAGS_BAD_FCS   = 0x0001;
 const uint16_t RADIOTAP_RXFLAGS_BAD_PLCP  = 0x0002;
+
+const uint32_t NICTA_RATE_TUPLES          = 0x10000000;
+const uint32_t NICTA_PACKET_TIME          = 0x20000000;
+const uint32_t NICTA_AIRTIME_METRIC       = 0x40000000;
+
 
 radiotap_datalink::radiotap_datalink()
 {
@@ -282,25 +287,22 @@ radiotap_datalink::parse(size_t frame_sz, const uint8_t *frame)
    }
 
    uint32_t bitmap = 0;
-   const uint8_t *bitmaps = frame + offsetof(radiotap_header, bitmaps_);
-   const uint8_t *limit = frame + hdr_sz;
-   le_to_cpu(reinterpret_cast<const uint8_t*>(bitmaps), bitmap);
-   bitmaps += sizeof(uint32_t);
-   uint32_t ext_bitmap = bitmap;
-   while(ext_bitmap & RADIOTAP_EXT) {
-      if(!(bitmaps < limit)) {
+   size_t ofs = offsetof(radiotap_header, bitmaps_);
+   le_to_cpu(reinterpret_cast<const uint8_t*>(frame + ofs), bitmap);
+   ofs += sizeof(uint32_t);
+   for(uint32_t ext_bitmap = bitmap; ext_bitmap & RADIOTAP_EXT; ) {
+      if(!(ofs < hdr_sz)) {
          ostringstream msg;
          msg << "bad radiotap header (expected " << MIN_HDR_SZ << " <= size <= " << frame_sz << ", actual size=" << hdr_sz << ")"<< endl;
          msg << hex << dump(frame_sz, frame) << endl;
          raise<invalid_argument>(__PRETTY_FUNCTION__, __FILE__, __LINE__, msg.str());
       }
-      le_to_cpu(reinterpret_cast<const uint8_t*>(bitmaps), ext_bitmap);
-      bitmaps += sizeof(uint32_t);
+      le_to_cpu(reinterpret_cast<const uint8_t*>(frame + ofs), ext_bitmap);
+      ofs += sizeof(uint32_t);
    }
 
    flags_t rx_flags = 0;
    flags_t chan_flags = 0;
-   size_t ofs = bitmaps - frame;
    buffer_info_sptr info(new buffer_info);
    for(uint32_t i = RADIOTAP_TSFT; i < RADIOTAP_EXT; i <<= 1) {
       int8_t junk_s8;
@@ -406,7 +408,13 @@ radiotap_datalink::parse(size_t frame_sz, const uint8_t *frame)
          extract(ofs, junk_u8, hdr_sz, frame_sz, frame);
          info->data_retries(junk_u8);
          break;
-         //  Warning: proprietary extensions!
+      default:
+         break;
+      }
+   }
+
+   /* process NICTA vendor extensions 
+
       case RADIOTAP_RATE_TUPLES:
 	      {
             vector<uint32_t> rates;
@@ -423,14 +431,15 @@ radiotap_datalink::parse(size_t frame_sz, const uint8_t *frame)
          }
          break;
       case RADIOTAP_PACKET_TIME:
+         extract(ofs, queue_ts, hdr_sz, frame_sz, frame);
+         extract(ofs, head_ts, hdr_sz, frame_sz, frame);
          extract(ofs, start_ts, hdr_sz, frame_sz, frame);
          extract(ofs, end_ts, hdr_sz, frame_sz, frame);
          info->packet_time(start_ts, end_ts);
          break;
-      default:
-         break;
-      }
-   }
+
+   */
+
    frame += hdr_sz;
    frame_sz -= hdr_sz;
    return buffer_sptr(new buffer_body(frame_sz, frame, info));
