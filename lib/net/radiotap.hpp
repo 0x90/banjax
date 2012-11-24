@@ -1,7 +1,7 @@
 /* -*- mode: C++; tab-width: 3; -*- */
 
 /*
- * Copyright 2009 Steve Glass
+ * Copyright 2009-2012 Steve Glass
  * 
  * This file is part of banjax.
  * 
@@ -42,6 +42,8 @@ namespace net {
    const uint32_t RADIOTAP_TXFLAGS           = 0x8000;
    const uint32_t RADIOTAP_RTS_RETRIES       = 0x10000;
    const uint32_t RADIOTAP_DATA_RETRIES      = 0x20000;
+   const uint32_t RADIOTAP_NAMESPACE         = 0x20000000;
+   const uint32_t RADIOTAP_VENDOR_NAMESPACE  = 0x40000000;
    const uint32_t RADIOTAP_EXT               = 0x80000000;
 
    const uint8_t  RADIOTAP_FLAGS_CFP         = 0x01;
@@ -73,6 +75,12 @@ namespace net {
 
    const uint16_t RADIOTAP_RXFLAGS_BAD_FCS   = 0x0001;
    const uint16_t RADIOTAP_RXFLAGS_BAD_PLCP  = 0x0002;
+
+   // NICTA vendor extensions
+   const uint32_t NICTA_OUID                 = 0x123456;
+   const uint32_t NICTA_RATE_TUPLES          = 0x10000000;
+   const uint32_t NICTA_PACKET_TIME          = 0x20000000;
+   const uint32_t NICTA_AIRTIME_METRIC       = 0x40000000;
 
 }
 

@@ -23,7 +23,7 @@ OPTS=""
 [ "$RUNTIME" != "" ] && OPTS+="--runtime ${RUNTIME} "
 
 echo "# Source: $p"
-echo "# Genrator: $0 $*"
+echo "# Generator: $0 $*"
 echo
 for r in 6 9 12 18 24 36 48 54; do
 	 files="${p}/*load${r}*.pcap"

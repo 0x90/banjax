@@ -71,31 +71,42 @@ main(int ac, char **av)
 
       eui_48 ta(ta_str.c_str());
       uint16_t txc = 0, seq_no = 0;
-      buffer_sptr b(w->read()), f(b), p(b), null;
-      if(b) {
-
-         const uint16_t SIFS = 16;
-         const uint16_t AIFS = 43;
-
+      buffer_sptr first(w->read());
+      if(first) {
          uint64_t tick_time = UINT64_C(1000000);
-         uint64_t end_time = runtime ? b->info()->timestamp_wallclock() + (runtime * tick_time) : UINT64_MAX;
+         uint64_t end_time = runtime ? first->info()->timestamp_wallclock() + (runtime * tick_time) : UINT64_MAX;
 
+         frame f(first);
+         frame_control fc(f.fc());
+         frame_type pt(fc.type());
+         uint_least32_t t_dead = 0;
          uint_least32_t t_mgmt = 0, t_mgmt_ifs_exp = 0, t_mgmt_ifs_act = 0;
-         uint_least32_t t_data = 0, t_data_ifs_exp = 0, t_data_ifs_act = 0;
+         uint_least32_t t_data = 0, t_data_ifs_exp = 0, t_data_ifs_act = 0, t_data_ifs_bcn = 0;
          uint_least32_t t_ctrl = 0, t_ctrl_ifs_exp = 0, t_ctrl_ifs_act = 0;
 
+         buffer_sptr b(first), p, s, null;
          for(uint32_t n = 1; b && (b->info()->timestamp_wallclock() <= end_time); p = b, b = w->read(), ++n) {
-            
+
             frame f(b);
             frame_control fc(f.fc());
+            frame_type ft(fc.type());
+            uint16_t ifs = p ? b->info()->timestamp1() - p->info()->timestamp2() : 0;
+            uint16_t txtime = b->info()->timestamp2() - b->info()->timestamp1();
+            encoding_sptr enc(b->info()->channel_encoding());
+            const uint16_t SIFS = enc->SIFS();
+            const uint16_t AIFS = enc->SIFS() + (3 * enc->slot_time());
 
-            switch(fc.type()) {
+            if(pt == MGMT_FRAME) {
+               t_dead += s ? b->info()->timestamp1() - s->info()->timestamp2() : 0;
+            }
+
+            switch(ft) {
             case MGMT_FRAME:
+               t_mgmt += txtime;
+               t_mgmt_ifs_act += ifs;
                t_mgmt_ifs_exp += AIFS;
-               t_mgmt_ifs_act += b->info()->timestamp1() - p->info()->timestamp2();
-               t_mgmt += b->info()->timestamp2() - b->info()->timestamp1();
+               s = p;
                break;
-
             case DATA_FRAME:
                if(!all_traffic) {
                   data_frame_sptr df(f.as_data_frame());
@@ -111,18 +122,18 @@ main(int ac, char **av)
                   if(udp->dst_port() != 5001)
                      continue;
                }
+               t_data += txtime;
+               t_data_ifs_act += ifs;
                t_data_ifs_exp += AIFS;
-               t_data_ifs_act += b->info()->timestamp1() - p->info()->timestamp2();
-               t_data += b->info()->timestamp2() - b->info()->timestamp1();
                break;
-
             case CTRL_FRAME:
+               t_ctrl += txtime;
+               t_ctrl_ifs_act += ifs;
                t_ctrl_ifs_exp += SIFS;
-               t_ctrl_ifs_act += b->info()->timestamp1() - p->info()->timestamp2();
-               t_ctrl += b->info()->timestamp2() - b->info()->timestamp1();
+               break;
+            default:
                break;
             }
-
          }
 
          cout << "t_mgmt=" << t_mgmt << endl;
@@ -139,14 +150,13 @@ main(int ac, char **av)
          cout << endl;
 
          if(b)
-            cout << "elapsed=" << b->info()->timestamp2() - f->info()->timestamp1() << endl;
+            cout << "elapsed=" << b->info()->timestamp2() - first->info()->timestamp1() << endl;
          else
-            cout << "elapsed=" << p->info()->timestamp2() - f->info()->timestamp1() << endl;
+            cout << "elapsed=" << p->info()->timestamp2() - first->info()->timestamp1() << endl;
 
          cout << "total_act=" << t_mgmt + t_mgmt_ifs_act + t_data + t_data_ifs_act + t_ctrl + t_ctrl_ifs_act << endl;
          cout << "total_exp=" << t_mgmt + t_mgmt_ifs_exp + t_data + t_data_ifs_exp + t_ctrl + t_ctrl_ifs_exp << endl;
          cout << " total_us=" << t_data + t_data_ifs_exp + t_ctrl + t_ctrl_ifs_exp + dead << endl;
-
       }
    } catch(const error& x) {
       cerr << x.what() << endl;

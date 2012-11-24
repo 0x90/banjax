@@ -20,6 +20,7 @@
 #define __STDC_CONSTANT_MACROS
 
 #include <net/buffer_body.hpp>
+#include <net/radiotap.hpp>
 #include <net/radiotap_datalink.hpp>
 #include <util/byteswab.hpp>
 #include <util/dump.hpp>
@@ -35,62 +36,6 @@ using util::dump;
 using util::le_to_cpu;
 using util::raise;
 using util::cpu_to_le;
-
-const uint32_t RADIOTAP_TSFT              = 0x0001;
-const uint32_t RADIOTAP_FLAGS             = 0x0002;
-const uint32_t RADIOTAP_RATE              = 0x0004;
-const uint32_t RADIOTAP_CHANNEL           = 0x0008;
-const uint32_t RADIOTAP_FHSS              = 0x0010;
-const uint32_t RADIOTAP_DBM_ANTSIGNAL     = 0x0020;
-const uint32_t RADIOTAP_DBM_ANTNOISE      = 0x0040;
-const uint32_t RADIOTAP_LOCK_QUALITY      = 0x0080;
-const uint32_t RADIOTAP_TX_ATTENUATION    = 0x0100;
-const uint32_t RADIOTAP_DB_TX_ATTENUATION = 0x0200;
-const uint32_t RADIOTAP_DBM_TX_POWER      = 0x0400;
-const uint32_t RADIOTAP_ANTENNA           = 0x0800;
-const uint32_t RADIOTAP_DB_ANTSIGNAL      = 0x1000;
-const uint32_t RADIOTAP_DB_ANTNOISE       = 0x2000;
-const uint32_t RADIOTAP_RXFLAGS           = 0x4000;
-const uint32_t RADIOTAP_TXFLAGS           = 0x8000;
-const uint32_t RADIOTAP_RTS_RETRIES       = 0x10000;
-const uint32_t RADIOTAP_DATA_RETRIES      = 0x20000;
-const uint32_t RADIOTAP_NAMESPACE         = 0x20000000;
-const uint32_t RADIOTAP_VENDOR_NAMESPACE  = 0x40000000;
-const uint32_t RADIOTAP_EXT               = 0x80000000;
-
-const uint8_t  RADIOTAP_FLAGS_CFP         = 0x01;
-const uint8_t  RADIOTAP_FLAGS_SHORTPRE    = 0x02;
-const uint8_t  RADIOTAP_FLAGS_WEP         = 0x04;
-const uint8_t  RADIOTAP_FLAGS_FRAG        = 0x08;
-const uint8_t  RADIOTAP_FLAGS_FCS         = 0x10;
-const uint8_t  RADIOTAP_FLAGS_PAD         = 0x20;
-const uint8_t  RADIOTAP_FLAGS_BAD_FCS     = 0x40;
-const uint8_t  RADIOTAP_FLAGS_SHORTGRD    = 0x80;
-
-const uint16_t RADIOTAP_CHAN_TURBO        = 0x0010;
-const uint16_t RADIOTAP_CHAN_CCK          = 0x0020;
-const uint16_t RADIOTAP_CHAN_OFDM         = 0x0040;
-const uint16_t RADIOTAP_CHAN_2GHZ         = 0x0080;
-const uint16_t RADIOTAP_CHAN_5GHZ         = 0x0100;
-const uint16_t RADIOTAP_CHAN_PASSIVE      = 0x0200;
-const uint16_t RADIOTAP_CHAN_DYN          = 0x0400;
-const uint16_t RADIOTAP_CHAN_GFSK         = 0x0800;
-const uint16_t RADIOTAP_CHAN_900MHZ       = 0x1000;
-const uint16_t RADIOTAP_CHAN_STURBO       = 0x2000;
-const uint16_t RADIOTAP_CHAN_HALF_RATE    = 0x4000;
-const uint16_t RADIOTAP_CHAN_QUARTER_RATE = 0x8000;
-
-const uint16_t RADIOTAP_TXFLAGS_FAIL      = 0x0001;
-const uint16_t RADIOTAP_TXFLAGS_CTS       = 0x0002;
-const uint16_t RADIOTAP_TXFLAGS_RTS_CTS   = 0x0004;
-const uint16_t RADIOTAP_TXFLAGS_NO_ACK    = 0x0008;
-
-const uint16_t RADIOTAP_RXFLAGS_BAD_FCS   = 0x0001;
-const uint16_t RADIOTAP_RXFLAGS_BAD_PLCP  = 0x0002;
-
-const uint32_t NICTA_RATE_TUPLES          = 0x10000000;
-const uint32_t NICTA_PACKET_TIME          = 0x20000000;
-const uint32_t NICTA_AIRTIME_METRIC       = 0x40000000;
 
 
 radiotap_datalink::radiotap_datalink()
@@ -237,8 +182,9 @@ radiotap_datalink::name() const
 }
 
 /**
- * Template helper function to exract a field from a radiotap header
- * taking care of alignment, byte-ordering and buffer-overflow issues.
+ * Template helper function to exract a little-endian field from a
+ * radiotap header taking care of alignment, byte-ordering and
+ * buffer-overflow issues.
  *
  * \param ofs The offset of the field from the frame start.
  * \param field The field to extract.
@@ -247,8 +193,7 @@ radiotap_datalink::name() const
  * \param frame A pointer to the frame.
  * \throws length_error When reading would overflow the buffer.
  */
-template<typename T> void
-extract(size_t& ofs, T& field, size_t hdr_sz, size_t frame_sz, const uint8_t *frame)
+template<typename T> void extract(size_t& ofs, T& field, size_t hdr_sz, size_t frame_sz, const uint8_t *frame)
 {
    const size_t field_sz = sizeof(field);
    const size_t align = field_sz - 1;
@@ -286,21 +231,16 @@ radiotap_datalink::parse(size_t frame_sz, const uint8_t *frame)
       raise<invalid_argument>(__PRETTY_FUNCTION__, __FILE__, __LINE__, msg.str());
    }
 
-   uint32_t bitmap = 0;
+   uint32_t bitmap = 0, ext_bitmap = 0;
    size_t ofs = offsetof(radiotap_header, bitmaps_);
-   le_to_cpu(reinterpret_cast<const uint8_t*>(frame + ofs), bitmap);
-   ofs += sizeof(uint32_t);
-   for(uint32_t ext_bitmap = bitmap; ext_bitmap & RADIOTAP_EXT; ) {
-      if(!(ofs < hdr_sz)) {
-         ostringstream msg;
-         msg << "bad radiotap header (expected " << MIN_HDR_SZ << " <= size <= " << frame_sz << ", actual size=" << hdr_sz << ")"<< endl;
-         msg << hex << dump(frame_sz, frame) << endl;
-         raise<invalid_argument>(__PRETTY_FUNCTION__, __FILE__, __LINE__, msg.str());
-      }
-      le_to_cpu(reinterpret_cast<const uint8_t*>(frame + ofs), ext_bitmap);
-      ofs += sizeof(uint32_t);
+   extract(ofs, bitmap, hdr_sz, frame_sz, frame);
+   if(bitmap & RADIOTAP_EXT) {
+      extract(ofs, ext_bitmap, hdr_sz, frame_sz, frame);
    }
 
+   uint32_t ouid;
+   uint8_t subnamespace;
+   uint16_t skip_sz = 0;
    flags_t rx_flags = 0;
    flags_t chan_flags = 0;
    buffer_info_sptr info(new buffer_info);
@@ -308,8 +248,9 @@ radiotap_datalink::parse(size_t frame_sz, const uint8_t *frame)
       int8_t junk_s8;
       uint8_t junk_u8;
       uint16_t junk_u16;
-      uint32_t start_ts, end_ts;
+      uint32_t junk_u32;
       uint64_t junk_u64;
+      uint32_t start_ts, end_ts;
       uint32_t bit = bitmap & i;
       switch(bit) {
       case RADIOTAP_TSFT:
@@ -408,15 +349,22 @@ radiotap_datalink::parse(size_t frame_sz, const uint8_t *frame)
          extract(ofs, junk_u8, hdr_sz, frame_sz, frame);
          info->data_retries(junk_u8);
          break;
+      case RADIOTAP_VENDOR_NAMESPACE:
+         extract(ofs, junk_u32, hdr_sz, frame_sz, frame);
+         ouid = junk_u32 >> 24;
+         skip_sz = junk_u32 & 0xffffff;
+         break;
       default:
          break;
       }
    }
 
-   /* process NICTA vendor extensions 
-
-      case RADIOTAP_RATE_TUPLES:
-	      {
+   if((bitmap & RADIOTAP_EXT) && (NICTA_OUID == ouid)) {
+      for(uint32_t i = RADIOTAP_TSFT; i < RADIOTAP_EXT; i <<= 1) {
+         uint32_t bit = ext_bitmap & i;
+         switch(bit) {
+         case NICTA_RATE_TUPLES:
+         {
             vector<uint32_t> rates;
             for(size_t i = 0; i < 5; ++i) {
                uint8_t rate, flags, tries;
@@ -430,15 +378,22 @@ radiotap_datalink::parse(size_t frame_sz, const uint8_t *frame)
             info->rates(rates);
          }
          break;
-      case RADIOTAP_PACKET_TIME:
-         extract(ofs, queue_ts, hdr_sz, frame_sz, frame);
-         extract(ofs, head_ts, hdr_sz, frame_sz, frame);
-         extract(ofs, start_ts, hdr_sz, frame_sz, frame);
-         extract(ofs, end_ts, hdr_sz, frame_sz, frame);
-         info->packet_time(start_ts, end_ts);
-         break;
-
-   */
+         case NICTA_PACKET_TIME:
+         	{
+               uint32_t queue_ts, head_ts, start_ts, end_ts;
+               extract(ofs, queue_ts, hdr_sz, frame_sz, frame);
+               extract(ofs, head_ts, hdr_sz, frame_sz, frame);
+               extract(ofs, start_ts, hdr_sz, frame_sz, frame);
+               extract(ofs, end_ts, hdr_sz, frame_sz, frame);
+               // normalize me now? or do we add queue/head to info?
+               info->packet_time(start_ts, end_ts);
+            }
+            break;
+         default:
+            break;
+         }
+      }
+   }
 
    frame += hdr_sz;
    frame_sz -= hdr_sz;
