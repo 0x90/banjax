@@ -50,6 +50,7 @@ namespace net {
    const property_t TIMESTAMP2            = 0x0400;
    const property_t TIMESTAMP_WALLCLOCK   = 0x0800;
    const property_t TX_FLAGS              = 0x1000;
+   const property_t METRIC                = 0x2000;
 
    /**
     * Property value type.
@@ -314,12 +315,58 @@ namespace net {
       uint32_t packet_time() const;
 
       /**
-       * Set the elapsed time used to transmit this packet.
+       * Return the timestamp when the packet was enqueued.
        *
-       * \param start_ts The packet start time (in microseconds).
-       * \param end_ts The packet end time (in microseconds).
+       * \return The timestamp (in microseconds).
        */
-      void packet_time(uint32_t start_ts, uint32_t end_ts);
+      uint32_t queue_ts() const;
+
+      /**
+       * Return the timestamp when the packet reached the queue head.
+       *
+       * \return The timestamp (in microseconds).
+       */
+      uint32_t head_ts() const;
+
+      /**
+       * Return the timestamp when the packet began contending for
+       * transmission.
+       *
+       * \return The timestamp (in microseconds).
+       */
+      uint32_t start_ts() const;
+
+      /**
+       * Return the timestamp when the packet transmission completed.
+       *
+       * \return The timestamp (in microseconds).
+       */
+      uint32_t end_ts() const;
+
+      /**
+       * Set the time infos for this packet. All times are in
+       * microseconds.
+       *
+       * \param queue_ts Time when the packet was added to the queue.
+       * \param head_ts Time when the packet reached the queue head.
+       * \param start_ts Time when packet transmission began.
+       * \param end_ts Time when packet transmission ended.
+       */
+      void packet_time(uint32_t queue_ts, uint32_t head_ts, uint32_t start_ts, uint32_t end_ts);
+
+      /**
+       * Return the link metric value for this packet.
+       *
+       * \return A uint32_t containing the metric.
+       */
+      uint32_t metric() const;
+
+      /**
+       * Set the link metric value for this packet.
+       *
+       * \param m A uint32_t containing the metric.
+       */
+      void metric(uint32_t m);
 
    private:
 
@@ -401,6 +448,16 @@ namespace net {
       std::vector<uint32_t> rates_;
 
       /**
+       * The packet enqueue time (in microseconds).
+       */
+      uint32_t queue_ts_;
+
+      /**
+       * The packet reached head-of-queue time (in microseconds).
+       */
+      uint32_t head_ts_;
+
+      /**
        * The packet transmission start time (in microseconds).
        */
       uint32_t start_ts_;
@@ -409,6 +466,11 @@ namespace net {
        * The packet transmission end time (in microseconds).
        */
       uint32_t end_ts_;
+
+      /**
+       * The link metric as it was when the kernel sent this packet.
+       */
+      uint32_t metric_;
 
    };
 

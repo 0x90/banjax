@@ -6,6 +6,7 @@
 
 #define __STDC_CONSTANT_MACROS
 #define __STDC_LIMIT_MACROS
+#include <airtime_metric_actual.hpp>
 #include <airtime_metric_linux.hpp>
 #include <airtime_metric_ns3.hpp>
 #include <elc_metric.hpp>
@@ -100,6 +101,7 @@ main(int ac, char **av)
       proto->push_back(metric_sptr(new metric_damper("ELC-Damped", metric_sptr(new elc_metric("", rts_cts_threshold, cw, 0, acktimeout)), damp)));
       proto->push_back(metric_sptr(new elc_mrr_metric("ELC-MRR", rts_cts_threshold, cw, 0, acktimeout)));
       proto->push_back(metric_sptr(new legacy_elc_metric(enc, rate_Mbs * 1000, mpdu_sz, rts_cts_threshold)));
+      proto->push_back(metric_sptr(new airtime_metric_actual));
       proto->push_back(metric_sptr(new airtime_metric_linux(enc)));
       proto->push_back(metric_sptr(new airtime_metric_ns3(enc, rts_cts_threshold)));
       proto->push_back(metric_sptr(new fdr_metric));

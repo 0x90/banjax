@@ -5,6 +5,7 @@ bin_PROGRAMS = elc
 
 elc_SOURCES = \
 	abstract_metric.cpp \
+	airtime_metric_actual.cpp \
 	airtime_metric_linux.cpp \
 	airtime_metric_ns3.cpp \
 	elc_metric.cpp \

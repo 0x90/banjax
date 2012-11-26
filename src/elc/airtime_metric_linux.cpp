@@ -52,7 +52,7 @@ airtime_metric_linux::operator=(const airtime_metric_linux& other)
       last_rate_Kbs_ = other.last_rate_Kbs_;
       fail_avg_ = other.fail_avg_;
       airtime_ = other.airtime_;
-      packets_ = 0;
+      packets_ = other.packets_;
    }
    return *this;
 }
