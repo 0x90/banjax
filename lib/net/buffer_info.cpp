@@ -325,10 +325,15 @@ buffer_info::write(ostream& os) const
    }
 
    if(has(PACKET_TIME)) {
+      os << "PKT-QUEUE: " << queue_ts_ << ", ";
+      os << "PKT-HEAD: " << head_ts_ << ", ";
       os << "PKT-START: " << start_ts_ << ", ";
       os << "PKT-END: " << end_ts_ << ", ";
       os << "PKT-TIME: " << packet_time() << ", ";
    }
+
+   if(has(METRIC))
+      os << "Metric: " << metric_ << ", ";
 
 }
 
