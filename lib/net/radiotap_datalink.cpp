@@ -238,8 +238,8 @@ radiotap_datalink::parse(size_t frame_sz, const uint8_t *frame)
       extract(ofs, ext_bitmap, hdr_sz, frame_sz, frame);
    }
 
-   uint32_t ouid;
-   uint8_t subnamespace;
+   uint8_t oui[3];
+   uint8_t sub_namespace = 0;
    uint16_t skip_sz = 0;
    flags_t rx_flags = 0;
    flags_t chan_flags = 0;
@@ -350,34 +350,41 @@ radiotap_datalink::parse(size_t frame_sz, const uint8_t *frame)
          info->data_retries(junk_u8);
          break;
       case RADIOTAP_VENDOR_NAMESPACE:
-         extract(ofs, junk_u32, hdr_sz, frame_sz, frame);
-         ouid = junk_u32 >> 24;
-         skip_sz = junk_u32 & 0xffffff;
+         extract(ofs, junk_u8, hdr_sz, frame_sz, frame);
+         oui[0] = junk_u8;
+         extract(ofs, junk_u8, hdr_sz, frame_sz, frame);
+         oui[1] = junk_u8;
+         extract(ofs, junk_u8, hdr_sz, frame_sz, frame);
+         oui[2] = junk_u8;
+         extract(ofs, junk_u8, hdr_sz, frame_sz, frame);
+         sub_namespace = junk_u8;
+         extract(ofs, junk_u16, hdr_sz, frame_sz, frame);
+         skip_sz = junk_u16;
          break;
       default:
          break;
       }
    }
 
-   if((bitmap & RADIOTAP_EXT) && (NICTA_OUID == ouid)) {
+   if((bitmap & RADIOTAP_EXT) && (0x12 == oui[0] && 0x34 == oui[1] && 0x56 == oui[2])) {
       for(uint32_t i = RADIOTAP_TSFT; i < RADIOTAP_EXT; i <<= 1) {
          uint32_t bit = ext_bitmap & i;
          switch(bit) {
          case NICTA_RATE_TUPLES:
-         {
-            vector<uint32_t> rates;
-            for(size_t i = 0; i < 5; ++i) {
-               uint8_t rate, flags, tries;
-               extract(ofs, rate, hdr_sz, frame_sz, frame);
-               extract(ofs, flags, hdr_sz, frame_sz, frame);
-               extract(ofs, tries, hdr_sz, frame_sz, frame);
-               for(uint16_t i = 0; i < tries; ++i) {
-                  rates.push_back(rate * UINT32_C(500));
+         	{
+               vector<uint32_t> rates;
+               for(size_t i = 0; i < 4; ++i) {
+                  uint8_t rate, flags, tries;
+                  extract(ofs, rate, hdr_sz, frame_sz, frame);
+                  extract(ofs, flags, hdr_sz, frame_sz, frame);
+                  extract(ofs, tries, hdr_sz, frame_sz, frame);
+                  for(uint16_t i = 0; i < tries; ++i) {
+                     rates.push_back(rate * UINT32_C(500));
+                  }
                }
+               info->rates(rates);
             }
-            info->rates(rates);
-         }
-         break;
+            break;
          case NICTA_PACKET_TIME:
          	{
                uint32_t queue_ts, head_ts, start_ts, end_ts;
@@ -385,8 +392,14 @@ radiotap_datalink::parse(size_t frame_sz, const uint8_t *frame)
                extract(ofs, head_ts, hdr_sz, frame_sz, frame);
                extract(ofs, start_ts, hdr_sz, frame_sz, frame);
                extract(ofs, end_ts, hdr_sz, frame_sz, frame);
-               // normalize me now? or do we add queue/head to info?
-               info->packet_time(start_ts, end_ts);
+               info->packet_time(queue_ts, start_ts, start_ts, end_ts);
+            }
+            break;
+         case NICTA_AIRTIME_METRIC:
+	         {
+               uint32_t airtime = 0;
+               extract(ofs, airtime, hdr_sz, frame_sz, frame);
+               info->metric(airtime);
             }
             break;
          default:

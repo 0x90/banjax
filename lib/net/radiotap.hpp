@@ -78,9 +78,9 @@ namespace net {
 
    // NICTA vendor extensions
    const uint32_t NICTA_OUID                 = 0x123456;
-   const uint32_t NICTA_RATE_TUPLES          = 0x10000000;
-   const uint32_t NICTA_PACKET_TIME          = 0x20000000;
-   const uint32_t NICTA_AIRTIME_METRIC       = 0x40000000;
+   const uint32_t NICTA_RATE_TUPLES          = 0x0001;
+   const uint32_t NICTA_PACKET_TIME          = 0x0002;
+   const uint32_t NICTA_AIRTIME_METRIC       = 0x0004;
 
 }
 
