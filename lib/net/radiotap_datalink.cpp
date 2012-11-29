@@ -370,21 +370,6 @@ radiotap_datalink::parse(size_t frame_sz, const uint8_t *frame)
       for(uint32_t i = RADIOTAP_TSFT; i < RADIOTAP_EXT; i <<= 1) {
          uint32_t bit = ext_bitmap & i;
          switch(bit) {
-         case NICTA_RATE_TUPLES:
-         	{
-               vector<uint32_t> rates;
-               for(size_t i = 0; i < 4; ++i) {
-                  uint8_t rate, flags, tries;
-                  extract(ofs, rate, hdr_sz, frame_sz, frame);
-                  extract(ofs, flags, hdr_sz, frame_sz, frame);
-                  extract(ofs, tries, hdr_sz, frame_sz, frame);
-                  for(uint16_t i = 0; i < tries; ++i) {
-                     rates.push_back(rate * UINT32_C(500));
-                  }
-               }
-               info->rates(rates);
-            }
-            break;
          case NICTA_PACKET_TIME:
          	{
                uint32_t queue_ts, head_ts, start_ts, end_ts;
@@ -400,6 +385,21 @@ radiotap_datalink::parse(size_t frame_sz, const uint8_t *frame)
                uint32_t airtime = 0;
                extract(ofs, airtime, hdr_sz, frame_sz, frame);
                info->metric(airtime);
+            }
+            break;
+         case NICTA_RATE_TUPLES:
+         	{
+               vector<uint32_t> rates;
+               for(size_t i = 0; i < 4; ++i) {
+                  uint8_t rate, flags, tries;
+                  extract(ofs, rate, hdr_sz, frame_sz, frame);
+                  extract(ofs, flags, hdr_sz, frame_sz, frame);
+                  extract(ofs, tries, hdr_sz, frame_sz, frame);
+                  for(uint16_t i = 0; i < tries; ++i) {
+                     rates.push_back(rate * UINT32_C(500));
+                  }
+               }
+               info->rates(rates);
             }
             break;
          default:
