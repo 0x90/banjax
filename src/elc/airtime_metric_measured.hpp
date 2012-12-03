@@ -5,8 +5,8 @@
  *
  */
 
-#ifndef METRICS_AIRTIME_METRIC_LINUX_HPP
-#define METRICS_AIRTIME_METRIC_LINUX_HPP
+#ifndef METRICS_AIRTIME_METRIC_MEASURED_HPP
+#define METRICS_AIRTIME_METRIC_MEASURED_HPP
 
 #include <abstract_metric.hpp>
 #include <net/encoding.hpp>
@@ -15,58 +15,58 @@
 namespace metrics {
 
    /**
-    * airtime_metric_linux is defined by 802.11s as its default
+    * airtime_metric_measured is defined by 802.11s as its default
     * routing metric (see IEEE 802.11s-d8 s 11A.7).
     *
     * This version is based on the Linux kernel implementation found
     * in net/mac80211/mesh_hwmp.c.
     */
-   class airtime_metric_linux : public abstract_metric {
+   class airtime_metric_measured : public abstract_metric {
    public:
 
       /**
-       * airtime_metric_linux constructor.
+       * airtime_metric_measured constructor.
        *
        * \param enc A non-null pointer to the encoding.
        * \param rts_cts_threshold Use RTS/CTS when rts_cts_threshold <= test frame size
        */
-      explicit airtime_metric_linux(net::encoding_sptr enc);
+      airtime_metric_measured();
 
       /**
-       * airtime_metric_linux copy constuctor.
+       * airtime_metric_measured copy constuctor.
        *
-       * \param other The other airtime_metric_linux to initialize from.
+       * \param other The other airtime_metric_measured to initialize from.
        */
-      airtime_metric_linux(const airtime_metric_linux& other);
+      airtime_metric_measured(const airtime_metric_measured& other);
 
       /**
-       * airtime_metric_linux assignment operator.
+       * airtime_metric_measured assignment operator.
        *
-       * \param other The other airtime_metric_linux to assign from.
-       * \return A reference to this airtime_metric_linux.
+       * \param other The other airtime_metric_measured to assign from.
+       * \return A reference to this airtime_metric_measured.
        */
-      airtime_metric_linux& operator=(const airtime_metric_linux& other);
+      airtime_metric_measured& operator=(const airtime_metric_measured& other);
 
       /**
-       * airtime_metric_linux destructor.
+       * airtime_metric_measured destructor.
        */
-     virtual ~airtime_metric_linux();
+     virtual ~airtime_metric_measured();
 
       /**
-       * Add a frame to the airtime_metric_linux and update the airtime_metric_linux statistics.
+       * Add a frame to the airtime_metric_measured and update the airtime_metric_measured statistics.
        *
        * \param b A shared_pointer to the buffer containing the frame.
        */
       virtual void add(net::buffer_sptr b);
 
       /**
-       * Return a pointer to a clone (deep copy) of this airtime_metric_linux
+       * Return a pointer to a clone (deep copy) of this airtime_metric_measured
        * instance. The clone is allocated on the heap using new and
        * the caller is responsible for ensuring it is deleted.
        *
-       * \return A pointer to a new airtime_metric_linux instance.
+       * \return A pointer to a new airtime_metric_measured instance.
        */
-      virtual airtime_metric_linux *clone() const;
+      virtual airtime_metric_measured *clone() const;
 
       /**
        * Compute the metric.
@@ -119,4 +119,4 @@ namespace metrics {
 
 }
 
-#endif // METRICS_AIRTIME_METRIC_LINUX_HPP
+#endif // METRICS_AIRTIME_METRIC_MEASURED_HPP

@@ -71,5 +71,5 @@ data_frame::mpdu_offset() const
       data_ofs += 6;
    if(has_qos_control())
       data_ofs += 2;
-   return data_ofs;
+   return data_ofs /* TEMPORARY KLUDGE */ + 6 /* SKIPS "JUNK" OCTETS */;
 }

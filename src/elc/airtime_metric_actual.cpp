@@ -27,16 +27,18 @@ using metrics::airtime_metric_actual;
 airtime_metric_actual::airtime_metric_actual() :
    abstract_metric(),
    airtime_sum_(0),
-   packets_(0),
-   metric_(0.0)
+   last_info_(),
+   metric_(0.0),
+   packets_(0)
 {
 }
 
 airtime_metric_actual::airtime_metric_actual(const airtime_metric_actual& other) :
    abstract_metric(other),
    airtime_sum_(other.airtime_sum_),
-   packets_(other.packets_),
-   metric_(other.metric_)
+   last_info_(other.last_info_),
+   metric_(other.metric_),
+   packets_(other.packets_)
 {
 }
 
@@ -46,8 +48,9 @@ airtime_metric_actual::operator=(const airtime_metric_actual& other)
    if(this != &other) {
       abstract_metric::operator=(other);
       airtime_sum_ = other.airtime_sum_;
-      packets_ = other.packets_;
+      last_info_ = other.last_info_;
       metric_ = other.metric_;
+      packets_ = other.packets_;
    }
    return *this;
 }
@@ -66,6 +69,7 @@ airtime_metric_actual::add(buffer_sptr b)
       bool tx_success = (0 == (info->tx_flags() & TX_FLAGS_FAIL));
       airtime_sum_ += info->metric();
       ++packets_;
+      last_info_ = info;
    }
 }
 
@@ -91,10 +95,17 @@ airtime_metric_actual::reset()
 {
    airtime_sum_ = 0;
    packets_ = 0;
+   buffer_info_sptr null;
+   last_info_ = null;
 }
 
 void
 airtime_metric_actual::write(ostream& os) const
 {
-   os << "Airtime-actual: " << metric_;
+   os << "Airtime-Actual-Avg: " << metric_ << ", ";
+   os << "Airtime-Actual: ";
+   if(last_info_)
+      os << last_info_->metric();
+   else
+      os << "N/A";
 }

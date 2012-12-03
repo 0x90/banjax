@@ -94,14 +94,19 @@ namespace metrics {
       uint_least32_t airtime_sum_;
 
       /**
-       * Count of packets attempted.
+       * The last packet's buffer_info.
        */
-      uint32_t packets_;
+      net::buffer_info_sptr last_info_;
 
       /**
        * The average metric value.
        */
       double metric_;
+
+      /**
+       * Count of packets attempted.
+       */
+      uint32_t packets_;
 
    };
 
