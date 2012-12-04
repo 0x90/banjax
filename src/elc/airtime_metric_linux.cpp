@@ -87,7 +87,7 @@ double
 airtime_metric_linux::compute(uint32_t ignored_delta_us)
 {
    const uint8_t ARITH_SHIFT = 8;
-#if 1
+#if 0
    // adjustments to help fix Airtime
    const uint32_t HDR_SZ = 62;
    const uint32_t CRC_SZ = 4;
