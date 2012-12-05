@@ -354,46 +354,7 @@ buffer_info::rates(const vector<uint32_t>& rates)
 uint32_t
 buffer_info::packet_time() const
 {
-   PRECONDITION(has(PACKET_TIME));
-   return end_ts_ ? end_ts_ - start_ts_ : 0;
-}
-
-uint32_t
-buffer_info::queue_ts() const
-{
-   PRECONDITION(has(PACKET_TIME));
-   return queue_ts_;
-}
-
-uint32_t
-buffer_info::head_ts() const
-{
-   PRECONDITION(has(PACKET_TIME));
-   return head_ts_;
-}
-
-uint32_t
-buffer_info::start_ts() const
-{
-   PRECONDITION(has(PACKET_TIME));
-   return start_ts_;
-}
-
-uint32_t
-buffer_info::end_ts() const
-{
-   PRECONDITION(has(PACKET_TIME));
-   return end_ts_;
-}
-
-void
-buffer_info::packet_time(uint32_t queue_ts, uint32_t head_ts, uint32_t start_ts, uint32_t end_ts)
-{
-   queue_ts_ = queue_ts;
-   head_ts_ = head_ts;
-   start_ts_ = start_ts;
-   end_ts_ = end_ts;
-   present_ |= PACKET_TIME;
+   return timestamp2() - timestamp1();
 }
 
 uint32_t

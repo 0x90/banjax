@@ -42,6 +42,7 @@ libbanjax_la_SOURCES= \
 	net/wnic_encoding_fix.cpp \
 	net/wnic_factory.cpp \
 	net/wnic_read_logger.cpp \
+	net/wnic_require_timestamps.cpp \
 	net/wnic_timestamp_fix.cpp \
 	net/wnic_timestamp_swizzle.cpp \
 	net/wnic_wallclock_fix.cpp \
@@ -89,6 +90,7 @@ nobase_libbanjax_la_HEADERS= \
 	net/wnic.hpp \
 	net/wnic_encoding_fix.hpp \
 	net/wnic_read_logger.hpp \
+	net/wnic_require_timestamps.hpp \
 	net/wnic_timestamp_fix.hpp \
 	net/wnic_timestamp_swizzle.hpp \
 	net/wnic_wallclock_fix.cpp \

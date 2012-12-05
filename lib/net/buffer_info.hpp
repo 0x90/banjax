@@ -315,46 +315,6 @@ namespace net {
       uint32_t packet_time() const;
 
       /**
-       * Return the timestamp when the packet was enqueued.
-       *
-       * \return The timestamp (in microseconds).
-       */
-      uint32_t queue_ts() const;
-
-      /**
-       * Return the timestamp when the packet reached the queue head.
-       *
-       * \return The timestamp (in microseconds).
-       */
-      uint32_t head_ts() const;
-
-      /**
-       * Return the timestamp when the packet began contending for
-       * transmission.
-       *
-       * \return The timestamp (in microseconds).
-       */
-      uint32_t start_ts() const;
-
-      /**
-       * Return the timestamp when the packet transmission completed.
-       *
-       * \return The timestamp (in microseconds).
-       */
-      uint32_t end_ts() const;
-
-      /**
-       * Set the time infos for this packet. All times are in
-       * microseconds.
-       *
-       * \param queue_ts Time when the packet was added to the queue.
-       * \param head_ts Time when the packet reached the queue head.
-       * \param start_ts Time when packet transmission began.
-       * \param end_ts Time when packet transmission ended.
-       */
-      void packet_time(uint32_t queue_ts, uint32_t head_ts, uint32_t start_ts, uint32_t end_ts);
-
-      /**
        * Return the link metric value for this packet.
        *
        * \return A uint32_t containing the metric.
