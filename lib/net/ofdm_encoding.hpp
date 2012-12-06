@@ -111,6 +111,7 @@ namespace net {
        * \param frame_sz The size of the frame in octets.
        * \param rate_kbs The data rate in units of 1Kb/s.
        * \param ignored The OFDM encoding does not support short preambles.
+       * \returns The time, in microseconds, needed to send the frame.
        * \throws invalid_argument_exception When rate_Kbs is not permitted using this encoding.
        */
       virtual uint16_t txtime(uint16_t frame_sz, uint32_t rate_Kbs, bool ignored) const;

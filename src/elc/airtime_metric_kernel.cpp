@@ -8,7 +8,7 @@
 #define __STDC_CONSTANT_MACROS
 #define __STDC_LIMIT_MACROS
 
-#include <airtime_metric_actual.hpp>
+#include <airtime_metric_kernel.hpp>
 
 #include <dot11/frame.hpp>
 #include <util/exceptions.hpp>
@@ -22,9 +22,9 @@
 using namespace dot11;
 using namespace net;
 using namespace std;
-using metrics::airtime_metric_actual;
+using metrics::airtime_metric_kernel;
 
-airtime_metric_actual::airtime_metric_actual() :
+airtime_metric_kernel::airtime_metric_kernel() :
    abstract_metric(),
    airtime_sum_(0),
    last_info_(),
@@ -33,7 +33,7 @@ airtime_metric_actual::airtime_metric_actual() :
 {
 }
 
-airtime_metric_actual::airtime_metric_actual(const airtime_metric_actual& other) :
+airtime_metric_kernel::airtime_metric_kernel(const airtime_metric_kernel& other) :
    abstract_metric(other),
    airtime_sum_(other.airtime_sum_),
    last_info_(other.last_info_),
@@ -42,8 +42,8 @@ airtime_metric_actual::airtime_metric_actual(const airtime_metric_actual& other)
 {
 }
 
-airtime_metric_actual&
-airtime_metric_actual::operator=(const airtime_metric_actual& other)
+airtime_metric_kernel&
+airtime_metric_kernel::operator=(const airtime_metric_kernel& other)
 {
    if(this != &other) {
       abstract_metric::operator=(other);
@@ -55,12 +55,12 @@ airtime_metric_actual::operator=(const airtime_metric_actual& other)
    return *this;
 }
 
-airtime_metric_actual::~airtime_metric_actual()
+airtime_metric_kernel::~airtime_metric_kernel()
 {
 }
 
 void
-airtime_metric_actual::add(buffer_sptr b)
+airtime_metric_kernel::add(buffer_sptr b)
 {
    frame f(b);
    frame_control fc(f.fc());
@@ -73,14 +73,14 @@ airtime_metric_actual::add(buffer_sptr b)
    }
 }
 
-airtime_metric_actual*
-airtime_metric_actual::clone() const
+airtime_metric_kernel*
+airtime_metric_kernel::clone() const
 {
-   return new airtime_metric_actual(*this);
+   return new airtime_metric_kernel(*this);
 }
 
 double
-airtime_metric_actual::compute(uint32_t ignored_delta_us)
+airtime_metric_kernel::compute(uint32_t ignored_delta_us)
 {
    if(packets_) {
       metric_ = airtime_sum_ / static_cast<double>(packets_);
@@ -91,7 +91,7 @@ airtime_metric_actual::compute(uint32_t ignored_delta_us)
 }
 
 void
-airtime_metric_actual::reset()
+airtime_metric_kernel::reset()
 {
    airtime_sum_ = 0;
    packets_ = 0;
@@ -100,10 +100,10 @@ airtime_metric_actual::reset()
 }
 
 void
-airtime_metric_actual::write(ostream& os) const
+airtime_metric_kernel::write(ostream& os) const
 {
-   os << "Airtime-Actual-Avg: " << metric_ << ", ";
-   os << "Airtime-Actual: ";
+   os << "Airtime-Kernel-Avg: " << metric_ << ", ";
+   os << "Airtime-Kernel: ";
    if(last_info_)
       os << last_info_->metric();
    else

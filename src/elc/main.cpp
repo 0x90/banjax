@@ -6,7 +6,7 @@
 
 #define __STDC_CONSTANT_MACROS
 #define __STDC_LIMIT_MACROS
-#include <airtime_metric_actual.hpp>
+#include <airtime_metric_kernel.hpp>
 #include <airtime_metric_linux.hpp>
 #include <airtime_metric_measured.hpp>
 #include <airtime_metric_ns3.hpp>
@@ -25,6 +25,7 @@
 #include <pdr_metric.hpp>
 #include <pktsz_metric.hpp>
 #include <simple_elc_metric.hpp>
+#include <tmt_metric.hpp>
 #include <txc_metric.hpp>
 
 #include <net/buffer_info.hpp>
@@ -76,7 +77,8 @@ main(int ac, char **av)
          ("encoding", value<string>(&enc_str)->default_value("OFDM"), "channel encoding")
          ("help,?", value(&help)->default_value(false)->zero_tokens(), "produce this help message")
          ("input,i", value<string>(&what)->default_value("mon0"), "input file/device name")
-         ("mpdu,m", value<uint16_t>(&mpdu_sz)->default_value(1536), "MPDU size used metric calculation")
+         ("linkrate,l", value<uint32_t>(&rate_Mbs)->default_value(6), "link rate in Mb/s")
+         ("mpdu,m", value<uint16_t>(&mpdu_sz)->default_value(1024), "MPDU size used metric calculation")
          ("rts-threshold,r", value<uint16_t>(&rts_cts_threshold)->default_value(UINT16_MAX), "RTS threshold level")
          ("runtime,u", value<uint64_t>(&runtime)->default_value(0), "produce results after n seconds")
          ("ticks,t", value<bool>(&show_ticks)->default_value(false)->zero_tokens(), "show results for each second")
@@ -93,8 +95,9 @@ main(int ac, char **av)
 
       encoding_sptr enc(encoding::get(enc_str));
    	metric_group_sptr proto(new metric_group);
+      proto->push_back(metric_sptr(new tmt_metric(enc, rate_Mbs * 1000, mpdu_sz, rts_cts_threshold)));
       proto->push_back(metric_sptr(new  goodput_metric));
-      proto->push_back(metric_sptr(new airtime_metric_actual));
+      proto->push_back(metric_sptr(new airtime_metric_kernel));
       proto->push_back(metric_sptr(new airtime_metric_linux(enc)));
       proto->push_back(metric_sptr(new airtime_metric_measured));
       proto->push_back(metric_sptr(new airtime_metric_ns3(enc, rts_cts_threshold)));

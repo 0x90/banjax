@@ -5,7 +5,7 @@ bin_PROGRAMS = elc
 
 elc_SOURCES = \
 	abstract_metric.cpp \
-	airtime_metric_actual.cpp \
+	airtime_metric_kernel.cpp \
 	airtime_metric_linux.cpp \
 	airtime_metric_measured.cpp \
 	airtime_metric_ns3.cpp \
@@ -26,6 +26,7 @@ elc_SOURCES = \
 	pktsz_metric.cpp \
 	residual.cpp \
 	simple_elc_metric.cpp \
+	tmt_metric.cpp \
 	txc_metric.cpp 
 
 elc_CPPFLAGS = -I@top_srcdir@/lib
