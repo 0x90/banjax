@@ -91,21 +91,6 @@ namespace metrics {
    private:
 
       /**
-       * Pointer to the default channel encoding.
-       */
-      net::encoding_sptr enc_;
-
-      /**
-       * Moving average for frame loss (scaled to 100).
-       */
-      uint32_t fail_avg_;
-
-      /**
-       * The data rate we last sent at
-       */
-      uint32_t last_rate_Kbs_;
-
-      /**
        * Stashed value of this metric.
        */
       double airtime_;
@@ -114,6 +99,12 @@ namespace metrics {
        * Count of packets successfully delivered.
        */
       uint32_t packets_;
+
+
+      /**
+       * The computed value of the airtime metric.
+       */
+      double metric_;
 
    };
 

@@ -42,7 +42,9 @@ if [ -s "$t" ]; then
 	 axis2=""
 	 let n=2
 	 for f in $*; do
-		  if [ "${axis[$f]}" == "" ]; then
+		  if [[ "${f/-*/}" == "Airtime" && "$f" != "Airtime-NS3" ]]; then
+				s="${s}${d}\"${t}\" using 1:(rate(\$${n})) with lp title \"${f}\""
+		  elif [ "${axis[$f]}" == "" ]; then
 				s="${s}${d}\"${t}\" using 1:(Mb(\$${n})) with lp title \"${f}\""
 		  else
 				s="${s}${d}\"${t}\" using 1:${n} with lp title \"${f}\" ${axis[$f]}"
@@ -56,11 +58,14 @@ if [ -s "$t" ]; then
 	 [ "$YRANGE" != "" ] && YRANGE="set yrange [$YRANGE]"
 	 [ "$Y2RANGE" != "" ] && Y2RANGE="set y2range [$Y2RANGE]"
 	 ${OUT} <<EOF
-set term postscript color enhanced eps
+set term postscript enhanced eps
 set out "$o"
 
 # function to convert MB/s -> Mb/s
-Mb(x)=x * 8
+Mb(x)=x*8
+
+# function to convert airtime to data rate
+rate(x)=8192.0/x
 
 set key below
 set grid xtics ytics
@@ -76,9 +81,9 @@ $Y2RANGE
 
 plot $s 
 EOF
-	 if [ -f "${t}" ]; then
-	 	  rm "$t"
-	 fi
+	 # if [ -f "${t}" ]; then
+	 # 	  rm "$t"
+	 # fi
 
 	 if [[ -f "${o}" && ! -s "${o}" ]]; then
 		  rm "$o"

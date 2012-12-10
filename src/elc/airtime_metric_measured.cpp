@@ -26,14 +26,16 @@ using metrics::airtime_metric_measured;
 airtime_metric_measured::airtime_metric_measured() :
    abstract_metric(),
    airtime_(0.0),
-   packets_(0)
+   packets_(0),
+   metric_(0.0)
 {
 }
 
 airtime_metric_measured::airtime_metric_measured(const airtime_metric_measured& other) :
    abstract_metric(other),
    airtime_(other.airtime_),
-   packets_(other.packets_)
+   packets_(other.packets_),
+   metric_(other.metric_)
 {
 }
 
@@ -44,6 +46,7 @@ airtime_metric_measured::operator=(const airtime_metric_measured& other)
       abstract_metric::operator=(other);
       airtime_ = other.airtime_;
       packets_ = other.packets_;
+      metric_ = other.metric_;
    }
    return *this;
 }
@@ -76,7 +79,8 @@ airtime_metric_measured::clone() const
 double
 airtime_metric_measured::compute(uint32_t ignored_delta_us)
 {
-   return airtime_;
+   metric_ = airtime_ / static_cast<double>(packets_);
+   return metric_;
 }
 
 void
@@ -89,5 +93,5 @@ airtime_metric_measured::reset()
 void
 airtime_metric_measured::write(ostream& os) const
 {
-   os << "Airtime-Measured: " << airtime_ / static_cast<double>(packets_);
+   os << "Airtime-Measured: " << metric_;
 }

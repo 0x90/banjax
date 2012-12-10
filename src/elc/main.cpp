@@ -97,12 +97,29 @@ main(int ac, char **av)
    	metric_group_sptr proto(new metric_group);
       proto->push_back(metric_sptr(new tmt_metric(enc, rate_Mbs * 1000, mpdu_sz, rts_cts_threshold)));
       proto->push_back(metric_sptr(new  goodput_metric));
-      proto->push_back(metric_sptr(new airtime_metric_kernel));
       proto->push_back(metric_sptr(new airtime_metric_linux(enc)));
+
+      proto->push_back(metric_sptr(new airtime_metric_kernel));
+      proto->push_back(metric_sptr(new metric_decimator("Airtime-Kernel-50PC", metric_sptr(new airtime_metric_kernel), 2)));
+      proto->push_back(metric_sptr(new metric_decimator("Airtime-Kernel-25PC", metric_sptr(new airtime_metric_kernel), 4)));
+      proto->push_back(metric_sptr(new metric_decimator("Airtime-Kernel-10PC", metric_sptr(new airtime_metric_kernel), 10)));
+      proto->push_back(metric_sptr(new metric_decimator("Airtime-Kernel-5PC", metric_sptr(new airtime_metric_kernel), 20)));
+
       proto->push_back(metric_sptr(new airtime_metric_measured));
+      proto->push_back(metric_sptr(new metric_decimator("Airtime-Measured-50PC", metric_sptr(new airtime_metric_measured), 2)));
+      proto->push_back(metric_sptr(new metric_decimator("Airtime-Measured-25PC", metric_sptr(new airtime_metric_measured), 4)));
+      proto->push_back(metric_sptr(new metric_decimator("Airtime-Measured-10PC", metric_sptr(new airtime_metric_measured), 10)));
+      proto->push_back(metric_sptr(new metric_decimator("Airtime-Measured-5PC", metric_sptr(new airtime_metric_measured), 20)));
+
       proto->push_back(metric_sptr(new airtime_metric_ns3(enc, rts_cts_threshold)));
+      proto->push_back(metric_sptr(new metric_decimator("Airtime-NS3-50PC", metric_sptr(new airtime_metric_ns3(enc, rts_cts_threshold)), 2)));
+      proto->push_back(metric_sptr(new metric_decimator("Airtime-NS3-25PC", metric_sptr(new airtime_metric_ns3(enc, rts_cts_threshold)), 4)));
+      proto->push_back(metric_sptr(new metric_decimator("Airtime-NS3-10PC", metric_sptr(new airtime_metric_ns3(enc, rts_cts_threshold)), 10)));
+      proto->push_back(metric_sptr(new metric_decimator("Airtime-NS3-5PC", metric_sptr(new airtime_metric_ns3(enc, rts_cts_threshold)), 20)));
+
       proto->push_back(metric_sptr(new fdr_metric));
       proto->push_back(metric_sptr(new txc_metric("TXC")));
+
 /*
       proto->push_back(metric_sptr(new elc_metric("ELC", rts_cts_threshold, cw, 0, acktimeout)));
       if(dead_time)
