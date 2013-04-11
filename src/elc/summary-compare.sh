@@ -1,23 +1,20 @@
 #!/bin/bash
 
 case "$#" in
-	 1)
-		  p="$1"
-		  m="ELC"
-		  fn="rmse"
-		  ;;
-	 2)
-		  p="$1"
-		  m="$2"
-		  fn="rmse"
-		  ;;
 	 3)
 		  p="$1"
-		  m="$2"
-		  fn="$3"
+		  m1="$2"
+		  m2="$3"
+		  fn="rmse"
+		  ;;
+	 4)
+		  p="$1"
+		  m1="$2"
+		  m2="$3"
+		  fn="$4"
 		  ;;
 	 *)
-		  echo "usage: summary-compare path [metric [fn]]" 2>&1
+		  echo "usage: summary-compare path metric metric [fn]]" 2>&1
 		  exit 1
 		  ;;
 esac
@@ -37,7 +34,7 @@ for r in 6 9 12 18 24 36 48 54; do
 	for f in $files; do
 		a=`echo $f | sed 's/.*att//' | sed 's/_load.*//'`;
 		echo -n "$r $a ";
-		./extract.scm Goodput "${m}" < $f | awk -f Mb.awk | awk -f "${fn}.awk"
+		./extract.scm "${m1}" "${m2}" < $f | awk -f "${fn}.awk"
 	done
 done
 

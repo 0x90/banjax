@@ -106,6 +106,11 @@ namespace metrics {
        */
       double metric_;
 
+      /**
+       * Can we compute a valid metric?
+       */
+      bool valid_;
+
    };
 
 }

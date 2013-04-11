@@ -78,7 +78,7 @@ airtime_metric_ns3::add(buffer_sptr b)
    const uint32_t CRC_SZ = 4;
    buffer_info_sptr info(b->info());
    const uint64_t NOW = info->timestamp_wallclock();
-   if(DATA_FRAME == fc.type() && info->has(TX_FLAGS)) {
+   if(info->has(TX_FLAGS)) {
       double avg_coeff = exp((-1.0 * static_cast<double>(NOW - last_update_)) / static_cast<double>(memory_time_));
       last_update_ = NOW;
       bool tx_success = (0 == (info->tx_flags() & TX_FLAGS_FAIL));

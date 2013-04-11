@@ -15,6 +15,7 @@
 #include <iostream>
 #include <iomanip>
 #include <math.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <sstream>
 
@@ -59,14 +60,16 @@ void
 airtime_metric_measured::add(buffer_sptr b)
 {
    frame f(b);
-   frame_control fc(f.fc());
    buffer_info_sptr info(b->info());
-   if(DATA_FRAME == fc.type() && info->has(TX_FLAGS)) {
-      bool tx_success = (0 == (info->tx_flags() & TX_FLAGS_FAIL));
-      if(tx_success) {
-         ++packets_;
+   if(info->has(TX_FLAGS)) {
+      int32_t airtime = info->packet_time();
+      if(0 < airtime && airtime < UINT32_C(0x80000000)) {
+         bool tx_success = (0 == (info->tx_flags() & TX_FLAGS_FAIL));
+         if(tx_success) {
+            ++packets_;
+         }
+         airtime_ += airtime;
       }
-      airtime_ += info->packet_time();
    }
 }
 
@@ -79,7 +82,12 @@ airtime_metric_measured::clone() const
 double
 airtime_metric_measured::compute(uint32_t ignored_delta_us)
 {
-   metric_ = airtime_ / static_cast<double>(packets_);
+   valid_ = (packets_ > 0);
+   if (valid_) {
+      metric_ = airtime_ / static_cast<double>(packets_);
+   } else {
+      metric_ = 0.0;
+   }
    return metric_;
 }
 
