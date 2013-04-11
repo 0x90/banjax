@@ -24,6 +24,7 @@
 #include <metric_group.hpp>
 #include <pdr_metric.hpp>
 #include <pktsz_metric.hpp>
+#include <pkttime_metric.hpp>
 #include <simple_elc_metric.hpp>
 #include <tmt_metric.hpp>
 #include <txc_metric.hpp>
@@ -78,6 +79,7 @@ main(int ac, char **av)
          ("help,?", value(&help)->default_value(false)->zero_tokens(), "produce this help message")
          ("input,i", value<string>(&what)->default_value("mon0"), "input file/device name")
          ("linkrate,l", value<uint32_t>(&rate_Mbs)->default_value(6), "link rate in Mb/s")
+         ("mpdu,m", value<uint16_t>(&mpdu_sz)->default_value(1024), "MPDU size in octets")
          ("rts-threshold,r", value<uint16_t>(&rts_cts_threshold)->default_value(UINT16_MAX), "RTS threshold level")
          ("runtime,u", value<uint64_t>(&runtime)->default_value(0), "produce results after n seconds")
          ("ticks,t", value<bool>(&show_ticks)->default_value(false)->zero_tokens(), "show results for each second")
@@ -94,28 +96,20 @@ main(int ac, char **av)
 
       encoding_sptr enc(encoding::get(enc_str));
    	metric_group_sptr proto(new metric_group);
-      proto->push_back(metric_sptr(new tmt_metric(enc, rate_Mbs * 1000, mpdu_sz, rts_cts_threshold)));
-      proto->push_back(metric_sptr(new  goodput_metric));
-      proto->push_back(metric_sptr(new airtime_metric_linux(enc)));
+      proto->push_back(metric_sptr(new goodput_metric));
 
       proto->push_back(metric_sptr(new airtime_metric_kernel));
-      proto->push_back(metric_sptr(new metric_decimator("Airtime-Kernel-50PC", metric_sptr(new airtime_metric_kernel), 2)));
-      proto->push_back(metric_sptr(new metric_decimator("Airtime-Kernel-25PC", metric_sptr(new airtime_metric_kernel), 4)));
-      proto->push_back(metric_sptr(new metric_decimator("Airtime-Kernel-10PC", metric_sptr(new airtime_metric_kernel), 10)));
-      proto->push_back(metric_sptr(new metric_decimator("Airtime-Kernel-5PC", metric_sptr(new airtime_metric_kernel), 20)));
+      // proto->push_back(metric_sptr(new metric_decimator("Airtime-Kernel-50PC", metric_sptr(new airtime_metric_kernel), 2)));
+      // proto->push_back(metric_sptr(new metric_decimator("Airtime-Kernel-25PC", metric_sptr(new airtime_metric_kernel), 4)));
+      // proto->push_back(metric_sptr(new metric_decimator("Airtime-Kernel-10PC", metric_sptr(new airtime_metric_kernel), 10)));
+      // proto->push_back(metric_sptr(new metric_decimator("Airtime-Kernel-5PC", metric_sptr(new airtime_metric_kernel), 20)));
 
+      proto->push_back(metric_sptr(new airtime_metric_linux(enc)));
       proto->push_back(metric_sptr(new airtime_metric_measured));
-      proto->push_back(metric_sptr(new metric_decimator("Airtime-Measured-50PC", metric_sptr(new airtime_metric_measured), 2)));
-      proto->push_back(metric_sptr(new metric_decimator("Airtime-Measured-25PC", metric_sptr(new airtime_metric_measured), 4)));
-      proto->push_back(metric_sptr(new metric_decimator("Airtime-Measured-10PC", metric_sptr(new airtime_metric_measured), 10)));
-      proto->push_back(metric_sptr(new metric_decimator("Airtime-Measured-5PC", metric_sptr(new airtime_metric_measured), 20)));
-
       proto->push_back(metric_sptr(new airtime_metric_ns3(enc, rts_cts_threshold)));
-      proto->push_back(metric_sptr(new metric_decimator("Airtime-NS3-50PC", metric_sptr(new airtime_metric_ns3(enc, rts_cts_threshold)), 2)));
-      proto->push_back(metric_sptr(new metric_decimator("Airtime-NS3-25PC", metric_sptr(new airtime_metric_ns3(enc, rts_cts_threshold)), 4)));
-      proto->push_back(metric_sptr(new metric_decimator("Airtime-NS3-10PC", metric_sptr(new airtime_metric_ns3(enc, rts_cts_threshold)), 10)));
-      proto->push_back(metric_sptr(new metric_decimator("Airtime-NS3-5PC", metric_sptr(new airtime_metric_ns3(enc, rts_cts_threshold)), 20)));
 
+      proto->push_back(metric_sptr(new tmt_metric(enc, rate_Mbs * 1000, mpdu_sz, rts_cts_threshold)));
+      proto->push_back(metric_sptr(new pkttime_metric));
       proto->push_back(metric_sptr(new fdr_metric));
       proto->push_back(metric_sptr(new txc_metric("TXC")));
 

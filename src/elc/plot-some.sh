@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 h=`dirname $0`
 
 if [ $# -lt 3 ]; then
@@ -24,7 +23,7 @@ axis["FDR"]="axes x1y2"
 
 # write the extract file
 OPTS=""
-if [ ! -e $d ]; then
+if [ ! -e "$d" ]; then
 	 echo 1>&2 "error: $d is missing!"
 	 exit 1
 fi

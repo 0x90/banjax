@@ -1,4 +1,4 @@
-/* -*- mode C++; tab-width: 3; -*- */
+/* -*- mode: C++; tab-width: 3; -*- */
 
 /*
  * Copyright 2012 NICTA
@@ -88,16 +88,6 @@ tmt_metric::successful_tx_time(encoding_sptr enc, uint32_t rate_kbs, uint16_t fr
    const uint32_t T_DATA = enc->txtime(frame_sz, rate_kbs, PREAMBLE);
    const uint32_t ACK_SZ = 14;
    const uint32_t T_ACK = enc->txtime(ACK_SZ, enc->response_rate(rate_kbs), PREAMBLE);
-
-#if 0
-   cerr << "AIFS: " << 9 + enc->DIFS() << endl;
-   cerr << "  CW: " << T_CW << endl;
-   cerr << " RTS: " << T_RTS_CTS << endl;
-   cerr << "DATA: " << T_DATA << endl;
-   cerr << "SIFS: " << enc->SIFS() << endl;
-   cerr << " ACK: " << T_ACK << endl;
-   cerr << "    : " << 9 + enc->DIFS() /* AIFS[BE] */ + T_CW + T_RTS_CTS + T_DATA + enc->SIFS() + T_ACK << endl;
-#endif
 
    /* TODO: make QoS aware!
     */

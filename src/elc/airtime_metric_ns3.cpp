@@ -117,8 +117,10 @@ airtime_metric_ns3::compute(uint32_t ignored_delta_us)
       if(fail_avg_ < 1.0) {
          // this is how NS-3 does it (but without conversion to TUs)
          airtime_ =  static_cast<double>(enc_->DIFS() + T_RTS_CTS + T_DATA + enc_->SIFS() + T_ACK) / (1.0 - fail_avg_);
+#if 0         
          // NOTE: we convert airtime to a channel rate in MB/s so we can compare with ELC etc.
          airtime_ = TEST_FRAME_SZ / airtime_; 
+#endif
       } else
          airtime_ = 0.0;
    } else
