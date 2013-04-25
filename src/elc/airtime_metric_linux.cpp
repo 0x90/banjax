@@ -29,7 +29,8 @@ airtime_metric_linux::airtime_metric_linux(encoding_sptr enc) :
    last_rate_Kbs_(enc_->default_rate()),
    fail_avg_(0),
    airtime_(0.0),
-   packets_(0)
+   packets_(0),
+   valid_(false)
 {
 }
 
@@ -39,7 +40,8 @@ airtime_metric_linux::airtime_metric_linux(const airtime_metric_linux& other) :
    last_rate_Kbs_(other.last_rate_Kbs_),
    fail_avg_(other.fail_avg_),
    airtime_(other.airtime_),
-   packets_(other.packets_)
+   packets_(other.packets_),
+   valid_(other.valid_)
 {
 }
 
@@ -53,6 +55,7 @@ airtime_metric_linux::operator=(const airtime_metric_linux& other)
       fail_avg_ = other.fail_avg_;
       airtime_ = other.airtime_;
       packets_ = other.packets_;
+      valid_ = other.valid_;
    }
    return *this;
 }
@@ -92,7 +95,7 @@ airtime_metric_linux::compute(uint32_t ignored_delta_us)
    const uint32_t S_UNIT = 1 << ARITH_SHIFT;
 	const int32_t DEVICE_CONSTANT = 1 << ARITH_SHIFT;
 
-   if(packets_) {
+   if(valid_ = packets_) {
       uint32_t err = (fail_avg_ << ARITH_SHIFT) / 100;
       uint32_t rate = last_rate_Kbs_ / 100;
       uint32_t tx_time = (DEVICE_CONSTANT + 10 * TEST_FRAME_SZ / rate);
@@ -114,5 +117,8 @@ airtime_metric_linux::reset()
 void
 airtime_metric_linux::write(ostream& os) const
 {
-   os << "Airtime-Linux: " << airtime_;
+   if(valid_)
+      os << "Airtime-Linux: " << airtime_;
+   else
+      os << "Airtime-Linux: - ";
 }

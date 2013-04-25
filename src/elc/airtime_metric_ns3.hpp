@@ -130,6 +130,10 @@ namespace metrics {
        */
       uint32_t packets_;
 
+      /**
+       * Did we compute a valid metric?
+       */
+      bool valid_;
    };
 
 }

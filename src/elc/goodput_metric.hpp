@@ -92,19 +92,29 @@ namespace metrics {
    private:
 
       /**
-       * Number of MAC layer octets successfully sent in last second.
+       * Number of MAC layer octets successfully sent since last reset().
        */
-      uint32_t frame_octets_;
+      uint_least32_t frame_octets_;
 
       /**
-       * Number of iperf octets transmitted successfully in last second.
+       * Number of transport layer octets transmitted successfully since last reset().
        */
-      uint32_t packet_octets_;
+      uint_least32_t packet_octets_;
 
       /**
-       * iperf goodput value.
+       * Number of packets seen since last reset().
        */
-      double iperf_goodput_;
+      uint32_t packets_;
+
+      /**
+       * Extra debug infos.
+       */
+      std::string debug_;
+
+      /**
+       * transport goodput value.
+       */
+      double transport_goodput_;
 
       /**
        * MAC layer goodput value.

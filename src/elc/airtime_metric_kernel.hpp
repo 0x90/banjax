@@ -90,24 +90,14 @@ namespace metrics {
    private:
 
       /**
-       * The sum of the metric values.
-       */
-      uint_least32_t airtime_sum_;
-
-      /**
        * The last packet's buffer_info.
        */
-      net::buffer_info_sptr last_info_;
+      net::buffer_info_sptr info_, last_info_;
 
       /**
-       * The average metric value.
+       * Do we have a valid metric value?
        */
-      double metric_;
-
-      /**
-       * Count of packets attempted.
-       */
-      uint32_t packets_;
+      bool valid_;
 
    };
 

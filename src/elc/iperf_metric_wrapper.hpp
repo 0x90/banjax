@@ -92,6 +92,23 @@ namespace metrics {
    private:
 
       /**
+       * Non-iperf octets delivered.
+       */
+      uint_least32_t octets_;
+
+      /**
+       * Non-iperf frames attempted.
+       */
+      uint32_t frames_attempted_;
+
+      /**
+       * Non-iperf frames delivered.
+       */
+      uint32_t frames_delivered_;
+
+      std::string debug_;
+
+      /**
        * Pointer to the wrapped metric.
        */
       metric_sptr wrapped_metric_;

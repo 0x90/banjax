@@ -26,6 +26,7 @@ elc_SOURCES = \
 	pktsz_metric.cpp \
 	pkttime_metric.cpp \
 	residual.cpp \
+	saturation_metric.cpp \
 	simple_elc_metric.cpp \
 	tmt_metric.cpp \
 	txc_metric.cpp 

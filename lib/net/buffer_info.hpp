@@ -40,7 +40,6 @@ namespace net {
    const property_t CHANNEL_FLAGS         = 0x0001;
    const property_t DATA_RETRIES          = 0x0002;
    const property_t FREQ_MHz              = 0x0004;
-   const property_t PACKET_TIME           = 0x0008;
    const property_t RATE_Kbs              = 0x0010;
    const property_t RATES_Kbs             = 0x0020;
    const property_t RTS_RETRIES           = 0x0040;
@@ -51,6 +50,7 @@ namespace net {
    const property_t TIMESTAMP_WALLCLOCK   = 0x0800;
    const property_t TX_FLAGS              = 0x1000;
    const property_t METRIC                = 0x2000;
+   const property_t PACKET_TIME           = TIMESTAMP1 | TIMESTAMP2;
 
    /**
     * Property value type.
@@ -406,26 +406,6 @@ namespace net {
        * Rates.
        */
       std::vector<uint32_t> rates_;
-
-      /**
-       * The packet enqueue time (in microseconds).
-       */
-      uint32_t queue_ts_;
-
-      /**
-       * The packet reached head-of-queue time (in microseconds).
-       */
-      uint32_t head_ts_;
-
-      /**
-       * The packet transmission start time (in microseconds).
-       */
-      uint32_t start_ts_;
-
-      /**
-       * The packet transmission end time (in microseconds).
-       */
-      uint32_t end_ts_;
 
       /**
        * The link metric as it was when the kernel sent this packet.

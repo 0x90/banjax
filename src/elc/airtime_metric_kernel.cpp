@@ -26,19 +26,15 @@ using metrics::airtime_metric_kernel;
 
 airtime_metric_kernel::airtime_metric_kernel() :
    abstract_metric(),
-   airtime_sum_(0),
-   last_info_(),
-   metric_(0.0),
-   packets_(0)
+   info_(),
+   last_info_()
 {
 }
 
 airtime_metric_kernel::airtime_metric_kernel(const airtime_metric_kernel& other) :
    abstract_metric(other),
-   airtime_sum_(other.airtime_sum_),
-   last_info_(other.last_info_),
-   metric_(other.metric_),
-   packets_(other.packets_)
+   info_(other.info_),
+   last_info_(other.last_info_)
 {
 }
 
@@ -47,10 +43,8 @@ airtime_metric_kernel::operator=(const airtime_metric_kernel& other)
 {
    if(this != &other) {
       abstract_metric::operator=(other);
-      airtime_sum_ = other.airtime_sum_;
+      info_ = other.info_;
       last_info_ = other.last_info_;
-      metric_ = other.metric_;
-      packets_ = other.packets_;
    }
    return *this;
 }
@@ -63,13 +57,10 @@ void
 airtime_metric_kernel::add(buffer_sptr b)
 {
    frame f(b);
-   frame_control fc(f.fc());
    buffer_info_sptr info(b->info());
-   if(DATA_FRAME == fc.type() && info->has(TX_FLAGS)) {
+   if(info->has(TX_FLAGS)) {
       bool tx_success = (0 == (info->tx_flags() & TX_FLAGS_FAIL));
-      airtime_sum_ += info->metric();
-      ++packets_;
-      last_info_ = info;
+      info_ = info;
    }
 }
 
@@ -82,30 +73,22 @@ airtime_metric_kernel::clone() const
 double
 airtime_metric_kernel::compute(uint32_t ignored_delta_us)
 {
-   if(packets_) {
-      metric_ = airtime_sum_ / static_cast<double>(packets_);
-   } else {
-      metric_ = 0;
-   }
-   return metric_;
+   last_info_ = info_;
+   return last_info_ ? last_info_->metric() : 0.0;
 }
 
 void
 airtime_metric_kernel::reset()
 {
-   airtime_sum_ = 0;
-   packets_ = 0;
-   buffer_info_sptr null;
-   last_info_ = null;
+   info_.reset();
 }
 
 void
 airtime_metric_kernel::write(ostream& os) const
 {
-   os << "Airtime-Kernel-Avg: " << metric_ << ", ";
    os << "Airtime-Kernel: ";
    if(last_info_)
       os << last_info_->metric();
    else
-      os << "N/A";
+      os << "- ";
 }

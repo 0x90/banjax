@@ -324,14 +324,6 @@ buffer_info::write(ostream& os) const
       os << ", ";
    }
 
-   if(has(PACKET_TIME)) {
-      os << "PKT-QUEUE: " << hex << queue_ts_ << ", ";
-      os << "PKT-HEAD: " << hex <<head_ts_ << ", ";
-      os << "PKT-START: " << hex << start_ts_ << ", ";
-      os << "PKT-END: " << hex << end_ts_ << ", ";
-      os << "PKT-TIME: " << dec << packet_time() << ", ";
-   }
-
    if(has(METRIC))
       os << "Metric: " << metric_ << ", ";
 

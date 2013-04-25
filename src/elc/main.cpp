@@ -25,6 +25,7 @@
 #include <pdr_metric.hpp>
 #include <pktsz_metric.hpp>
 #include <pkttime_metric.hpp>
+#include <saturation_metric.hpp>
 #include <simple_elc_metric.hpp>
 #include <tmt_metric.hpp>
 #include <txc_metric.hpp>
@@ -33,8 +34,9 @@
 #include <net/ofdm_encoding.hpp>
 #include <net/wnic.hpp>
 #include <net/wnic_encoding_fix.hpp>
-#include <net/wnic_wallclock_fix.hpp>
 #include <net/wnic_require_timestamps.hpp>
+#include <net/wnic_timestamp_fix.hpp>
+#include <net/wnic_timestamp_swizzle.hpp>
 
 #include <boost/program_options.hpp>
 #include <cstdlib>
@@ -95,40 +97,27 @@ main(int ac, char **av)
       }
 
       encoding_sptr enc(encoding::get(enc_str));
-   	metric_group_sptr proto(new metric_group);
-      proto->push_back(metric_sptr(new goodput_metric));
+    	metric_group_sptr link_metrics(new metric_group);
+      link_metrics->push_back(metric_sptr(new goodput_metric));
+      link_metrics->push_back(metric_sptr(new airtime_metric_kernel));
+      // link_metrics->push_back(metric_sptr(new metric_decimator("Airtime-Kernel-5PC", metric_sptr(new airtime_metric_kernel), 20)));
+      link_metrics->push_back(metric_sptr(new airtime_metric_linux(enc)));
+      link_metrics->push_back(metric_sptr(new airtime_metric_measured));
+      link_metrics->push_back(metric_sptr(new airtime_metric_ns3(enc, rts_cts_threshold)));
+      link_metrics->push_back(metric_sptr(new tmt_metric(enc, rate_Mbs * 1000, mpdu_sz, rts_cts_threshold)));
+      link_metrics->push_back(metric_sptr(new pkttime_metric));
+      link_metrics->push_back(metric_sptr(new fdr_metric));
+      link_metrics->push_back(metric_sptr(new txc_metric("TXC")));
 
-      proto->push_back(metric_sptr(new airtime_metric_kernel));
-      // proto->push_back(metric_sptr(new metric_decimator("Airtime-Kernel-50PC", metric_sptr(new airtime_metric_kernel), 2)));
-      // proto->push_back(metric_sptr(new metric_decimator("Airtime-Kernel-25PC", metric_sptr(new airtime_metric_kernel), 4)));
-      // proto->push_back(metric_sptr(new metric_decimator("Airtime-Kernel-10PC", metric_sptr(new airtime_metric_kernel), 10)));
-      // proto->push_back(metric_sptr(new metric_decimator("Airtime-Kernel-5PC", metric_sptr(new airtime_metric_kernel), 20)));
-
-      proto->push_back(metric_sptr(new airtime_metric_linux(enc)));
-      proto->push_back(metric_sptr(new airtime_metric_measured));
-      proto->push_back(metric_sptr(new airtime_metric_ns3(enc, rts_cts_threshold)));
-
-      proto->push_back(metric_sptr(new tmt_metric(enc, rate_Mbs * 1000, mpdu_sz, rts_cts_threshold)));
-      proto->push_back(metric_sptr(new pkttime_metric));
-      proto->push_back(metric_sptr(new fdr_metric));
-      proto->push_back(metric_sptr(new txc_metric("TXC")));
-
-/*
-      proto->push_back(metric_sptr(new elc_metric("ELC", rts_cts_threshold, cw, 0, acktimeout)));
-      if(dead_time)
-         proto->push_back(metric_sptr(new elc_metric("ELC-adj", rts_cts_threshold, cw, dead_time, acktimeout)));
-      proto->push_back(metric_sptr(new elc_mrr_metric("ELC-MRR", rts_cts_threshold, cw, 0, acktimeout)));
-      proto->push_back(metric_sptr(new legacy_elc_metric(enc, rate_Mbs * 1000, mpdu_sz, rts_cts_threshold)));
-      proto->push_back(metric_sptr(new metric_damper("ELC-Damped", metric_sptr(new elc_metric("", rts_cts_threshold, cw, 0, acktimeout)), damp)));
-      proto->push_back(metric_sptr(new metric_decimator("ELC-10PC", metric_sptr(new elc_metric("", rts_cts_threshold, cw, 0, acktimeout)), 10)));
-      proto->push_back(metric_sptr(new metric_decimator("ELC-1PC", metric_sptr(new elc_metric("", rts_cts_threshold, cw, 0, acktimeout)), 100)));
-      proto->push_back(metric_sptr(new simple_elc_metric));
-*/
-      metric_sptr m(new iperf_metric_wrapper(metric_sptr(new metric_demux(proto))));
+    	metric_group_sptr chan_metrics(new metric_group);
+      chan_metrics->push_back(metric_sptr(new iperf_metric_wrapper(metric_sptr(new metric_demux(link_metrics)))));
+      chan_metrics->push_back(metric_sptr(new saturation_metric));
+      metric_sptr metrics(chan_metrics);
 
       wnic_sptr w(wnic::open(what));
-      w = wnic_sptr(new wnic_wallclock_fix(w));
       w = wnic_sptr(new wnic_require_timestamps(w));
+      w = wnic_sptr(new wnic_timestamp_swizzle(w));
+      w = wnic_sptr(new wnic_timestamp_fix(w));
       if("OFDM" == enc_str) {
          w = wnic_sptr(new wnic_encoding_fix(w, CHANNEL_CODING_OFDM | CHANNEL_PREAMBLE_LONG));
       } else if("DSSS" == enc_str) {
@@ -138,31 +127,31 @@ main(int ac, char **av)
       buffer_sptr first(w->read()), b(first), last;
       if(b) {
          buffer_info_sptr info(b->info());
-         uint64_t tick_time = UINT64_C(1000000);
-         uint64_t end_time = runtime ? info->timestamp_wallclock() + (runtime * tick_time) : UINT64_MAX;
-         uint64_t tick = show_ticks ? info->timestamp_wallclock() + tick_time : UINT64_MAX;
-         for(uint32_t n = 0; b && (info->timestamp_wallclock() <= end_time); ++n) {
+         uint32_t tick_time = UINT32_C(1000000);
+         uint32_t end_time = runtime ? info->timestamp1() + (runtime * tick_time) : UINT32_MAX;
+         uint64_t tick = show_ticks ? info->timestamp1() + tick_time : UINT64_MAX;
+         for(uint32_t n = 0; b && (info->timestamp1() <= end_time); ++n) {
             // is it time to print results yet?
             info = b->info();
-            uint64_t timestamp = info->timestamp_wallclock();
+            uint64_t timestamp = info->timestamp1();
             for(; tick <= timestamp; tick += tick_time) {
-               m->compute(tick, tick_time);
+               metrics->compute(tick, tick_time);
                cout << "Time: " << tick / tick_time << endl;
-               cout << *m << endl;
-               m->reset();
+               cout << *metrics << endl;
+               metrics->reset();
             }
             if(debug) { 
                cout << n << " " << *info << endl;
             }
-            m->add(b);
+            metrics->add(b);
             last = b;
             b = w->read();
          }
          if(!show_ticks) {
-            uint32_t elapsed = last->info()->timestamp_wallclock() - first->info()->timestamp_wallclock();
-            m->compute(tick, elapsed);
+            uint32_t elapsed = last->info()->timestamp1() - first->info()->timestamp1();
+            metrics->compute(tick, elapsed);
             cout << "Time: " << static_cast<double>(elapsed) / tick_time << endl;
-            cout << *m << endl;
+            cout << *metrics << endl;
          }
       }
    } catch(const error& x) {

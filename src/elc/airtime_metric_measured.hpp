@@ -27,10 +27,9 @@ namespace metrics {
       /**
        * airtime_metric_measured constructor.
        *
-       * \param enc A non-null pointer to the encoding.
-       * \param rts_cts_threshold Use RTS/CTS when rts_cts_threshold <= test frame size
+       * \param name The name this metric uses when writing results.
        */
-      airtime_metric_measured();
+      airtime_metric_measured(const std::string& name = "Airtime-Measured");
 
       /**
        * airtime_metric_measured copy constuctor.
@@ -91,15 +90,29 @@ namespace metrics {
    private:
 
       /**
+       * Name of this metric.
+       */
+      std::string name_;
+
+      /**
        * Stashed value of this metric.
        */
-      double airtime_;
+      uint_least32_t airtime_;
 
       /**
        * Count of packets successfully delivered.
        */
       uint32_t packets_;
 
+      /**
+       * Total airtime NOT used by metric.
+       */
+      uint_least32_t error_;
+
+      /**
+       * Number of candidate packets we ignored.
+       */
+      uint32_t ignored_;
 
       /**
        * The computed value of the airtime metric.
@@ -107,9 +120,14 @@ namespace metrics {
       double metric_;
 
       /**
-       * Can we compute a valid metric?
+       * Did we compute a valid metric?
        */
       bool valid_;
+
+      /**
+       * Additional debugging output we might want to see.
+       */
+      std::string debug_;
 
    };
 

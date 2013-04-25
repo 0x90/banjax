@@ -377,8 +377,13 @@ radiotap_datalink::parse(size_t frame_sz, const uint8_t *frame)
                extract(ofs, head_ts, hdr_sz, frame_sz, frame);
                extract(ofs, start_ts, hdr_sz, frame_sz, frame);
                extract(ofs, end_ts, hdr_sz, frame_sz, frame);
-               info->timestamp1(start_ts);
-               info->timestamp2(end_ts);
+               if(start_ts && end_ts) {
+                  info->timestamp1(start_ts);
+                  info->timestamp2(end_ts);
+               } else {
+                  info->timestamp1(0);
+                  info->timestamp2(0);
+               }
             }
             break;
          case NICTA_AIRTIME_METRIC:

@@ -43,28 +43,26 @@ wnic_timestamp_fix::read()
    buffer_sptr buf(wnic_->read());
    if(buf) {
       buffer_info_sptr info(buf->info());
-      if(info->has(RATE_Kbs | CHANNEL_FLAGS | TIMESTAMP1) ^ (info->has(RATE_Kbs | CHANNEL_FLAGS | TIMESTAMP2))) {
-
+      if(info->has(TIMESTAMP1 | TIMESTAMP2)) {
+         // nothing to do!
+      } else if(info->has(RATE_Kbs | CHANNEL_FLAGS) && (info->has(TIMESTAMP1) || info->has(TIMESTAMP2))) {
          // guard against MadWifi giving us a rate of 0Kb/s
          uint32_t rate_Kbs = info->rate_Kbs();
          encoding_sptr enc(info->channel_encoding());
          if(!rate_Kbs) {
             rate_Kbs = enc->default_rate();
          }
-
          // compute txtime
          uint32_t t = 0;
          const uint32_t CRC_SZ = 4;
          bool has_short_preamble = info->channel_flags() & CHANNEL_PREAMBLE_SHORT;
          t = enc->txtime(buf->data_size() + CRC_SZ, rate_Kbs, has_short_preamble);
-
          // adjust timestamp
          if(info->has(TIMESTAMP1)) {
             info->timestamp2(info->timestamp1() + t);
          } else if(info->has(TIMESTAMP2)) {
             info->timestamp1(info->timestamp2() - t);
          }
-
       } else {
          ostringstream msg;
          msg << "cannot fix timestamp (" << *info << ")" << endl;

@@ -32,7 +32,8 @@ airtime_metric_ns3::airtime_metric_ns3(encoding_sptr enc, uint16_t rts_cts_thres
    last_update_(0),
    fail_avg_(0.0),
    airtime_(0.0),
-   packets_(0)
+   packets_(0),
+   valid_(false)
 {
 }
 
@@ -45,7 +46,8 @@ airtime_metric_ns3::airtime_metric_ns3(const airtime_metric_ns3& other) :
    last_update_(other.last_update_),
    fail_avg_(other.fail_avg_),
    airtime_(other.airtime_),
-   packets_(other.packets_)
+   packets_(other.packets_),
+   valid_(other.valid_)
 {
 }
 
@@ -62,6 +64,7 @@ airtime_metric_ns3::operator=(const airtime_metric_ns3& other)
       fail_avg_ = other.fail_avg_;
       airtime_ = other.airtime_;
       packets_ = other.packets_;
+      valid_ = other.valid_;
    }
    return *this;
 }
@@ -102,8 +105,7 @@ airtime_metric_ns3::clone() const
 double
 airtime_metric_ns3::compute(uint32_t ignored_delta_us)
 {
-
-   if(packets_) {
+   if(valid_ = packets_) {
       // 802.11s appendix Y.5 uses this sort of method to calculate O + \frac{B_t}{r}
       const bool USE_SHORT_PREAMBLE = false;
       const uint32_t TEST_FRAME_SZ = 1024;
@@ -139,5 +141,8 @@ airtime_metric_ns3::reset()
 void
 airtime_metric_ns3::write(ostream& os) const
 {
-   os << "Airtime-NS3: " << airtime_;
+   if(valid_)
+      os << "Airtime-NS3: " << airtime_;
+   else
+      os << "Airtime-NS3: - ";
 }
