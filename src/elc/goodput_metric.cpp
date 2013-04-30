@@ -118,7 +118,7 @@ goodput_metric::reset()
 void
 goodput_metric::write(ostream& os) const
 {
-   os << "goodput-mac: " << mac_goodput_ << ", ";
-   os << "goodput-transport: " << transport_goodput_;
+   os << "goodput-transport: " << transport_goodput_ << ", ";
+   os << "goodput-mac: " << mac_goodput_;
    os << debug_;
 }

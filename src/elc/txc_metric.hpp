@@ -31,7 +31,7 @@ namespace metrics {
        * \param name Label used to report metric.
        * \param use_all_packets Compute metric using good+bad packets.
        */
-      txc_metric(const std::string name = "TXC", bool use_all_packets=false);
+      txc_metric(const std::string name = "TXC");
 
       /**
        * txc_metric copy constuctor.
@@ -97,11 +97,6 @@ namespace metrics {
       std::string name_;
 
       /**
-       * Use all frames (i.e. not just good packets) to compute TXC.
-       */
-      bool use_all_packets_;
-
-      /**
        * The average TXC value.
        */
       double txc_;
@@ -122,9 +117,9 @@ namespace metrics {
       uint8_t max_txc_;
 
       /**
-       * The stashed maximum TXC.
+       * Somewhere so we can "show our workings".
        */
-      uint_least32_t max_txc_stash_;
+      std::string debug_;
 
    };
 

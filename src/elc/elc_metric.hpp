@@ -176,6 +176,11 @@ namespace metrics {
        * Stashed value of this metric.
        */
       double elc_;
+      
+      /**
+       * Somewhere for us to "show our workings".
+       */
+      std::string debug_;
 
    };
 

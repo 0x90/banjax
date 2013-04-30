@@ -7,6 +7,7 @@ SUBDIRS = \
 	contention \
 	elc \
 	icmp \
+	pkttime \
 	probe \
 	strip \
 	traffic \

@@ -94,7 +94,7 @@ void
 metric_demux::write(ostream& os) const
 {
    for(linkmap::const_iterator i(links_.begin()); i != links_.end(); ++i) {
-      cout << "MAC: " << i->first << ", " << *(i->second) << endl;
+      cout << "MAC: " << i->first << ", " << *(i->second);
    }
 }
 

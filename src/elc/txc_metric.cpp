@@ -14,6 +14,7 @@
 #include <iostream>
 #include <iomanip>
 #include <math.h>
+#include <sstream>
 #include <stdlib.h>
 
 using namespace dot11;
@@ -21,27 +22,25 @@ using namespace net;
 using namespace std;
 using metrics::txc_metric;
 
-txc_metric::txc_metric(string name, bool use_all_packets) :
+txc_metric::txc_metric(string name) :
    abstract_metric(),
    name_(name),
-   use_all_packets_(use_all_packets),
    txc_(0.0),
    frames_delivered_(0),
    frame_transmissions_(0),
    max_txc_(0),
-   max_txc_stash_(0)
+   debug_()
 {
 }
 
 txc_metric::txc_metric(const txc_metric& other) :
    abstract_metric(other),
    name_(other.name_),
-   use_all_packets_(other.use_all_packets_),
    txc_(other.txc_),
    frames_delivered_(other.frames_delivered_),
    frame_transmissions_(other.frame_transmissions_),
    max_txc_(other.max_txc_),
-   max_txc_stash_(other.max_txc_stash_)
+   debug_(other.debug_)
 {
 }
 
@@ -51,12 +50,11 @@ txc_metric::operator=(const txc_metric& other)
    if(this != &other) {
       abstract_metric::operator=(other);
       name_ = other.name_;
-      use_all_packets_ = other.use_all_packets_;
       txc_ = other.txc_;
       frames_delivered_ = other.frames_delivered_;
       frame_transmissions_ = other.frame_transmissions_;
       max_txc_ = other.max_txc_;
-      max_txc_stash_ = other.max_txc_stash_;
+      debug_ = other.debug_;
    }
    return *this;
 }
@@ -69,15 +67,14 @@ void
 txc_metric::add(buffer_sptr b)
 {
    frame f(b);
-   frame_control fc(f.fc());
    buffer_info_sptr info(b->info());
-   if(DATA_FRAME == fc.type() && info->has(TX_FLAGS)) {
+   if(info->has(TX_FLAGS)) {
+      uint8_t txc = info->has(DATA_RETRIES) ? 1 + info->data_retries() : 1;
+      frame_transmissions_ += txc;
+      max_txc_ = max(max_txc_, txc);
       bool tx_success = !(info->tx_flags() & TX_FLAGS_FAIL);
-      if(tx_success || use_all_packets_) {
-         uint8_t txc = info->has(DATA_RETRIES) ? 1 + info->data_retries() : 1;
-         max_txc_ = max(max_txc_, txc);
+      if(tx_success) {
          ++frames_delivered_;
-         frame_transmissions_ += txc;
       }
    }
 }
@@ -92,7 +89,13 @@ double
 txc_metric::compute(uint32_t junk)
 {
    txc_ = frame_transmissions_ / static_cast<double>(frames_delivered_);
-   max_txc_stash_ = max_txc_;
+#ifndef NDEBUG
+   ostringstream os;
+   os << ", " << name_ << "-max: " << static_cast<uint16_t>(max_txc_);
+   os << ", " << name_ << "-transmissions: " << frame_transmissions_;
+   os << ", " << name_ << "-delivered: " << frames_delivered_;
+   debug_ = os.str();
+#endif
    return txc_;
 }
 
@@ -107,6 +110,6 @@ txc_metric::reset()
 void
 txc_metric::write(ostream& os) const
 {
-   os << name_ << "-Max" << ": " << max_txc_stash_ << ", ";
    os << name_ << ": " << txc_;
+   os << debug_;
 }

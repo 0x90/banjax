@@ -99,9 +99,10 @@ double
 saturation_metric::compute(uint64_t time, uint32_t delta_us)
 {
    valid_ = rx_packets_ + tx_packets_;
-   saturation_ = (delta_us / static_cast<double>(tx_time_ + rx_time_)) * 100.0;
+   saturation_ = (static_cast<double>(tx_time_ + rx_time_) / delta_us) * 100.0;
 #ifndef NDEBUG
    ostringstream os;
+   os << ", " << name_ << "-tx: " << (static_cast<double>(tx_time_) / delta_us) * 100.0;
    os << ", " << name_ << "-bad-packets: " << bad_packets_;
    os << ", " << name_ << "-good-packets: " << rx_packets_ + tx_packets_;
    os << ", " << name_ << "-rx-packets: " << rx_packets_;

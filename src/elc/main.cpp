@@ -110,8 +110,8 @@ main(int ac, char **av)
       link_metrics->push_back(metric_sptr(new txc_metric("TXC")));
 
     	metric_group_sptr chan_metrics(new metric_group);
-      chan_metrics->push_back(metric_sptr(new iperf_metric_wrapper(metric_sptr(new metric_demux(link_metrics)))));
       chan_metrics->push_back(metric_sptr(new saturation_metric));
+      chan_metrics->push_back(metric_sptr(new iperf_metric_wrapper(metric_sptr(new metric_demux(link_metrics)))));
       metric_sptr metrics(chan_metrics);
 
       wnic_sptr w(wnic::open(what));
@@ -127,8 +127,9 @@ main(int ac, char **av)
       buffer_sptr first(w->read()), b(first), last;
       if(b) {
          buffer_info_sptr info(b->info());
-         uint32_t tick_time = UINT32_C(1000000);
-         uint32_t end_time = runtime ? info->timestamp1() + (runtime * tick_time) : UINT32_MAX;
+         uint64_t tick_time = UINT64_C(1000000);
+         uint64_t start_time =  info->timestamp1();
+         uint64_t end_time = runtime ? info->timestamp1() + (runtime * tick_time) : UINT64_MAX;
          uint64_t tick = show_ticks ? info->timestamp1() + tick_time : UINT64_MAX;
          for(uint32_t n = 0; b && (info->timestamp1() <= end_time); ++n) {
             // is it time to print results yet?
@@ -136,22 +137,20 @@ main(int ac, char **av)
             uint64_t timestamp = info->timestamp1();
             for(; tick <= timestamp; tick += tick_time) {
                metrics->compute(tick, tick_time);
-               cout << "Time: " << tick / tick_time << endl;
-               cout << *metrics << endl;
+               cout << "Time: " << (tick - start_time) / tick_time << ", " << *metrics << endl;
                metrics->reset();
             }
             if(debug) { 
-               cout << n << " " << *info << endl;
+               clog << n << " " << *info << endl;
             }
             metrics->add(b);
             last = b;
             b = w->read();
          }
          if(!show_ticks) {
-            uint32_t elapsed = last->info()->timestamp1() - first->info()->timestamp1();
+            uint_least32_t elapsed = runtime * tick_time;
             metrics->compute(tick, elapsed);
-            cout << "Time: " << static_cast<double>(elapsed) / tick_time << endl;
-            cout << *metrics << endl;
+            cout << "Time: " << static_cast<double>(elapsed) / tick_time << ", " << *metrics << endl;
          }
       }
    } catch(const error& x) {

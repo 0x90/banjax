@@ -84,7 +84,7 @@ double
 pkttime_metric::compute(uint32_t elapsed)
 {
    valid_ = (packets_ > 0);
-   if (valid_) {
+   if(valid_) {
       pkttime_ = (static_cast<double>(elapsed) / packets_);
    } else {
       pkttime_ = 0.0;
@@ -102,5 +102,8 @@ pkttime_metric::reset()
 void
 pkttime_metric::write(ostream& os) const
 {
-   os << "PKTTIME: " << pkttime_;
+   if(valid_)
+      os << "PKTTIME: " << pkttime_;
+   else
+      os << "PKTTIME: - ";
 }

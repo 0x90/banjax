@@ -13,6 +13,7 @@
 #include <iostream>
 #include <iomanip>
 #include <math.h>
+#include <sstream>
 
 using namespace dot11;
 using namespace net;
@@ -30,7 +31,8 @@ elc_metric::elc_metric(const string& name, uint16_t rts_cts_threshold, uint16_t 
    t_pkt_succ_(0.0),
    t_pkt_fail_(0.0),
    packet_octets_(0),
-   elc_(0)
+   elc_(0),
+   debug_()
 {
 }
 
@@ -45,7 +47,8 @@ elc_metric::elc_metric(const elc_metric& other) :
    t_pkt_succ_(other.t_pkt_succ_),
    t_pkt_fail_(other.t_pkt_fail_),
    packet_octets_(other.packet_octets_),
-   elc_(other.elc_)
+   elc_(other.elc_),
+   debug_(other.debug_)
 {
 }
 
@@ -64,6 +67,7 @@ elc_metric::operator=(const elc_metric& other)
       t_pkt_fail_ = other.t_pkt_fail_;
       packet_octets_ = other.packet_octets_;
       elc_ = other.elc_;
+      debug_ = other.debug_;
    }
    return *this;
 }
@@ -101,6 +105,16 @@ double
 elc_metric::compute(uint32_t delta_us)
 {
    elc_ = packet_octets_ / (t_pkt_succ_ + t_pkt_fail_ + t_dead_);
+#ifndef NDEBUG
+   ostringstream os;
+   streamsize p = os.precision();
+   os << setprecision(0);
+   os << ", n-pkts: " << n_pkt_succ_;
+   os << ", t-pkt-succ: " << fixed << t_pkt_succ_;
+   os << ", t-pkts-fail: " << fixed << t_pkt_fail_;
+   os << ", t-dead: " << t_dead_ << ", ";  
+   debug_ = os.str();
+#endif
    return elc_;
 }
 
@@ -116,13 +130,6 @@ elc_metric::reset()
 void
 elc_metric::write(ostream& os) const
 {
-   streamsize p = os.precision();
-   os << "n-pkts: " << n_pkt_succ_ << ", ";
-   os << "t-pkt-succ: " << setprecision(0) << fixed << t_pkt_succ_ << ", ";
-   os << "t-pkts-fail: " << setprecision(0) << fixed << t_pkt_fail_ << ", ";
-   os << setprecision(p);
-   os << "t-dead: " << t_dead_ << ", ";  
-
    os << name_ << ": " << elc_;
 }
 
