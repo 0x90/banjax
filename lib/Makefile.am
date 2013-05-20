@@ -12,6 +12,30 @@ libbanjax_la_SOURCES= \
 	dot11/mgmt_frame.cpp \
 	dot11/sequence_control.cpp \
 	dot11/udp_hdr.cpp \
+	metrics/abstract_metric.cpp \
+	metrics/airtime_metric_kernel.cpp \
+	metrics/airtime_metric_linux.cpp \
+	metrics/airtime_metric_measured.cpp \
+	metrics/airtime_metric_ns3.cpp \
+	metrics/elc_metric.cpp \
+	metrics/elc_mrr_metric.cpp \
+	metrics/etx_metric.cpp \
+	metrics/fdr_metric.cpp \
+	metrics/goodput_metric.cpp \
+	metrics/iperf_metric_wrapper.cpp \
+	metrics/legacy_elc_metric.cpp \
+	metrics/metric.cpp \
+	metrics/metric_damper.cpp \
+	metrics/metric_decimator.cpp \
+	metrics/metric_demux.cpp \
+	metrics/metric_group.cpp \
+	metrics/pdr_metric.cpp \
+	metrics/pktsz_metric.cpp \
+	metrics/pkttime_metric.cpp \
+	metrics/saturation_metric.cpp \
+	metrics/simple_elc_metric.cpp \
+	metrics/tmt_metric.cpp \
+	metrics/txc_metric.cpp \
 	net/abstract_buffer.cpp \
 	net/abstract_wnic.cpp \
 	net/buffer_body.cpp \
@@ -41,6 +65,7 @@ libbanjax_la_SOURCES= \
 	net/wnic.cpp \
 	net/wnic_encoding_fix.cpp \
 	net/wnic_factory.cpp \
+	net/wnic_frame_aggregator.cpp \
 	net/wnic_read_logger.cpp \
 	net/wnic_require_timestamps.cpp \
 	net/wnic_timestamp_fix.cpp \
@@ -89,6 +114,7 @@ nobase_libbanjax_la_HEADERS= \
 	net/txtime.hpp \
 	net/wnic.hpp \
 	net/wnic_encoding_fix.hpp \
+	net/wnic_frame_aggregator.cpp \
 	net/wnic_read_logger.hpp \
 	net/wnic_require_timestamps.hpp \
 	net/wnic_timestamp_fix.hpp \

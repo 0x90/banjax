@@ -5,10 +5,10 @@ SUBDIRS = \
 	beacons \
 	changes \
 	contention \
-	elc \
 	icmp \
-	pkttime \
+	monitor \
 	probe \
+	sender \
 	strip \
 	traffic \
 	tscal \
