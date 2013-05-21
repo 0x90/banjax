@@ -69,7 +69,7 @@ wnic_frame_aggregator::read()
                   buffer_sptr r(first_);
                   r->info()->timestamp2(last_->info()->timestamp2());
                   r->info()->data_retries(txc_);
-                  // set tx flag for first
+                  // r->info()->tx_flags(0);
                   // update aggregator state
                   state_ = DRAINING;
                   seq_no_ = f.sc().sequence_no();
@@ -88,7 +88,7 @@ wnic_frame_aggregator::read()
             buffer_sptr r(first_);
             r->info()->timestamp2(last_->info()->timestamp2());
             r->info()->data_retries(txc_);
-            // set tx flag for first
+            // r->info()->tx_flags(0);
             // update aggregator state
             state_ = DRAINING;
             seq_no_ = 0;
