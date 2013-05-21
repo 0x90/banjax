@@ -11,6 +11,8 @@
 #include <net/wnic_wrapper.hpp>
 #include <dot11/frame.hpp>
 
+#include <deque>
+
 namespace net {
 
    /**
@@ -27,9 +29,8 @@ namespace net {
        *
        * \param w A non-NULL pointer to the wnic to wrap.
        * \param ta The MAC address of the sender.
-       * \param greedy Use greedy frame aggregation.
        */
-      wnic_frame_aggregator(wnic_sptr w, const net::eui_48& ta, bool greedy = false);
+      wnic_frame_aggregator(wnic_sptr w, const net::eui_48& ta);
 
       /**
        * wnic_frame_aggregator destructor.
@@ -52,9 +53,9 @@ namespace net {
       net::eui_48 ta_;
 
       /**
-       * Greedy frame aggregation?
+       * Aggregator state.
        */
-      bool greedy_;
+      enum State { READING, AGGREGATING, DRAINING } state_;
 
       /**
        * Sequence number for the current packet.
@@ -62,14 +63,24 @@ namespace net {
       uint16_t seq_no_;
 
       /**
-       * The first frame in this packet.
+       * First frame in current packet.
        */
       buffer_sptr first_;
 
       /**
-       * The last frame (seen so far) for this packet.
+       * Last frame in current packet.
        */
       buffer_sptr last_;
+
+      /**
+       * The TXC for the current packet.
+       */
+      uint8_t txc_;
+
+      /**
+       * Frame queue.
+       */
+      std::deque<buffer_sptr> frames_;
 
    };
 

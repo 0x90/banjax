@@ -31,7 +31,7 @@ main(int ac, char **av)
 
       uint64_t runtime;
       string what, ta;
-      bool debug, greedy, verbose;
+      bool debug, verbose;
       string enc_str;
       options_description options("program options");
       options.add_options()
@@ -39,7 +39,6 @@ main(int ac, char **av)
          ("debug,g", value<bool>(&debug)->default_value(false)->zero_tokens(), "enable debugging")
          ("encoding", value<string>(&enc_str)->default_value("OFDM"), "channel encoding")
          ("input,i", value<string>(&what)->default_value("mon0"), "input file/device name")
-         ("greedy,r", value<bool>(&greedy)->default_value(false)->zero_tokens(), "use greedy packet membership test")
          ("runtime,u", value<uint64_t>(&runtime)->default_value(0), "finish after n seconds")
          ("ta,a", value<string>(&ta)->default_value("00:0b:6b:0a:82:34"), "transmitter address")
          ("verbose,v", value<bool>(&verbose)->default_value(false)->zero_tokens(), "enable verbose output")
@@ -63,7 +62,7 @@ main(int ac, char **av)
       }
       w = wnic_sptr(new wnic_timestamp_swizzle(w));
       w = wnic_sptr(new wnic_timestamp_fix(w));
-      w = wnic_sptr(new wnic_frame_aggregator(w, eui_48(ta.c_str()), greedy));
+      w = wnic_sptr(new wnic_frame_aggregator(w, eui_48(ta.c_str())));
 
       buffer_sptr b(w->read());
       if(b) {
