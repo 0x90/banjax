@@ -1,7 +1,7 @@
 /* -*- mode: C++; tab-width: 3; -*- */
 
 /*
- * Copyright 2009-2011 Steve Glass
+ * Copyright 2009-2013 Steve Glass
  * 
  * This file is part of banjax.
  * 
@@ -157,6 +157,16 @@ namespace net {
        * \true if this is a special address; otherwise false.
        */
       bool is_special() const;
+
+      /**
+       * Return true iff this eui_48 instance represents a unicast
+       * address. These addresses have bit0 cleared for the most
+       * significant octet and are easily detected. This is the
+       * logical negation of is_multicast().
+       *
+       * \return true if this is a multicast address; otherwise false.
+       */
+      bool is_unicast() const;
 
       /**
        * Write this object in human-readable form to ostream os.

@@ -35,8 +35,6 @@
 #include <net/wnic.hpp>
 #include <net/wnic_encoding_fix.hpp>
 #include <net/wnic_require_timestamps.hpp>
-#include <net/wnic_timestamp_fix.hpp>
-#include <net/wnic_timestamp_swizzle.hpp>
 
 #include <boost/program_options.hpp>
 #include <cstdlib>
@@ -114,14 +112,12 @@ main(int ac, char **av)
       metric_sptr metrics(chan_metrics);
 
       wnic_sptr w(wnic::open(what));
-      w = wnic_sptr(new wnic_require_timestamps(w));
-      w = wnic_sptr(new wnic_timestamp_swizzle(w));
-      w = wnic_sptr(new wnic_timestamp_fix(w));
       if("OFDM" == enc_str) {
          w = wnic_sptr(new wnic_encoding_fix(w, CHANNEL_CODING_OFDM | CHANNEL_PREAMBLE_LONG));
       } else if("DSSS" == enc_str) {
          w = wnic_sptr(new wnic_encoding_fix(w, CHANNEL_CODING_DSSS | CHANNEL_PREAMBLE_LONG));
       }
+      w = wnic_sptr(new wnic_require_timestamps(w));
 
       buffer_sptr first(w->read()), b(first), last;
       if(b) {

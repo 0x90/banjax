@@ -10,7 +10,7 @@
 #include <dot11/frame.hpp>
 #include <dot11/frame_type.hpp>
 #include <dot11/sequence_control.hpp>
-
+ 
 #include <iostream>
 
 using namespace net;
@@ -43,7 +43,7 @@ wnic_frame_aggregator::read()
       case READING:
          if(b = wnic_wrapper::read()) {
             frame f(b);
-            if(f.fc().type() == DATA_FRAME && (f.address2() == ta_)) {
+            if((f.fc().type() == DATA_FRAME) && (f.address2() == ta_) && f.address1().is_unicast()) {
                state_ = AGGREGATING;
                seq_no_ = f.sc().sequence_no();
                first_ = last_ = b;
@@ -59,7 +59,7 @@ wnic_frame_aggregator::read()
       case AGGREGATING:
          if(b = wnic_wrapper::read()) {
             frame f(b);
-            if((f.fc().type() == DATA_FRAME) && (f.address2() == ta_)) {
+            if((f.fc().type() == DATA_FRAME) && (f.address2() == ta_) && f.address1().is_unicast()) {
                if(f.sc().sequence_no() == seq_no_) {
                   last_ = b;
                   txc_++;
@@ -77,7 +77,7 @@ wnic_frame_aggregator::read()
                   txc_ = 1;
                   return r;
                }
-            } else if(f.fc().subtype() == CTRL_ACK && f.address1() == ta_) {
+            } else if((f.fc().subtype() == CTRL_ACK) && (f.address1() == ta_)) {
                last_ = b;
                frames_.clear();
             } else {
@@ -103,6 +103,7 @@ wnic_frame_aggregator::read()
          if(0 < frames_.size()) {
             b = frames_.front();
             frames_.pop_front();
+            return b;
          } else if(first_) {
             state_ = AGGREGATING;
          } else {

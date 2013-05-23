@@ -1,11 +1,11 @@
 # Copyright 2011 NICTA
 # 
 
-bin_PROGRAMS = strip
+bin_PROGRAMS = tstrip
 
-strip_SOURCES = \
+tstrip_SOURCES = \
 	strip.cpp 
 
-strip_CPPFLAGS = -I@top_srcdir@/lib
+tstrip_CPPFLAGS = -I@top_srcdir@/lib
 
-strip_LDADD = @top_srcdir@/lib/libbanjax.la -lpcap -lboost_program_options
+tstrip_LDADD = @top_srcdir@/lib/libbanjax.la -lpcap -lboost_program_options

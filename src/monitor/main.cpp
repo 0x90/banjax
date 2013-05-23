@@ -95,7 +95,8 @@ main(int ac, char **av)
 
     	metric_group_sptr chan_metrics(new metric_group);
       chan_metrics->push_back(metric_sptr(new saturation_metric));
-      // chan_metrics->push_back(metric_sptr(new iperf_metric_wrapper(metric_sptr(new metric_demux(link_metrics)))));
+      link_metrics->push_back(metric_sptr(new pkttime_metric));
+      chan_metrics->push_back(metric_sptr(new iperf_metric_wrapper(metric_sptr(new metric_demux(link_metrics)))));
       metric_sptr metrics(chan_metrics);
 
       wnic_sptr w(wnic::open(what));
@@ -118,6 +119,7 @@ main(int ac, char **av)
          uint64_t start_time = b->info()->timestamp1();
          uint64_t end_time = runtime ? b->info()->timestamp1() + (runtime * tick_time) : UINT64_MAX;
          uint64_t next_tick = show_ticks ? b->info()->timestamp1() + tick_time : UINT64_MAX;
+         metrics->add(b);
 
          for(uint32_t n = 2; (b = buffer_sptr(w->read())) && (b->info()->timestamp1() <= end_time); ++n){
             // is it time to print results yet?

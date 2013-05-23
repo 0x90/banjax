@@ -78,12 +78,12 @@ void
 saturation_metric::add(buffer_sptr b)
 {
    buffer_info_sptr info(b->info());
-   if(info->has(RX_FLAGS)) {
-      rx_packets_++;
-      rx_time_ += info->packet_time();
-   } else if(info->has(TX_FLAGS)) {
+   if(info->has(TX_FLAGS)) {
       tx_packets_++;
       tx_time_ += info->packet_time();
+   } else if(info->has(RX_FLAGS)) {
+      rx_packets_++;
+      rx_time_ += info->packet_time();
    } else {
       bad_packets_++;
    }

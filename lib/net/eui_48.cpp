@@ -158,6 +158,13 @@ eui_48::is_special() const
    return find_if(&specials[0], &specials[nof_specials], bind(&eui_48_range::contains, _1, *this)) != &specials[nof_specials];
 }
 
+bool
+eui_48::is_unicast() const
+{
+   const uint8_t multicast_bit = 0x01;
+   return (addr_[0] & multicast_bit) == 0;
+}
+
 size_t
 hash(const eui_48& addr)
 {
