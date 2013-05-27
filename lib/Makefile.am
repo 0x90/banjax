@@ -22,6 +22,7 @@ libbanjax_la_SOURCES= \
 	metrics/etx_metric.cpp \
 	metrics/fdr_metric.cpp \
 	metrics/goodput_metric.cpp \
+	metrics/iperf_metric.cpp \
 	metrics/iperf_metric_wrapper.cpp \
 	metrics/legacy_elc_metric.cpp \
 	metrics/metric.cpp \
@@ -36,6 +37,7 @@ libbanjax_la_SOURCES= \
 	metrics/simple_elc_metric.cpp \
 	metrics/tmt_metric.cpp \
 	metrics/txc_metric.cpp \
+	metrics/utilization_metric.cpp \
 	net/abstract_buffer.cpp \
 	net/abstract_wnic.cpp \
 	net/buffer_body.cpp \
@@ -91,6 +93,32 @@ nobase_libbanjax_la_HEADERS= \
 	dot11/mgmt_frame.hpp \
 	dot11/sequence_control.hpp \
 	dot11/udp_hdr.hpp \
+	metrics/abstract_metric.hpp \
+	metrics/airtime_metric_kernel.hpp \
+	metrics/airtime_metric_linux.hpp \
+	metrics/airtime_metric_measured.hpp \
+	metrics/airtime_metric_ns3.hpp \
+	metrics/elc_metric.hpp \
+	metrics/elc_mrr_metric.hpp \
+	metrics/etx_metric.hpp \
+	metrics/fdr_metric.hpp \
+	metrics/goodput_metric.hpp \
+	metrics/iperf_metric.hpp \
+	metrics/iperf_metric_wrapper.hpp \
+	metrics/legacy_elc_metric.hpp \
+	metrics/metric.hpp \
+	metrics/metric_damper.hpp \
+	metrics/metric_decimator.hpp \
+	metrics/metric_demux.hpp \
+	metrics/metric_group.hpp \
+	metrics/pdr_metric.hpp \
+	metrics/pktsz_metric.hpp \
+	metrics/pkttime_metric.hpp \
+	metrics/saturation_metric.hpp \
+	metrics/simple_elc_metric.hpp \
+	metrics/tmt_metric.hpp \
+	metrics/txc_metric.hpp \
+	metrics/utilization_metric.hpp \
 	net/abstract_buffer.hpp \
 	net/abstract_wnic.hpp \
 	net/buffer_body.hpp \
@@ -114,12 +142,12 @@ nobase_libbanjax_la_HEADERS= \
 	net/txtime.hpp \
 	net/wnic.hpp \
 	net/wnic_encoding_fix.hpp \
-	net/wnic_frame_aggregator.cpp \
+	net/wnic_frame_aggregator.hpp \
 	net/wnic_read_logger.hpp \
 	net/wnic_require_timestamps.hpp \
 	net/wnic_timestamp_fix.hpp \
 	net/wnic_timestamp_swizzle.hpp \
-	net/wnic_wallclock_fix.cpp \
+	net/wnic_wallclock_fix.hpp \
 	net/wnic_wrapper.hpp \
 	net/wnic_write_logger.hpp \
 	util/byteswab.hpp \

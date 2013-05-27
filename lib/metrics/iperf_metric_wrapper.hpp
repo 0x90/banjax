@@ -92,26 +92,24 @@ namespace metrics {
    private:
 
       /**
-       * Non-iperf octets delivered.
-       */
-      uint_least32_t octets_;
-
-      /**
-       * Non-iperf frames attempted.
-       */
-      uint32_t frames_attempted_;
-
-      /**
-       * Non-iperf frames delivered.
-       */
-      uint32_t frames_delivered_;
-
-      std::string debug_;
-
-      /**
        * Pointer to the wrapped metric.
        */
       metric_sptr wrapped_metric_;
+
+      /**
+       * Total number of frames seen by this metric.
+       */
+      uint32_t all_frames_;
+
+      /**
+       * Total number of iperf frames seen by this metric.
+       */
+      uint32_t iperf_frames_;
+
+      /**
+       * Any debug info we wish to report.
+       */
+      std::string debug_;
 
    };
 

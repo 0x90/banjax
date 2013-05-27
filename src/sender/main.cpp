@@ -119,14 +119,14 @@ main(int ac, char **av)
       }
       w = wnic_sptr(new wnic_require_timestamps(w));
 
-      buffer_sptr first(w->read()), b(first), last;
+      buffer_sptr b(w->read());
       if(b) {
          buffer_info_sptr info(b->info());
          uint64_t tick_time = UINT64_C(1000000);
          uint64_t start_time =  info->timestamp1();
          uint64_t end_time = runtime ? info->timestamp1() + (runtime * tick_time) : UINT64_MAX;
          uint64_t next_tick = show_ticks ? info->timestamp1() + tick_time : UINT64_MAX;
-         for(uint32_t n = 0; b && (info->timestamp1() <= end_time); ++n) {
+         for(uint32_t n = 1; b && (info->timestamp1() <= end_time); ++n) {
             // is it time to print results yet?
             info = b->info();
             uint64_t timestamp = info->timestamp2();
@@ -139,7 +139,6 @@ main(int ac, char **av)
                clog << n << " " << *info << endl;
             }
             metrics->add(b);
-            last = b;
             b = w->read();
          }
          if(!show_ticks) {

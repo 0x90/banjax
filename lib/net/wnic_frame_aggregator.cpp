@@ -12,8 +12,10 @@
 #include <dot11/sequence_control.hpp>
  
 #include <iostream>
+#include <iomanip>
 
 using namespace net;
+using namespace std;
 using dot11::frame;
 using dot11::CTRL_ACK;
 using dot11::DATA_FRAME;
@@ -68,7 +70,7 @@ wnic_frame_aggregator::read()
                   // aggregate packet stats
                   buffer_sptr r(first_);
                   r->info()->timestamp2(last_->info()->timestamp2());
-                  r->info()->data_retries(txc_);
+                  r->info()->data_retries(txc_ - 1);
                   r->info()->tx_flags(0);
                   // update aggregator state
                   state_ = DRAINING;
@@ -87,7 +89,7 @@ wnic_frame_aggregator::read()
             // aggregate packet stats
             buffer_sptr r(first_);
             r->info()->timestamp2(last_->info()->timestamp2());
-            r->info()->data_retries(txc_);
+            r->info()->data_retries(txc_ - 1);
             r->info()->tx_flags(0);
             // update aggregator state
             state_ = DRAINING;

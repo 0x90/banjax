@@ -14,6 +14,7 @@
 #include <metrics/etx_metric.hpp>
 #include <metrics/fdr_metric.hpp>
 #include <metrics/goodput_metric.hpp>
+#include <metrics/iperf_metric.hpp>
 #include <metrics/iperf_metric_wrapper.hpp>
 #include <metrics/legacy_elc_metric.hpp>
 #include <metrics/metric.hpp>
@@ -28,6 +29,7 @@
 #include <metrics/simple_elc_metric.hpp>
 #include <metrics/tmt_metric.hpp>
 #include <metrics/txc_metric.hpp>
+#include <metrics/utilization_metric.hpp>
 
 #include <net/buffer_info.hpp>
 #include <net/wnic.hpp>
@@ -54,6 +56,8 @@ main(int ac, char **av)
 {
    try {
 
+      uint16_t mpdu_sz, rts_cts_threshold;
+      uint32_t rate_Mbs;
       uint64_t runtime;
       string what, ta;
       bool debug, verbose;
@@ -66,8 +70,11 @@ main(int ac, char **av)
          ("debug,g", value<bool>(&debug)->default_value(false)->zero_tokens(), "enable debugging")
          ("encoding", value<string>(&enc_str)->default_value("OFDM"), "channel encoding")
          ("input,i", value<string>(&what)->default_value("mon0"), "input file/device name")
+         ("mpdu,m", value<uint16_t>(&mpdu_sz)->default_value(1024), "MPDU size in octets")
+         ("rate,r", value<uint32_t>(&rate_Mbs)->default_value(6), "transmission rate (in Mb/s)")
+         ("rts-threshold,r", value<uint16_t>(&rts_cts_threshold)->default_value(UINT16_MAX), "RTS threshold level")
          ("runtime,u", value<uint64_t>(&runtime)->default_value(0), "finish after n seconds")
-         ("ta,a", value<string>(&ta)->default_value("00:0b:6b:0a:82:34"), "transmitter address")
+         ("ta,a", value<string>(&ta)->default_value(""), "transmitter address")
          ("verbose,v", value<bool>(&verbose)->default_value(false)->zero_tokens(), "enable verbose output")
          ("ticks,t", value<bool>(&show_ticks)->default_value(false)->zero_tokens(), "show results for each second")
          ;
@@ -81,7 +88,7 @@ main(int ac, char **av)
       }
 
       encoding_sptr enc(encoding::get(enc_str));
-    	metric_group_sptr link_metrics(new metric_group);
+    	// metric_group_sptr link_metrics(new metric_group);
       // link_metrics->push_back(metric_sptr(new goodput_metric));
       // link_metrics->push_back(metric_sptr(new airtime_metric_kernel));
       // link_metrics->push_back(metric_sptr(new metric_decimator("Airtime-Kernel-5PC", metric_sptr(new airtime_metric_kernel), 20)));
@@ -93,11 +100,14 @@ main(int ac, char **av)
       // link_metrics->push_back(metric_sptr(new fdr_metric));
       // link_metrics->push_back(metric_sptr(new txc_metric("TXC")));
 
-    	metric_group_sptr chan_metrics(new metric_group);
-      chan_metrics->push_back(metric_sptr(new saturation_metric));
-      link_metrics->push_back(metric_sptr(new pkttime_metric));
-      chan_metrics->push_back(metric_sptr(new iperf_metric_wrapper(metric_sptr(new metric_demux(link_metrics)))));
-      metric_sptr metrics(chan_metrics);
+    	// metric_group_sptr chan_metrics(new metric_group);
+      // chan_metrics->push_back(metric_sptr(new utilization_metric("util")));
+      // chan_metrics->push_back(metric_sptr(new iperf_metric_wrapper(metric_sptr(new metric_demux(link_metrics)))));
+
+
+      metric_sptr metrics;
+      metrics = metric_sptr(new iperf_metric("iperf"));
+      metrics = metric_sptr(new iperf_metric_wrapper(metrics));
 
       wnic_sptr w(wnic::open(what));
       if("OFDM" == enc_str) {
@@ -109,21 +119,19 @@ main(int ac, char **av)
       }
       w = wnic_sptr(new wnic_timestamp_swizzle(w));
       w = wnic_sptr(new wnic_timestamp_fix(w));
-      w = wnic_sptr(new wnic_frame_aggregator(w, eui_48(ta.c_str())));
+      if(ta.size() > 0) {
+         w = wnic_sptr(new wnic_frame_aggregator(w, eui_48(ta.c_str())));
+      }
 
       buffer_sptr b(w->read());
       if(b) {
-         uint16_t seq_no = 0;
-         buffer_sptr first, last;
+         buffer_info_sptr info(b->info());
          uint64_t tick_time = UINT64_C(1000000);
-         uint64_t start_time = b->info()->timestamp1();
-         uint64_t end_time = runtime ? b->info()->timestamp1() + (runtime * tick_time) : UINT64_MAX;
-         uint64_t next_tick = show_ticks ? b->info()->timestamp1() + tick_time : UINT64_MAX;
-         metrics->add(b);
-
-         for(uint32_t n = 2; (b = buffer_sptr(w->read())) && (b->info()->timestamp1() <= end_time); ++n){
-            // is it time to print results yet?
-            buffer_info_sptr info(b->info());
+         uint64_t start_time = info->timestamp1();
+         uint64_t end_time = runtime ? info->timestamp1() + (runtime * tick_time) : UINT64_MAX;
+         uint64_t next_tick = show_ticks ? info->timestamp1() + tick_time : UINT64_MAX;
+         for(uint32_t n = 1; b && (info->timestamp1() <= end_time); ++n){
+            info = b->info();
             uint64_t timestamp = info->timestamp2();
             for(; next_tick <= timestamp; next_tick += tick_time) {
                metrics->compute(next_tick, tick_time);
@@ -134,7 +142,6 @@ main(int ac, char **av)
                clog << n << " " << *info << endl;
             }
             metrics->add(b);
-            last = b;
             b = w->read();
          }
          if(!show_ticks) {
