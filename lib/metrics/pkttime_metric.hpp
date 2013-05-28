@@ -20,7 +20,7 @@ namespace metrics {
    /**
     * pkttime_metric reports the average packet time for a saturated
     * link. Note that this is ONLY accurate for a completely saturated
-    * link.
+    * link as it divides the time by the number of packets delivered.
     */
    class pkttime_metric : public abstract_metric {
    public:

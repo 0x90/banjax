@@ -105,9 +105,9 @@ main(int ac, char **av)
       // chan_metrics->push_back(metric_sptr(new iperf_metric_wrapper(metric_sptr(new metric_demux(link_metrics)))));
 
 
-      metric_sptr metrics;
-      metrics = metric_sptr(new iperf_metric("iperf"));
-      metrics = metric_sptr(new iperf_metric_wrapper(metrics));
+      metric_group_sptr metrics(metric_group_sptr(new metric_group));
+      metrics->push_back(metric_sptr(new utilization_metric("util")));
+      metrics->push_back(metric_sptr(new iperf_metric_wrapper(metric_sptr(new iperf_metric("iperf")))));
 
       wnic_sptr w(wnic::open(what));
       if("OFDM" == enc_str) {

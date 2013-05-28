@@ -1,11 +1,11 @@
 # Copyright 2011 NICTA
 # 
 
-bin_PROGRAMS = elc
+bin_PROGRAMS = sender
 
-elc_SOURCES = \
+sender_SOURCES = \
 	main.cpp
 
-elc_CPPFLAGS = -I@top_srcdir@/lib
+sender_CPPFLAGS = -I@top_srcdir@/lib
 
-elc_LDADD = @top_srcdir@/lib/libbanjax.la -lpcap -lboost_program_options
+sender_LDADD = @top_srcdir@/lib/libbanjax.la -lpcap -lboost_program_options

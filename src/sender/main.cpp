@@ -1,7 +1,7 @@
 /* -*- Mode: C++; tab-width: 3; -*- */
 
 /* 
- * Copyright NICTA, 2011
+ * Copyright NICTA, 2011-2013
  */
 
 #define __STDC_CONSTANT_MACROS
@@ -15,6 +15,7 @@
 #include <metrics/etx_metric.hpp>
 #include <metrics/fdr_metric.hpp>
 #include <metrics/goodput_metric.hpp>
+#include <metrics/iperf_metric.hpp>
 #include <metrics/iperf_metric_wrapper.hpp>
 #include <metrics/legacy_elc_metric.hpp>
 #include <metrics/metric.hpp>
@@ -95,15 +96,17 @@ main(int ac, char **av)
 
       encoding_sptr enc(encoding::get(enc_str));
     	metric_group_sptr link_metrics(new metric_group);
-      link_metrics->push_back(metric_sptr(new goodput_metric));
       link_metrics->push_back(metric_sptr(new airtime_metric_kernel));
       // link_metrics->push_back(metric_sptr(new metric_decimator("Airtime-Kernel-5PC", metric_sptr(new airtime_metric_kernel), 20)));
       link_metrics->push_back(metric_sptr(new airtime_metric_linux(enc)));
       link_metrics->push_back(metric_sptr(new airtime_metric_measured));
       link_metrics->push_back(metric_sptr(new airtime_metric_ns3(enc, rts_cts_threshold)));
+      link_metrics->push_back(metric_sptr(new iperf_metric));
       link_metrics->push_back(metric_sptr(new tmt_metric(enc, rate_Mbs * 1000, mpdu_sz, rts_cts_threshold)));
       link_metrics->push_back(metric_sptr(new pkttime_metric));
       link_metrics->push_back(metric_sptr(new fdr_metric));
+      link_metrics->push_back(metric_sptr(new pdr_metric));
+      link_metrics->push_back(metric_sptr(new goodput_metric));
       link_metrics->push_back(metric_sptr(new txc_metric("TXC")));
 
     	metric_group_sptr chan_metrics(new metric_group);

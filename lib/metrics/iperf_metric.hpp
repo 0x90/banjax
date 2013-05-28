@@ -31,7 +31,7 @@ namespace metrics {
        * \param name A non-NULL pointer to the name of this metric.
        * \param wrapped_metric A non-null pointer to the wrapped metric.
        */
-      explicit iperf_metric(const char *name);
+      explicit iperf_metric(const char *name = "iperf");
 
       /**
        * iperf_metric copy constuctor.

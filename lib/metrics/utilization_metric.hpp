@@ -90,39 +90,9 @@ namespace metrics {
 		std::string name_;
 
       /**
-       * Control frames.
-       */
-      uint32_t ctrl_;
-
-      /**
-       * Management frames.
-       */
-      uint32_t mgmt_;
-
-      /**
-       * Number of RX packets seen by this metric.
-       */
-      uint32_t rx_;
-
-      /**
-       * Number of TX packets seen by this metric.
-       */
-      uint32_t tx_;
-
-      /**
-       * Number of packets we couldn't process.
-       */
-      uint32_t bad_;
-
-      /**
        * Time (in microseconds) we can account for.
        */
       uint32_t time_;
-
-      /**
-       * Have we computed a valid metric?
-       */
-      bool valid_;
 
 		/**
 		 * Value of this metric.

@@ -90,34 +90,9 @@ namespace metrics {
 		std::string name_;
 
       /**
-       * Number of packets we couldn't process.
-       */
-      uint32_t bad_packets_;
-
-      /**
-       * Number of RX packets seen by this metric.
-       */
-      uint32_t rx_packets_;
-
-      /**
-       * Time (in microseconds) spent receiving stuff (e.g. ack frames).
-       */
-      uint32_t rx_time_;
-
-      /**
-       * Number of TX packets seen by this metric.
-       */
-      uint32_t tx_packets_;
-
-      /**
        * Time (in microseconds) spent actually sending packets.
        */
-      uint32_t tx_time_;
-
-      /**
-       * Have we computed a valid metric?
-       */
-      bool valid_;
+      uint32_t time_;
 
 		/**
 		 * Value of this metric.

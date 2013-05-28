@@ -26,6 +26,7 @@ using namespace std;
 using metrics::pkttime_metric;
 
 pkttime_metric::pkttime_metric() :
+   abstract_metric(),
    packets_(0),
    octets_(0),
    pkttime_(0),

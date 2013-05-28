@@ -112,6 +112,11 @@ namespace metrics {
        */
       double tmt_;
 
+      /**
+       * Any additional debug info we may want to print.
+       */
+      std::string debug_;
+
    };
 
 }

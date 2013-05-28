@@ -7,7 +7,6 @@ SUBDIRS = \
 	contention \
 	icmp \
 	monitor \
-	probe \
 	sender \
 	strip \
 	traffic \

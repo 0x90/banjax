@@ -125,6 +125,7 @@ iperf_metric::compute(uint64_t mactime, uint32_t delta_us)
 {
 #ifndef NDEBUG
    ostringstream os;
+   os << ", " << name_ << "-seq-no: " << last_seq_no_;
    os << ", " << name_ << "-attempted: " << packets_attempted_;
    os << ", " << name_ << "-delivered: " << packets_delivered_;
    os << ", " << name_ << "-dropped: " << packets_dropped_;
