@@ -13,7 +13,10 @@
 namespace metrics {
 
 	/**
-	 * saturation_metric computes the total time used by ACK frames.
+	 * saturation_metric computes the saturation. Unlike the
+	 * utilization metric we assume we are a sender node and assume
+	 * that the times of outgoing packets includes the AIFS and
+	 * contention and acknowledgment.
 	 */
 	class saturation_metric : public metric {
 	public:

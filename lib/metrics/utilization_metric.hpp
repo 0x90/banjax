@@ -13,7 +13,9 @@
 namespace metrics {
 
 	/**
-	 * utilization_metric computes the total time used.
+	 * utilization_metric computes the saturation. Unlike the
+	 * saturation metric we assume we are running at a monitor node and
+	 * so the appropriate IFS is added to each frame's time.
 	 */
 	class utilization_metric : public metric {
 	public:
