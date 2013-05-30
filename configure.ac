@@ -51,6 +51,6 @@ AC_CHECK_HEADERS([])
 AM_INIT_AUTOMAKE([subdir-objects])
 
 # Generate these output files
-AC_CONFIG_FILES([Makefile lib/Makefile lib/banjax.pc src/Makefile src/beacons/Makefile src/changes/Makefile src/contention/Makefile src/sender/Makefile src/icmp/Makefile src/monitor/Makefile src/strip/Makefile src/traffic/Makefile src/tscal/Makefile src/txc/Makefile src/verify/Makefile])
+AC_CONFIG_FILES([Makefile lib/Makefile lib/banjax.pc src/Makefile src/beacons/Makefile src/changes/Makefile src/contention/Makefile src/sender/Makefile src/icmp/Makefile src/monitor/Makefile src/tstrip/Makefile src/traffic/Makefile src/tscal/Makefile src/txc/Makefile src/undup/Makefile src/verify/Makefile])
 
 AC_OUTPUT

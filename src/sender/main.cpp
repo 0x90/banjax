@@ -31,6 +31,11 @@
 #include <metrics/tmt_metric.hpp>
 #include <metrics/txc_metric.hpp>
 
+#include <dot11/data_frame.hpp>
+#include <dot11/ip_hdr.hpp>
+#include <dot11/llc_hdr.hpp>
+#include <dot11/udp_hdr.hpp>
+
 #include <net/buffer_info.hpp>
 #include <net/ofdm_encoding.hpp>
 #include <net/wnic.hpp>
@@ -46,9 +51,56 @@
 
 using namespace boost;
 using namespace boost::program_options;
+using namespace dot11;
 using namespace net;
 using namespace metrics;
 using namespace std;
+
+
+static bool
+is_iperf_packet(buffer_sptr b)
+{
+   // is it an iperf packet?
+   frame f(b);
+   data_frame_sptr df(f.as_data_frame());
+   if(!df)
+      return false;
+
+   llc_hdr_sptr llc(df->get_llc_hdr());
+   if(!llc)
+      return false;
+
+   ip_hdr_sptr ip(llc->get_ip_hdr());
+   if(!ip)
+      return false;
+
+   udp_hdr_sptr udp(ip->get_udp_hdr());
+   if(!udp)
+      return false;
+
+   if(udp->dst_port() != 5001)
+      return false;
+
+   return true;
+}
+
+
+static uint32_t
+iperf_seq_no(buffer_sptr b)
+{
+   uint32_t packet = 0;
+   if(is_iperf_packet(b)) {
+      frame f(b);
+      data_frame_sptr df(f.as_data_frame());
+      llc_hdr_sptr llc(df->get_llc_hdr());
+      ip_hdr_sptr ip(llc->get_ip_hdr());
+      udp_hdr_sptr udp(ip->get_udp_hdr());
+      buffer_sptr payload(udp->get_payload());
+      packet = payload->read_u32(0);
+   }
+   return packet;
+}
+
 
 int
 main(int ac, char **av)
@@ -101,7 +153,7 @@ main(int ac, char **av)
       link_metrics->push_back(metric_sptr(new airtime_metric_linux(enc)));
       link_metrics->push_back(metric_sptr(new airtime_metric_measured));
       link_metrics->push_back(metric_sptr(new airtime_metric_ns3(enc, rts_cts_threshold)));
-      link_metrics->push_back(metric_sptr(new iperf_metric));
+      link_metrics->push_back(metric_sptr(new iperf_metric("iperf", false)));
       link_metrics->push_back(metric_sptr(new tmt_metric(enc, rate_Mbs * 1000, mpdu_sz, rts_cts_threshold)));
       link_metrics->push_back(metric_sptr(new pkttime_metric));
       link_metrics->push_back(metric_sptr(new fdr_metric));
@@ -129,7 +181,7 @@ main(int ac, char **av)
          uint64_t start_time =  info->timestamp1();
          uint64_t end_time = runtime ? info->timestamp1() + (runtime * tick_time) : UINT64_MAX;
          uint64_t next_tick = show_ticks ? info->timestamp1() + tick_time : UINT64_MAX;
-         for(uint32_t n = 1; b && (info->timestamp1() <= end_time); ++n) {
+         while(b && (info->timestamp1() <= end_time)) {
             // is it time to print results yet?
             info = b->info();
             uint64_t timestamp = info->timestamp2();
@@ -138,8 +190,8 @@ main(int ac, char **av)
                cout << "Time: " << (next_tick - start_time) / tick_time << ", " << *metrics << endl;
                metrics->reset();
             }
-            if(debug) { 
-               clog << n << " " << *info << endl;
+            if(debug && is_iperf_packet(b)) { 
+               clog << iperf_seq_no(b) << " " << *info << endl;
             }
             metrics->add(b);
             b = w->read();

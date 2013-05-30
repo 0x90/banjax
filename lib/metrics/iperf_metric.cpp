@@ -21,12 +21,14 @@ using namespace net;
 using namespace std;
 using metrics::iperf_metric;
 
-iperf_metric::iperf_metric(const char *name) :
+iperf_metric::iperf_metric(const char *name, bool cw) :
    metric(),
    name_(name),
-   first_(false),
+   cw_(cw),
+   first_(true),
    last_seq_no_(0),
-   packet_time_(0),
+   packet_time_all_(0),
+   packet_time_iperf_(0),
    packets_attempted_(0),
    packets_delivered_(0),
    packets_dropped_(0),
@@ -39,9 +41,11 @@ iperf_metric::iperf_metric(const char *name) :
 iperf_metric::iperf_metric(const iperf_metric& other) :
    metric(other),
    name_(other.name_),
+   cw_(other.cw_),
    first_(other.first_),
    last_seq_no_(other.last_seq_no_),
-   packet_time_(other.packet_time_),
+   packet_time_all_(other.packet_time_all_),
+   packet_time_iperf_(other.packet_time_iperf_),
    packets_attempted_(other.packets_attempted_),
    packets_delivered_(other.packets_delivered_),
    packets_dropped_(other.packets_dropped_),
@@ -57,9 +61,11 @@ iperf_metric::operator=(const iperf_metric& other)
    if(this != &other) {
       metric::operator=(other);
       name_ = other.name_;
+      cw_ = other.cw_;
       first_ = other.first_;
       last_seq_no_ = other.last_seq_no_;
-      packet_time_ = other.packet_time_;
+      packet_time_all_ = other.packet_time_all_;
+      packet_time_iperf_ = other.packet_time_iperf_;
       packets_attempted_ = other.packets_attempted_;
       packets_delivered_ = other.packets_delivered_;
       packets_dropped_ = other.packets_dropped_;
@@ -77,8 +83,27 @@ iperf_metric::~iperf_metric()
 void
 iperf_metric::add(buffer_sptr b)
 {
-   // is it an iperf packet?
    frame f(b);
+   buffer_info_sptr info(b->info());
+   encoding_sptr enc(info->channel_encoding());
+
+   // compute packet overhead
+   uint16_t IFS = 0;
+   if(cw_) {
+      switch(f.fc().type()) {
+      case CTRL_FRAME:
+         IFS = enc->SIFS();
+         break;
+      case MGMT_FRAME:
+      case DATA_FRAME:
+         IFS = enc->DIFS() + enc->slot_time(); // AIFS
+         IFS += static_cast<uint16_t>((enc->CWMIN() / 2.0) * enc->slot_time());
+         break;
+      }
+   }
+   packet_time_all_ += info->packet_time() + IFS;
+
+   // is it an iperf packet?
    data_frame_sptr df(f.as_data_frame());
    if(!df)
       return;
@@ -99,17 +124,15 @@ iperf_metric::add(buffer_sptr b)
       return;
 
    // update stats
-   packet_time_ += b->info()->packet_time();
-
-   buffer_info_sptr info(b->info());
    packets_attempted_++;
    packets_delivered_ += info->has(TX_FLAGS) ? ((info->tx_flags() & TX_FLAGS_FAIL) ? 0 : 1) : 0;
+   packet_time_iperf_ += info->packet_time() + IFS;
 
    buffer_sptr udp_payload(udp->get_payload());
    uint32_t seq_no = udp_payload->read_u32(0);
    packets_dropped_ += first_ ? 0 : seq_no - last_seq_no_ + 1;
    last_seq_no_ = seq_no;
-   first_ = true;
+   first_ = false;
 
    // ToDo: use packet time to compute: jitter/avg packet time/actual offered load?
 }
@@ -125,21 +148,23 @@ iperf_metric::compute(uint64_t mactime, uint32_t delta_us)
 {
 #ifndef NDEBUG
    ostringstream os;
+   os << ", " << name_ << "-time-all: " << packet_time_all_;
+   os << ", " << name_ << "-time-iperf: " << packet_time_iperf_;
    os << ", " << name_ << "-seq-no: " << last_seq_no_;
-   os << ", " << name_ << "-attempted: " << packets_attempted_;
    os << ", " << name_ << "-delivered: " << packets_delivered_;
    os << ", " << name_ << "-dropped: " << packets_dropped_;
    debug_ = os.str();
 #endif
-   if(valid_ = (packets_attempted_ > 0))
-      metric_ =  packet_time_ / packets_attempted_;
+   if(valid_ = (packets_delivered_ > 0))
+      metric_ =  packet_time_all_ / packets_delivered_;
    return metric_;
 }
 
 void
 iperf_metric::reset()
 {
-   packet_time_ = 0;
+   packet_time_all_ = 0;
+   packet_time_iperf_ = 0;
    packets_attempted_ = 0;
    packets_delivered_ = 0;
    packets_dropped_ = 0;

@@ -29,9 +29,9 @@ namespace metrics {
        * iperf_metric constructor.
        *
        * \param name A non-NULL pointer to the name of this metric.
-       * \param wrapped_metric A non-null pointer to the wrapped metric.
+       * \param cw If true add avg CW to contention time; otherwise leave alone.
        */
-      explicit iperf_metric(const char *name = "iperf");
+      iperf_metric(const char *name, bool cw);
 
       /**
        * iperf_metric copy constuctor.
@@ -98,6 +98,11 @@ namespace metrics {
       std::string name_;
 
       /**
+       * Do we need to adjust for the IFS+contention window.
+       */
+      bool cw_;
+
+      /**
        * Is the first packet we've seen?
        */
       bool first_;
@@ -110,7 +115,12 @@ namespace metrics {
       /**
        * Total packet time in us seen since last reset().
        */
-      uint_least32_t packet_time_;
+      uint_least32_t packet_time_all_;
+
+      /**
+       * Total iperf packet time in us seen since last reset().
+       */
+      uint_least32_t packet_time_iperf_;
 
       /**
        * iperf packets attempted.

@@ -8,8 +8,9 @@ SUBDIRS = \
 	icmp \
 	monitor \
 	sender \
-	strip \
 	traffic \
 	tscal \
+	tstrip \
 	txc \
+	undup \
 	verify

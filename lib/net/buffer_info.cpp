@@ -233,6 +233,8 @@ buffer_info::tx_flags(uint32_t f)
 void
 buffer_info::write(ostream& os) const
 {
+   if(has(TIMESTAMP1) && has(TIMESTAMP2))
+      os << "PACKET-TIME: " << packet_time() << ", ";
    if(has(TIMESTAMP1))
       os << "TIMESTAMP1: " << timestamp1() << ", ";
    if(has(TIMESTAMP2))
