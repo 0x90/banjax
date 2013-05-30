@@ -8,6 +8,7 @@ SUBDIRS = \
 	icmp \
 	monitor \
 	sender \
+	sync \
 	traffic \
 	tscal \
 	tstrip \
