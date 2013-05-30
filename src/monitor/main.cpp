@@ -159,7 +159,7 @@ main(int ac, char **av)
 
       metric_group_sptr metrics(metric_group_sptr(new metric_group));
       metrics->push_back(metric_sptr(new utilization_metric));
-      metrics->push_back(metric_sptr(new iperf_metric_wrapper(metric_sptr(new iperf_metric("iperf", true)))));
+      metrics->push_back(metric_sptr(new iperf_metric("iperf", true)));
 
       wnic_sptr w(wnic::open(what));
       if("OFDM" == enc_str) {
