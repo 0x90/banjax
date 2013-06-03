@@ -9,7 +9,7 @@
 ;;; apply fn to lines from port
 ;;; ignores comments/blank lines from original file
 
-(defporte (filter-port port fn)
+(define (filter-port port fn)
   (let ((s (read-line port)))
     (cond ((eof-object? s)
            s)
