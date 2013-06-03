@@ -105,16 +105,6 @@ namespace metrics {
       uint32_t packets_;
 
       /**
-       * Total airtime NOT used by metric.
-       */
-      uint_least32_t error_;
-
-      /**
-       * Number of candidate packets we ignored.
-       */
-      uint32_t ignored_;
-
-      /**
        * The computed value of the airtime metric.
        */
       double metric_;

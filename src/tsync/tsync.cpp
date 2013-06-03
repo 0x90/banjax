@@ -45,20 +45,18 @@ radiotap_offset(const uint8_t *octets, size_t octets_sz)
 bool
 is_iperf_frame(const uint8_t *octets, size_t octets_sz)
 {
-   bool announce = false;
+   bool iperf = false;
    size_t ofs = radiotap_offset(octets, octets_sz);
    if(ofs < octets_sz) {
-      const size_t ANNOUNCE_FRAME_SZ = 74;
       const uint8_t *frame = octets + ofs;
       const size_t frame_sz = octets_sz - ofs;
-      if(ANNOUNCE_FRAME_SZ == frame_sz &&
-          frame[0] == 0x88 &&                      // frame type == DATA
-         frame[38] == 0x08 && frame[39] == 0x00 && // LLC type == IP
-         frame[49] == 0x11 &&                      // IP protocol == UDP
-         frame[62] == 0x17 && frame[63] == 0x47)   // dest port == 5959
-         announce = true;
+      if(frame[0]  == 0x88 &&                      // frame type == DATA
+         frame[44] == 0x08 && frame[45] == 0x00 && // LLC type == IP
+         frame[55] == 0x11 &&                      // IP protocol == UDP
+         frame[68] == 0x13 && frame[69] == 0x89)   // dest port == 5959
+         iperf = true;
    }
-   return announce;
+   return iperf;
 }
 
 

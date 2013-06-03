@@ -29,8 +29,6 @@ airtime_metric_measured::airtime_metric_measured(const string& name) :
    name_(name),
    airtime_(0),
    packets_(0),
-   error_(0),
-   ignored_(0),
    metric_(0.0),
    valid_(false),
    debug_()
@@ -42,8 +40,6 @@ airtime_metric_measured::airtime_metric_measured(const airtime_metric_measured& 
    name_(other.name_),
    airtime_(other.airtime_),
    packets_(other.packets_),
-   error_(other.error_),
-   ignored_(other.ignored_),
    metric_(other.metric_),
    valid_(other.valid_),
    debug_(other.debug_)
@@ -58,8 +54,6 @@ airtime_metric_measured::operator=(const airtime_metric_measured& other)
       name_ = other.name_;
       airtime_ = other.airtime_;
       packets_ = other.packets_;
-      error_ = other.error_;
-      ignored_ = other.ignored_;
       metric_ = other.metric_;
       valid_ = other.valid_;
       debug_ = other.debug_;
@@ -85,9 +79,6 @@ airtime_metric_measured::add(buffer_sptr b)
             ++packets_;
          }
          airtime_ += airtime;
-      } else {
-         ++ignored_;
-         error_ += airtime;
       }
    }
 }
@@ -99,7 +90,7 @@ airtime_metric_measured::clone() const
 }
 
 double
-airtime_metric_measured::compute(uint32_t ignored_delta_us)
+airtime_metric_measured::compute(uint32_t)
 {
    if(valid_ = (packets_ > 0)) {
       metric_ = airtime_ / static_cast<double>(packets_);
@@ -108,15 +99,10 @@ airtime_metric_measured::compute(uint32_t ignored_delta_us)
    }
 #ifndef NDEBUG
    ostringstream os;
-   if(valid_) {
+   if(valid_)
       os << ", " << name_ << "-Total: " << airtime_;
-      os << ", " << name_ << "-Ignored: " << ignored_;
-      os << ", " << name_ << "-Error: " << error_;
-   } else {
+   else
       os << ", " << name_ << "-Total: - ";
-      os << ", " << name_ << "-Ignored: -";
-      os << ", " << name_ << "-Error: -";
-   }
    debug_ = os.str();
 #endif
    return metric_;
@@ -127,8 +113,6 @@ airtime_metric_measured::reset()
 {
    airtime_ = 0;
    packets_ = 0;
-   error_ = 0;
-   ignored_ = 0;
 }
 
 void

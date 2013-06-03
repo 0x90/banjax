@@ -113,14 +113,9 @@ namespace metrics {
       uint32_t last_seq_no_;
 
       /**
-       * Total packet time in us seen since last reset().
-       */
-      uint_least32_t packet_time_all_;
-
-      /**
        * Total iperf packet time in us seen since last reset().
        */
-      uint_least32_t packet_time_iperf_;
+      uint_least32_t packet_time_;
 
       /**
        * iperf packets attempted.

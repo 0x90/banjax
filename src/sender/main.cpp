@@ -148,18 +148,18 @@ main(int ac, char **av)
 
       encoding_sptr enc(encoding::get(enc_str));
     	metric_group_sptr link_metrics(new metric_group);
-      link_metrics->push_back(metric_sptr(new airtime_metric_kernel));
+      // link_metrics->push_back(metric_sptr(new airtime_metric_kernel));
       // link_metrics->push_back(metric_sptr(new metric_decimator("Airtime-Kernel-5PC", metric_sptr(new airtime_metric_kernel), 20)));
       link_metrics->push_back(metric_sptr(new airtime_metric_linux(enc)));
       link_metrics->push_back(metric_sptr(new airtime_metric_measured));
       link_metrics->push_back(metric_sptr(new airtime_metric_ns3(enc, rts_cts_threshold)));
       link_metrics->push_back(metric_sptr(new iperf_metric("iperf", false)));
-      link_metrics->push_back(metric_sptr(new tmt_metric(enc, rate_Mbs * 1000, mpdu_sz, rts_cts_threshold)));
       link_metrics->push_back(metric_sptr(new pkttime_metric));
-      link_metrics->push_back(metric_sptr(new fdr_metric));
-      link_metrics->push_back(metric_sptr(new pdr_metric));
-      link_metrics->push_back(metric_sptr(new goodput_metric));
-      link_metrics->push_back(metric_sptr(new txc_metric("TXC")));
+      // link_metrics->push_back(metric_sptr(new tmt_metric(enc, rate_Mbs * 1000, mpdu_sz, rts_cts_threshold)));
+      // link_metrics->push_back(metric_sptr(new fdr_metric));
+      // link_metrics->push_back(metric_sptr(new pdr_metric));
+      // link_metrics->push_back(metric_sptr(new goodput_metric));
+      // link_metrics->push_back(metric_sptr(new txc_metric("TXC")));
 
     	metric_group_sptr chan_metrics(new metric_group);
       chan_metrics->push_back(metric_sptr(new saturation_metric));

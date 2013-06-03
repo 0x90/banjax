@@ -8,10 +8,10 @@ SUBDIRS = \
 	icmp \
 	monitor \
 	sender \
-	sync \
 	traffic \
 	tscal \
 	tstrip \
+	tsync \
 	txc \
 	undup \
 	verify
