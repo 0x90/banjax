@@ -9,9 +9,7 @@
 #include <string.h>
 #include <unistd.h>
 
-
 using namespace std;
-
 
 void
 error(const char *fmt, ...)
@@ -24,8 +22,7 @@ error(const char *fmt, ...)
    exit(EXIT_FAILURE);
 }
 
-
-struct ieee80211_radiotap_header {
+struct radiotap_header {
    u_int8_t it_version;         /* set to 0 */
    u_int8_t it_pad;
    u_int16_t it_len;            /* entire length */
@@ -34,19 +31,18 @@ struct ieee80211_radiotap_header {
 
 
 uint16_t
-radiotap_offset(const uint8_t *octets, size_t octets_sz)
+radiotap_hdr_size(const uint8_t *octets, size_t octets_sz)
 {
-   const struct ieee80211_radiotap_header *radiotap;
-   radiotap = (const struct ieee80211_radiotap_header*) octets;
+   const struct radiotap_header *radiotap;
+   radiotap = (const struct radiotap_header*) octets;
    return (0 == radiotap->it_version) ? le16toh(radiotap->it_len) : 0;
 }
-
 
 bool
 is_iperf_frame(const uint8_t *octets, size_t octets_sz)
 {
    bool iperf = false;
-   size_t ofs = radiotap_offset(octets, octets_sz);
+   size_t ofs = radiotap_hdr_size(octets, octets_sz);
    if(ofs < octets_sz) {
       const uint8_t *frame = octets + ofs;
       const size_t frame_sz = octets_sz - ofs;
@@ -58,7 +54,6 @@ is_iperf_frame(const uint8_t *octets, size_t octets_sz)
    }
    return iperf;
 }
-
 
 int
 main(int ac, char **av)
@@ -88,14 +83,14 @@ main(int ac, char **av)
          error("failed to open \"%s\" (%s)\n", out_path.c_str(), pcap_geterr(dead));
       }
 
+      bool iperf = false;
       const uint8_t *octets;
       struct pcap_pkthdr hdr;
-      while((octets = pcap_next(in, &hdr)) && !is_iperf_frame(octets, hdr.caplen))
-         ;
-      if(octets) {
-         pcap_dump(reinterpret_cast<u_char*>(out), &hdr, octets);
-         while((octets = pcap_next(in, &hdr)))
+      while(octets = pcap_next(in, &hdr)) {
+         if(iperf || is_iperf_frame(octets, hdr.caplen)) {
             pcap_dump(reinterpret_cast<u_char*>(out), &hdr, octets);
+            iperf = true;
+         }
       }
 
       pcap_dump_close(out);
