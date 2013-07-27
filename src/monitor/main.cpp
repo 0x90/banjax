@@ -140,26 +140,20 @@ main(int ac, char **av)
       }
 
       encoding_sptr enc(encoding::get(enc_str));
-    	// metric_group_sptr link_metrics(new metric_group);
-      // link_metrics->push_back(metric_sptr(new goodput_metric));
-      // link_metrics->push_back(metric_sptr(new airtime_metric_kernel));
+    	metric_group_sptr link_metrics(new metric_group);
+      link_metrics->push_back(metric_sptr(new goodput_metric));
+      link_metrics->push_back(metric_sptr(new airtime_metric_kernel));
       // link_metrics->push_back(metric_sptr(new metric_decimator("Airtime-Kernel-5PC", metric_sptr(new airtime_metric_kernel), 20)));
-      // link_metrics->push_back(metric_sptr(new airtime_metric_linux(enc)));
-      // link_metrics->push_back(metric_sptr(new airtime_metric_measured));
+      link_metrics->push_back(metric_sptr(new airtime_metric_linux(enc)));
+      link_metrics->push_back(metric_sptr(new airtime_metric_measured));
       // link_metrics->push_back(metric_sptr(new airtime_metric_ns3(enc, rts_cts_threshold)));
-      // link_metrics->push_back(metric_sptr(new tmt_metric(enc, rate_Mbs * 1000, mpdu_sz, rts_cts_threshold)));
+      link_metrics->push_back(metric_sptr(new tmt_metric(enc, rate_Mbs * 1000, mpdu_sz, rts_cts_threshold)));
       // link_metrics->push_back(metric_sptr(new pkttime_metric));
       // link_metrics->push_back(metric_sptr(new fdr_metric));
       // link_metrics->push_back(metric_sptr(new txc_metric("TXC")));
-
-    	// metric_group_sptr chan_metrics(new metric_group);
-      // chan_metrics->push_back(metric_sptr(new utilization_metric()));
-      // chan_metrics->push_back(metric_sptr(new iperf_metric_wrapper(metric_sptr(new metric_demux(link_metrics)))));
-
-
-      metric_group_sptr metrics(metric_group_sptr(new metric_group));
-      metrics->push_back(metric_sptr(new utilization_metric));
-      metrics->push_back(metric_sptr(new iperf_metric("iperf", true)));
+      link_metrics->push_back(metric_sptr(new elc_metric("iELC", UINT16_MAX, 0, 0, UINT16_MAX)));
+      link_metrics->push_back(metric_sptr(new legacy_elc_metric(enc, rate_Mbs * 1000, mpdu_sz, rts_cts_threshold)));
+      metric_sptr metrics(metric_sptr(new iperf_metric_wrapper(metric_sptr(new metric_demux(link_metrics)))));
 
       wnic_sptr w(wnic::open(what));
       if("OFDM" == enc_str) {
